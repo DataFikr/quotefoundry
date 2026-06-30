@@ -9,10 +9,24 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-export const supabase: SupabaseClient = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+// Build the real client only when env is present (prod / Stage 8). In tests and
+// pre-wiring dev the env is empty, so we leave it null and let the mock client be
+// injected via setSupabaseClient(). `export let` gives a LIVE binding: services
+// that `import { supabase }` see whatever it's reassigned to, so injection works
+// without touching any service.
+function makeRealClient(): SupabaseClient | null {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
+
+export let supabase: SupabaseClient = makeRealClient() as SupabaseClient;
+
+// Swap in a client (the in-memory mock for tests/dev, or a live client).
+export function setSupabaseClient(client: unknown): void {
+  supabase = client as SupabaseClient;
+}
 
 // A uniform result type so every service call is handled the same way in the UI:
 //   const { data, error } = await quoteService.list();
