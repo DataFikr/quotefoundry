@@ -9,10 +9,12 @@ import type { Quote } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money2, statusPill, heading, cardShadowLg, initials } from '../app/ui';
 import { CustomerPreviewModal } from './CustomerPreviewModal';
+import { useIsMobile } from '../app/useIsMobile';
 
 export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: string; onBack: () => void; onEdit: (id: string) => void; onChanged: () => void }) {
   const [q, setQ] = useState<Quote | null>(null);
   const [preview, setPreview] = useState(false);
+  const mobile = useIsMobile();
 
   const load = useCallback(async () => {
     const res = await quoteService.get(quoteId);
@@ -47,12 +49,12 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
   ];
 
   return (
-    <div style={{ padding: '26px 34px 48px' }} data-screen="detail">
+    <div style={{ padding: mobile ? '18px 16px 40px' : '26px 34px 48px' }} data-screen="detail">
       <div onClick={onBack} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: color.muted, fontWeight: 600, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
         <i className="las la-arrow-left" /> Pipeline
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24, alignItems: 'start' }}>
-        <div style={{ background: color.surface, borderRadius: 22, boxShadow: cardShadowLg, padding: '30px 32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 360px', gap: 24, alignItems: 'start' }}>
+        <div data-testid="detail-card" style={{ background: color.surface, borderRadius: 22, boxShadow: cardShadowLg, padding: '30px 32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <h2 style={{ margin: 0, fontFamily: heading, fontWeight: 700, fontSize: 26, letterSpacing: '-.3px' }}>{q.inputs.job_name}</h2>
             <span style={{ display: 'inline-block', padding: '6px 15px', borderRadius: 9, fontSize: 13, fontWeight: 700, fontFamily: heading, background: pill.bg, color: pill.color }}>{pill.label}</span>
@@ -99,7 +101,7 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
               .map((ev) => (
                 <div key={(ev as string[])[0]} style={{ display: 'flex', gap: 13, padding: '11px 0' }}>
                   <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(94,129,244,.12)', color: color.accentDeep, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}><i className="las la-circle" /></div>
-                  <div><div style={{ fontFamily: heading, fontWeight: 700, fontSize: 14 }}>{(ev as string[])[0]}</div><div style={{ fontSize: 12.5, color: color.muted, marginTop: 1 }}>{new Date((ev as string[])[1]).toLocaleDateString()}</div></div>
+                  <div><div style={{ fontFamily: heading, fontWeight: 700, fontSize: 14 }}>{(ev as string[])[0]}</div><div style={{ fontSize: 12.5, color: color.muted, marginTop: 1 }} data-mask>{new Date((ev as string[])[1]).toLocaleDateString()}</div></div>
                 </div>
               ))}
           </div>

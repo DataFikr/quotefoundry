@@ -10,6 +10,7 @@ import { computeQuote } from '../data-access-layer/lib/quoteEngine';
 import type { QuoteInputs, ShopRates } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money, money2, heading, cardShadowLg } from '../app/ui';
+import { useIsMobile } from '../app/useIsMobile';
 
 const EMPTY: QuoteInputs = {
   job_name: '', material_spec: '', material_weight: 0, quantity: 1, burn_minutes: 0,
@@ -34,6 +35,7 @@ export function EditorScreen({ quoteId, onSaved, onCancel }: { quoteId?: string;
   const [rates, setRates] = useState<ShopRates | null>(null);
   const [editId, setEditId] = useState<string | undefined>(quoteId);
   const [saving, setSaving] = useState(false);
+  const mobile = useIsMobile();
 
   useEffect(() => {
     (async () => {
@@ -82,11 +84,11 @@ export function EditorScreen({ quoteId, onSaved, onCancel }: { quoteId?: string;
   ] : [];
 
   return (
-    <div style={{ padding: '26px 34px 48px' }} data-screen="editor">
+    <div style={{ padding: mobile ? '18px 16px 40px' : '26px 34px 48px' }} data-screen="editor">
       <div onClick={onCancel} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: color.muted, fontWeight: 600, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
         <i className="las la-arrow-left" /> Pipeline
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 410px', gap: 24, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 410px', gap: 24, alignItems: 'start' }}>
         {/* LEFT: inputs */}
         <div style={{ ...{ background: color.surface, borderRadius: 22, boxShadow: cardShadowLg }, padding: '28px 30px', minWidth: 0 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -151,7 +153,7 @@ export function EditorScreen({ quoteId, onSaved, onCancel }: { quoteId?: string;
         </div>
 
         {/* RIGHT: live cost summary (internal view shows margin/overhead) */}
-        <div style={{ background: `linear-gradient(160deg,${color.panelFrom},${color.panelTo})`, borderRadius: 22, padding: '28px 28px 26px', color: '#fff', position: 'sticky', top: 8, boxShadow: '0 24px 50px -28px rgba(20,20,50,.7)' }} data-testid="cost-panel">
+        <div style={{ background: `linear-gradient(160deg,${color.panelFrom},${color.panelTo})`, borderRadius: 22, padding: '28px 28px 26px', color: '#fff', position: mobile ? 'static' : 'sticky', top: 8, boxShadow: '0 24px 50px -28px rgba(20,20,50,.7)' }} data-testid="cost-panel">
           <div style={{ fontSize: 12, fontWeight: 700, color: '#9EA0C8', textTransform: 'uppercase', letterSpacing: '.6px' }}>Cost breakdown</div>
           <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {lines.map(([lbl, val]) => (

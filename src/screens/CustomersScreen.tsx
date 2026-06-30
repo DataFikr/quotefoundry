@@ -7,6 +7,7 @@ import { customerService } from '../data-access-layer/services/rateService';
 import type { Customer } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { heading, cardShadow, initials } from '../app/ui';
+import { useIsMobile } from '../app/useIsMobile';
 
 const AVATARS = ['linear-gradient(135deg,#5E81F4,#7C5CFC)', 'linear-gradient(135deg,#2BB6A8,#178F84)', 'linear-gradient(135deg,#F4806A,#E0533B)'];
 
@@ -15,6 +16,7 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: () => void }) {
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState({ company_name: '', contact_name: '', email: '', phone: '' });
+  const mobile = useIsMobile();
 
   const load = useCallback(async () => {
     const res = await customerService.list(search.trim() || undefined);
@@ -33,7 +35,7 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: () => void }) {
   const field: React.CSSProperties = { height: 42, border: `1.5px solid ${color.border}`, borderRadius: 11, padding: '0 12px', fontSize: 14, flex: 1, minWidth: 0 };
 
   return (
-    <div style={{ padding: '30px 34px 48px' }} data-screen="customers">
+    <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px' }} data-screen="customers">
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: color.surface, border: `1px solid ${color.borderSoft}`, borderRadius: 13, padding: '0 16px', height: 46, width: 320, maxWidth: '40vw' }}>
           <i className="las la-search" style={{ color: '#B6B6CC', fontSize: 17 }} />
@@ -55,7 +57,7 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: () => void }) {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(3,1fr)', gap: 20 }}>
         {list.map((c, i) => (
           <div key={c.id} data-customer={c.company_name} style={{ background: color.surface, borderRadius: 20, padding: 24, boxShadow: cardShadow }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>

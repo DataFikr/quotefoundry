@@ -7,6 +7,7 @@ import { quoteService } from '../data-access-layer/services/quoteService';
 import type { Quote, QuoteStatus } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money, statusPill, heading, cardShadow, cardShadowLg } from '../app/ui';
+import { useIsMobile } from '../app/useIsMobile';
 
 const FILTERS: Array<{ key: QuoteStatus | 'all'; label: string }> = [
   { key: 'all', label: 'All' },
@@ -28,6 +29,8 @@ function StatCard({ label, value, foot, footColor }: { label: string; value: str
 }
 
 export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: string) => void; onNew: () => void; onRefresh: () => void }) {
+  const mobile = useIsMobile();
+  const ROW_COLS = '2.4fr 1.7fr 1fr 1.1fr 1fr 44px';
   const [all, setAll] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<QuoteStatus | 'all'>('all');
@@ -72,8 +75,8 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
   }
 
   return (
-    <div style={{ padding: '30px 34px 48px' }} data-screen="pipeline">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20, marginBottom: 26 }}>
+    <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px' }} data-screen="pipeline">
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: mobile ? 12 : 20, marginBottom: 26 }}>
         <StatCard label="Open pipeline" value={money(stats.openSum)} foot={`${stats.openCount} active quotes`} footColor={color.success} />
         <StatCard label="Won this month" value={money(stats.wonSum)} foot={`${stats.wonCount} jobs landed`} footColor={color.success} />
         <StatCard label="Win rate" value={`${stats.winRate}%`} foot="won vs. lost" />
@@ -100,17 +103,39 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2.4fr 1.7fr 1fr 1.1fr 1fr 44px', gap: 14, padding: '8px 22px', fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.4px' }}>
-          <div>Job / Quote #</div><div>Customer</div><div>Date</div><div style={{ textAlign: 'right' }}>Quoted</div><div>Status</div><div />
-        </div>
+        {!mobile && (
+          <div style={{ display: 'grid', gridTemplateColumns: ROW_COLS, gap: 14, padding: '8px 22px', fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.4px' }}>
+            <div>Job / Quote #</div><div>Customer</div><div>Date</div><div style={{ textAlign: 'right' }}>Quoted</div><div>Status</div><div />
+          </div>
+        )}
 
         {loading && <div style={{ padding: 40, textAlign: 'center', color: color.muted }}>Loading quotes…</div>}
 
         {!loading && rows.map((q) => {
           const pill = statusPill(q.status);
+          if (mobile) {
+            // table → card on phones
+            return (
+              <div key={q.id} onClick={() => onOpen(q.id)} data-row={q.quote_number} data-row-mobile
+                style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, margin: '8px 0', borderRadius: 16, border: `1px solid ${color.border}`, cursor: 'pointer', minHeight: 44 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, flex: 'none', borderRadius: 12, background: 'rgba(94,129,244,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color.accentDeep, fontSize: 18 }}><i className="las la-drafting-compass" /></div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.inputs.job_name}</div>
+                    <div style={{ fontSize: 12.5, color: color.muted }}>{q.quote_number} · {q.customer_name ?? '—'}</div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); clone(q.id); }} title="Clone" style={{ width: 40, height: 40, border: 'none', borderRadius: 11, background: color.appBg, color: color.muted, cursor: 'pointer', fontSize: 16 }}><i className="las la-copy" /></button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ display: 'inline-block', padding: '6px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, fontFamily: heading, background: pill.bg, color: pill.color }}>{pill.label}</span>
+                  <span style={{ fontFamily: heading, fontWeight: 700, fontSize: 17 }}>{money(q.quoted_price)}</span>
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={q.id} onClick={() => onOpen(q.id)} data-row={q.quote_number}
-              style={{ display: 'grid', gridTemplateColumns: '2.4fr 1.7fr 1fr 1.1fr 1fr 44px', gap: 14, alignItems: 'center', padding: '14px 22px', margin: '4px 0', borderRadius: 16, cursor: 'pointer', border: '1px solid transparent' }}>
+              style={{ display: 'grid', gridTemplateColumns: ROW_COLS, gap: 14, alignItems: 'center', padding: '14px 22px', margin: '4px 0', borderRadius: 16, cursor: 'pointer', border: '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
                 <div style={{ width: 44, height: 44, flex: 'none', borderRadius: 13, background: 'rgba(94,129,244,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color.accentDeep, fontSize: 19 }}>
                   <i className="las la-drafting-compass" />
