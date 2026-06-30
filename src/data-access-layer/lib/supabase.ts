@@ -44,7 +44,8 @@ export function fail<T>(error: string): Result<T> {
 // Wrap a Supabase call so PostgREST errors become friendly strings, never
 // uncaught exceptions. Keeps every service method shaped identically.
 export async function run<T>(
-  fn: () => Promise<{ data: T | null; error: { message: string } | null }>
+  // PostgREST builders are thenable (PromiseLike), not full Promises — accept either.
+  fn: () => PromiseLike<{ data: T | null; error: { message: string } | null }>
 ): Promise<Result<T>> {
   try {
     const { data, error } = await fn();

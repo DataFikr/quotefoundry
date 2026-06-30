@@ -1,35 +1,24 @@
-// App.tsx — shell. Screens get wired in here from Stage 3 (auth) onward.
-// Stage 0 placeholder so the scaffold builds and renders.
+// App.tsx — boots the data layer (mock in dev, live in Stage 8) then renders
+// the app shell. Auth screens layer in alongside this in a later pass; for the
+// daily-loop build the dev bootstrap signs in a demo shop.
+import { useEffect, useState } from 'react';
 import { color, font } from './design/tokens';
+import { devBootstrap } from './app/devBootstrap';
+import { AppShell } from './app/AppShell';
 
 export function App() {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: color.appBg,
-        color: color.ink,
-        fontFamily: `${font.body}, sans-serif`,
-      }}
-    >
-      <div style={{ textAlign: 'center' }}>
-        <div
-          style={{
-            fontFamily: `${font.heading}, sans-serif`,
-            fontWeight: 900,
-            fontSize: 32,
-            color: color.accentDeep,
-          }}
-        >
-          QuoteForge
-        </div>
-        <div style={{ color: color.muted, marginTop: 8 }}>
-          Scaffold ready — screens wire in from Stage 4.
-        </div>
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    devBootstrap().then(() => setReady(true));
+  }, []);
+
+  if (!ready) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: color.appBg, color: color.muted, fontFamily: `${font.body}, sans-serif` }}>
+        Loading QuoteForge…
       </div>
-    </div>
-  );
+    );
+  }
+  return <AppShell shopName="Ironside Fabrication" />;
 }
