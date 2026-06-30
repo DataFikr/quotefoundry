@@ -1,0 +1,177 @@
+
+<h2 class="sr-only">Customer list screen: a searchable list of saved customers with quote history and value, plus a detail panel and add-customer action</h2>
+<style>
+.cl{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.cl-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+.cl-top{padding:11px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:12px}
+.cl-back{font-size:13px;color:#185FA5;cursor:pointer;display:flex;align-items:center;gap:4px}
+.cl-back i{font-size:15px}
+.cl-crumb{font-size:13px;color:var(--color-text-tertiary)}
+.cl-crumb b{color:var(--color-text-primary);font-weight:500}
+.cl-body{padding:18px}
+.cl-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.cl-h{font-size:18px;font-weight:500}
+.cl-h small{font-size:13px;color:var(--color-text-secondary);font-weight:400;margin-left:8px}
+.cl-add{font-size:14px;font-weight:500;padding:9px 16px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:7px}
+.cl-controls{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.cl-search{flex:1;min-width:180px;position:relative;display:flex;align-items:center}
+.cl-search i{position:absolute;left:11px;font-size:16px;color:var(--color-text-tertiary)}
+.cl-search input{width:100%;height:38px;padding-left:34px}
+.cl-sort{height:38px;padding:0 10px;font-size:13px}
+.cl-grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.cl-list{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+.cl-lh{display:grid;grid-template-columns:1.6fr 80px 100px 90px;gap:10px;padding:9px 14px;background:var(--color-background-secondary);font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.03em}
+.cl-row{display:grid;grid-template-columns:1.6fr 80px 100px 90px;gap:10px;padding:11px 14px;border-top:0.5px solid var(--color-border-tertiary);align-items:center;font-size:13px;cursor:pointer;transition:background .12s}
+.cl-row:hover,.cl-row.sel{background:var(--color-background-secondary)}
+.cl-row.sel{box-shadow:inset 3px 0 0 #185FA5}
+.cl-cn{font-weight:500;display:flex;align-items:center;gap:9px}
+.cl-ava{width:30px;height:30px;border-radius:7px;background:#E6F1FB;color:#0C447C;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.cl-cn small{display:block;font-size:11px;color:var(--color-text-tertiary);font-weight:400;margin-top:1px}
+.cl-num{text-align:right;font-variant-numeric:tabular-nums}
+.cl-val{text-align:right;font-variant-numeric:tabular-nums;font-weight:500;color:#04342C}
+.cl-rate{text-align:right;font-size:12px;color:var(--color-text-secondary)}
+.cl-empty{padding:26px;text-align:center;color:var(--color-text-tertiary);font-size:13px;display:none}
+/* detail panel */
+.cl-detail{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;align-self:start;position:sticky;top:10px}
+.cl-dhead{display:flex;align-items:center;gap:11px;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cl-davatar{width:42px;height:42px;border-radius:9px;background:#185FA5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0}
+.cl-dname{font-size:15px;font-weight:500}
+.cl-dname small{display:block;font-size:12px;color:var(--color-text-secondary);font-weight:400;margin-top:1px}
+.cl-dsec{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#185FA5;margin:14px 0 7px}
+.cl-drow{display:flex;align-items:flex-start;gap:9px;font-size:13px;padding:4px 0;color:var(--color-text-secondary)}
+.cl-drow i{font-size:15px;color:var(--color-text-tertiary);flex-shrink:0;margin-top:1px}
+.cl-dstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.cl-dstat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 11px}
+.cl-dstat .n{font-size:16px;font-weight:500}
+.cl-dstat .l{font-size:10px;color:var(--color-text-secondary);margin-top:1px}
+.cl-dq{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cl-dq:last-child{border-bottom:none}
+.cl-dq .qn{color:var(--color-text-primary)}
+.cl-dq .qs{font-size:10px;font-weight:500;padding:2px 7px;border-radius:9px}
+.qs-won{background:#E1F5EE;color:#04342C}
+.qs-sent{background:#E6F1FB;color:#0C447C}
+.qs-lost{background:#FAE9E5;color:#993C1D}
+.cl-dact{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.cl-dbtn{font-size:13px;font-weight:500;padding:9px;border-radius:var(--border-radius-md);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;border:none}
+.cl-dp{background:#0F6E56;color:#fff}
+.cl-ds{background:transparent;color:#185FA5;border:0.5px solid #185FA5}
+@media(max-width:640px){.cl-grid{grid-template-columns:1fr}.cl-detail{position:static}.cl-lh{grid-template-columns:1fr 80px}.cl-row{grid-template-columns:1fr 80px}.cl-row>*:nth-child(n+3),.cl-lh>*:nth-child(n+3){display:none}}
+</style>
+
+<div class="cl">
+<div class="cl-frame">
+
+  <div class="cl-top">
+    <span class="cl-back" onclick="sendPrompt('Back to pipeline')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Pipeline</span>
+    <span class="cl-crumb">/ <b>Customers</b></span>
+  </div>
+
+  <div class="cl-body">
+    <div class="cl-heading">
+      <div class="cl-h">Customers <small>9 saved</small></div>
+      <button class="cl-add" onclick="sendPrompt('Add a new customer')"><i class="ti ti-plus" aria-hidden="true"></i> Add customer</button>
+    </div>
+
+    <div class="cl-controls">
+      <div class="cl-search"><i class="ti ti-search" aria-hidden="true"></i><input id="csearch" placeholder="Search customers" oninput="renderC()"></div>
+      <select class="cl-sort" id="csort" onchange="renderC()">
+        <option value="value">Sort: Total won</option>
+        <option value="name">Sort: Name</option>
+        <option value="recent">Sort: Most recent</option>
+        <option value="quotes">Sort: Most quotes</option>
+      </select>
+    </div>
+
+    <div class="cl-grid">
+      <div>
+        <div class="cl-list">
+          <div class="cl-lh"><span>Customer</span><span class="cl-num">Quotes</span><span class="cl-val">Won</span><span class="cl-rate">Win rate</span></div>
+          <div id="crows"></div>
+          <div class="cl-empty" id="cempty">No customers match your search.</div>
+        </div>
+      </div>
+
+      <div class="cl-detail" id="cdetail"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+var custs=[
+  {id:1,name:"Apex Industrial",contact:"Dana Reyes",role:"Purchasing",email:"purchasing@apexindustrial.com",phone:"(216) 555-0188",addr:"3320 Commerce Pkwy, Cleveland, OH",terms:"Net 30",quotes:8,won:5,value:24700,recent:1,
+    history:[["Q-2026-051","Stair stringers","sent"],["Q-2026-048","ADA handrail","won"],["Q-2026-031","Platform frame","won"],["Q-2026-019","Bollards","lost"]]},
+  {id:2,name:"Northgate Mfg",contact:"Sam Ortiz",role:"Operations",email:"sortiz@northgatemfg.com",phone:"(440) 555-0202",addr:"880 Industrial Dr, Mentor, OH",terms:"Net 30",quotes:6,won:4,value:19850,recent:2,
+    history:[["Q-2026-049","Equipment skid","sent"],["Q-2026-045","Catwalk grating","sent"],["Q-2026-040","Ladder w/ cage","won"],["Q-2026-022","Pipe rack","won"]]},
+  {id:3,name:"Vale Construction",contact:"Pat Lindqvist",role:"Project Mgr",email:"pat@valeconstruction.com",phone:"(216) 555-0144",addr:"15 Riverside Ave, Lakewood, OH",terms:"Net 45",quotes:7,won:3,value:17200,recent:1,
+    history:[["Q-2026-050","Mezzanine railing","sent"],["Q-2026-044","Dock plate","won"],["Q-2026-038","Steel staircase","draft"]]},
+  {id:4,name:"BuildRight LLC",contact:"Chris Vogel",role:"Owner",email:"chris@buildrightllc.com",phone:"(330) 555-0166",addr:"42 Foundry St, Akron, OH",terms:"Net 30",quotes:5,won:2,value:12600,recent:2,
+    history:[["Q-2026-047","Structural beam","sent"],["Q-2026-041","Conveyor stand","won"]]},
+  {id:5,name:"Refinery Services",contact:"Lee Branch",role:"Procurement",email:"lbranch@refserv.com",phone:"(440) 555-0211",addr:"7 Terminal Rd, Eastlake, OH",terms:"Net 60",quotes:4,won:2,value:21300,recent:1,
+    history:[["Q-2026-043","Pipe supports","sent"],["Q-2026-028","Valve skid","won"]]},
+  {id:6,name:"City of Lakewood",contact:"Procurement Dept",role:"Public works",email:"bids@lakewoodoh.gov",phone:"(216) 555-0100",addr:"12650 Detroit Ave, Lakewood, OH",terms:"Net 30",quotes:3,won:1,value:8400,recent:3,
+    history:[["Q-2026-046","Bollards qty 12","sent"],["Q-2025-201","Park railings","won"]]},
+  {id:7,name:"Haul Co",contact:"Rick Mason",role:"Fleet",email:"rick@haulco.com",phone:"(330) 555-0190",addr:"5 Depot Ln, Canton, OH",terms:"COD",quotes:3,won:2,value:3900,recent:2,
+    history:[["Q-2026-039","Hitch reinforcement","draft"],["Q-2025-188","Trailer frame","won"]]},
+  {id:8,name:"Lakeside Estates",contact:"Morgan Hale",role:"Developer",email:"mhale@lakesideestates.com",phone:"(216) 555-0177",addr:"900 Lake Rd, Bay Village, OH",terms:"Net 30",quotes:2,won:0,value:0,recent:1,
+    history:[["Q-2026-042","Gate frame","lost"]]},
+  {id:9,name:"Summit Welding Supply",contact:"Toni Park",role:"Buyer",email:"toni@summitweld.com",phone:"(440) 555-0233",addr:"61 Steel Ave, Twinsburg, OH",terms:"Net 30",quotes:2,won:1,value:5600,recent:3,
+    history:[["Q-2025-194","Display racks","won"]]}
+];
+var sel=1;
+function initials(n){return n.split(' ').slice(0,2).map(function(w){return w[0]}).join('').toUpperCase()}
+function money(x){return '$'+x.toLocaleString()}
+function renderC(){
+  var q=(document.getElementById('csearch').value||'').toLowerCase();
+  var sort=document.getElementById('csort').value;
+  var arr=custs.filter(function(c){return !q||c.name.toLowerCase().includes(q)||c.contact.toLowerCase().includes(q)});
+  arr.sort(function(a,b){
+    if(sort==='name')return a.name.localeCompare(b.name);
+    if(sort==='quotes')return b.quotes-a.quotes;
+    if(sort==='recent')return a.recent-b.recent;
+    return b.value-a.value;
+  });
+  var rows='';
+  arr.forEach(function(c){
+    var wr=c.quotes?Math.round(c.won/c.quotes*100):0;
+    rows+='<div class="cl-row'+(c.id===sel?' sel':'')+'" onclick="selC('+c.id+')">'+
+      '<div class="cl-cn"><div class="cl-ava">'+initials(c.name)+'</div><div>'+c.name+'<small>'+c.contact+'</small></div></div>'+
+      '<div class="cl-num">'+c.quotes+'</div>'+
+      '<div class="cl-val">'+money(c.value)+'</div>'+
+      '<div class="cl-rate">'+wr+'%</div>'+
+      '</div>';
+  });
+  document.getElementById('crows').innerHTML=rows;
+  document.getElementById('cempty').style.display=arr.length?'none':'block';
+  renderD();
+}
+function selC(id){sel=id;renderC()}
+function renderD(){
+  var c=custs.find(function(x){return x.id===sel});
+  if(!c){document.getElementById('cdetail').innerHTML='';return}
+  var wr=c.quotes?Math.round(c.won/c.quotes*100):0;
+  var hist='';
+  c.history.forEach(function(h){
+    var cls=h[2]==='won'?'qs-won':h[2]==='lost'?'qs-lost':'qs-sent';
+    hist+='<div class="cl-dq"><span class="qn">'+h[1]+'</span><span class="qs '+cls+'">'+h[2]+'</span></div>';
+  });
+  document.getElementById('cdetail').innerHTML=
+    '<div class="cl-dhead"><div class="cl-davatar">'+initials(c.name)+'</div>'+
+    '<div class="cl-dname">'+c.name+'<small>'+c.contact+' · '+c.role+'</small></div></div>'+
+    '<div class="cl-dsec">Contact</div>'+
+    '<div class="cl-drow"><i class="ti ti-mail" aria-hidden="true"></i>'+c.email+'</div>'+
+    '<div class="cl-drow"><i class="ti ti-phone" aria-hidden="true"></i>'+c.phone+'</div>'+
+    '<div class="cl-drow"><i class="ti ti-map-pin" aria-hidden="true"></i>'+c.addr+'</div>'+
+    '<div class="cl-drow"><i class="ti ti-file-dollar" aria-hidden="true"></i>Terms: '+c.terms+'</div>'+
+    '<div class="cl-dstats">'+
+      '<div class="cl-dstat"><div class="n">'+c.quotes+'</div><div class="l">Total quotes</div></div>'+
+      '<div class="cl-dstat"><div class="n" style="color:#0F6E56">'+money(c.value)+'</div><div class="l">Won value</div></div>'+
+    '</div>'+
+    '<div class="cl-dsec">Recent quotes</div>'+hist+
+    '<div class="cl-dact">'+
+      '<button class="cl-dbtn cl-dp" onclick="sendPrompt(\'Start a new quote for '+c.name+'\')"><i class="ti ti-plus" aria-hidden="true"></i> New quote for '+c.name+'</button>'+
+      '<button class="cl-dbtn cl-ds" onclick="sendPrompt(\'Edit '+c.name+' details\')"><i class="ti ti-pencil" aria-hidden="true"></i> Edit details</button>'+
+    '</div>';
+}
+renderC();
+</script>

@@ -1,0 +1,172 @@
+
+<h2 class="sr-only">Sign-up and onboarding screen mockups for a fab quoting SaaS: account creation, industry selection, and shop rate entry with pre-filled defaults</h2>
+<style>
+.ob{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.ob-screen{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden;margin-bottom:20px}
+.ob-cap{font-size:12px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;display:flex;align-items:center;gap:7px}
+.ob-cap .step{background:#185FA5;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.ob-cap.green .step{background:#0F6E56}
+.ob-top{padding:14px 20px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.ob-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.ob-logo i{color:#185FA5;font-size:18px}
+.ob-prog{display:flex;gap:5px;align-items:center}
+.ob-dot{width:26px;height:4px;border-radius:2px;background:var(--color-border-tertiary)}
+.ob-dot.done{background:#0F6E56}
+.ob-dot.now{background:#185FA5}
+.ob-body{padding:26px 28px}
+.ob-h{font-size:21px;font-weight:500;margin:0 0 5px}
+.ob-sub{font-size:14px;color:var(--color-text-secondary);line-height:1.5;margin:0 0 20px}
+.ob-field{margin-bottom:14px}
+.ob-field label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:var(--color-text-secondary)}
+.ob-field input{width:100%}
+.ob-btn{font-size:15px;font-weight:500;padding:12px 22px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.ob-btn.full{width:100%;justify-content:center}
+.ob-btn-row{display:flex;align-items:center;gap:12px;margin-top:6px}
+.ob-skip{font-size:13px;color:var(--color-text-secondary);background:none;border:none;cursor:pointer;text-decoration:underline}
+.ob-or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--color-text-tertiary);font-size:12px}
+.ob-or::before,.ob-or::after{content:"";flex:1;height:0.5px;background:var(--color-border-tertiary)}
+.ob-sso{width:100%;font-size:14px;font-weight:500;padding:11px;border-radius:var(--border-radius-md);background:transparent;border:0.5px solid var(--color-border-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.ob-fine{font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:12px;line-height:1.5}
+.ob-inds{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ob-ind{padding:16px;border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-secondary);cursor:pointer;display:flex;align-items:center;gap:12px;background:var(--color-background-primary)}
+.ob-ind.sel{border:2px solid #185FA5;background:#E6F1FB}
+.ob-ind i{font-size:24px;color:#185FA5}
+.ob-ind .it{font-size:14px;font-weight:500;color:#042C53}
+.ob-ind .id{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+.ob-ind.soon{opacity:.55;cursor:default}
+.ob-ind.soon .badge{font-size:10px;background:var(--color-background-secondary);color:var(--color-text-tertiary);padding:1px 7px;border-radius:8px;margin-left:auto}
+.ob-rategroup{margin-bottom:18px}
+.ob-rglabel{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#185FA5;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ob-rglabel i{font-size:15px}
+.ob-rate{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.ob-rate .rl{font-size:13px;color:var(--color-text-primary)}
+.ob-rate .rl small{display:block;font-size:11px;color:var(--color-text-tertiary);margin-top:1px}
+.ob-rate .ri{position:relative;display:flex;align-items:center}
+.ob-rate .ri .pre{position:absolute;left:10px;font-size:13px;color:var(--color-text-tertiary);pointer-events:none}
+.ob-rate .ri .suf{position:absolute;right:10px;font-size:12px;color:var(--color-text-tertiary);pointer-events:none}
+.ob-rate input{width:100%;text-align:right;padding-right:34px;padding-left:22px;height:34px}
+.ob-prefill{font-size:12px;color:#0F6E56;background:#E1F5EE;border-radius:var(--border-radius-md);padding:9px 12px;margin-bottom:16px;display:flex;align-items:center;gap:8px;line-height:1.45}
+.ob-prefill i{font-size:16px;flex-shrink:0}
+.ob-finalcard{background:#E1F5EE;border-radius:var(--border-radius-lg);padding:18px;text-align:center}
+.ob-finalcard i.big{font-size:32px;color:#0F6E56}
+.ob-finalcard h4{font-size:17px;font-weight:500;color:#04342C;margin:8px 0 4px}
+.ob-finalcard p{font-size:13px;color:#0F6E56;margin:0 0 14px;line-height:1.5}
+@media(max-width:520px){.ob-inds{grid-template-columns:1fr}}
+</style>
+
+<div class="ob">
+
+  <p class="ob-cap"><span class="step">1</span> Sign up — under 60 seconds</p>
+  <div class="ob-screen">
+    <div class="ob-top">
+      <div class="ob-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <div class="ob-prog"><span class="ob-dot now"></span><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot"></span></div>
+    </div>
+    <div class="ob-body">
+      <h3 class="ob-h">Start quoting free</h3>
+      <p class="ob-sub">No credit card. Your first quote is minutes away.</p>
+      <button class="ob-sso"><i class="ti ti-brand-google" aria-hidden="true"></i> Continue with Google</button>
+      <div class="ob-or">or</div>
+      <div class="ob-field"><label>Work email</label><input type="email" placeholder="you@yourshop.com"></div>
+      <div class="ob-field"><label>Create password</label><input type="password" placeholder="8+ characters"></div>
+      <button class="ob-btn full" onclick="sendPrompt('What happens after I create my account?')">Create account <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      <p class="ob-fine">By continuing you agree to the Terms and Privacy Policy.<br>No card required · Cancel anytime</p>
+    </div>
+  </div>
+
+  <p class="ob-cap"><span class="step">2</span> Pick your trade — loads the right template</p>
+  <div class="ob-screen">
+    <div class="ob-top">
+      <div class="ob-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <div class="ob-prog"><span class="ob-dot done"></span><span class="ob-dot now"></span><span class="ob-dot"></span><span class="ob-dot"></span></div>
+    </div>
+    <div class="ob-body">
+      <h3 class="ob-h">What does your shop do?</h3>
+      <p class="ob-sub">This sets up the right cost lines and starting rates for your trade. You can change everything later.</p>
+      <div class="ob-inds">
+        <div class="ob-ind sel">
+          <i class="ti ti-flame" aria-hidden="true"></i>
+          <div><div class="it">Metal fab &amp; welding</div><div class="id">Structural, sheet, custom</div></div>
+        </div>
+        <div class="ob-ind soon">
+          <i class="ti ti-settings" aria-hidden="true"></i>
+          <div><div class="it">CNC machining</div><div class="id">Mill, lathe, turning</div></div>
+          <span class="badge">Soon</span>
+        </div>
+        <div class="ob-ind soon">
+          <i class="ti ti-tools" aria-hidden="true"></i>
+          <div><div class="it">Woodworking</div><div class="id">Cabinets, millwork</div></div>
+          <span class="badge">Soon</span>
+        </div>
+        <div class="ob-ind soon">
+          <i class="ti ti-cpu" aria-hidden="true"></i>
+          <div><div class="it">Electronics</div><div class="id">PCB assembly</div></div>
+          <span class="badge">Soon</span>
+        </div>
+      </div>
+      <div class="ob-btn-row" style="margin-top:18px">
+        <button class="ob-btn" onclick="sendPrompt('Continue to rate setup')">Continue <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <p class="ob-cap green"><span class="step">3</span> Enter shop rates — pre-filled, just adjust</p>
+  <div class="ob-screen">
+    <div class="ob-top">
+      <div class="ob-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <div class="ob-prog"><span class="ob-dot done"></span><span class="ob-dot done"></span><span class="ob-dot now"></span><span class="ob-dot"></span></div>
+    </div>
+    <div class="ob-body">
+      <h3 class="ob-h">Your shop rates</h3>
+      <p class="ob-sub">We've filled in typical fab shop numbers. Adjust any that differ — or keep them and fine-tune later.</p>
+
+      <div class="ob-prefill"><i class="ti ti-bulb" aria-hidden="true"></i> These defaults work out of the box. Change only what you know is different for your shop, then move on.</div>
+
+      <div class="ob-rategroup">
+        <div class="ob-rglabel"><i class="ti ti-user-dollar" aria-hidden="true"></i> Labor rates (fully loaded $/hr)</div>
+        <div class="ob-rate"><span class="rl">Cutting / sawing</span><span class="ri"><span class="pre">$</span><input value="75"><span class="suf">/hr</span></span></div>
+        <div class="ob-rate"><span class="rl">Fitting / assembly</span><span class="ri"><span class="pre">$</span><input value="80"><span class="suf">/hr</span></span></div>
+        <div class="ob-rate"><span class="rl">Welding</span><span class="ri"><span class="pre">$</span><input value="90"><span class="suf">/hr</span></span></div>
+        <div class="ob-rate"><span class="rl">Finishing / grinding</span><span class="ri"><span class="pre">$</span><input value="65"><span class="suf">/hr</span></span></div>
+      </div>
+
+      <div class="ob-rategroup">
+        <div class="ob-rglabel"><i class="ti ti-box" aria-hidden="true"></i> Machine &amp; material</div>
+        <div class="ob-rate"><span class="rl">Burn rate <small>plasma / laser run cost</small></span><span class="ri"><span class="pre">$</span><input value="120"><span class="suf">/hr</span></span></div>
+        <div class="ob-rate"><span class="rl">Steel price</span><span class="ri"><span class="pre">$</span><input value="0.85"><span class="suf">/lb</span></span></div>
+        <div class="ob-rate"><span class="rl">Drop / scrap allowance</span><span class="ri"><input value="15" style="padding-left:10px"><span class="suf">%</span></span></div>
+      </div>
+
+      <div class="ob-rategroup">
+        <div class="ob-rglabel"><i class="ti ti-chart-pie" aria-hidden="true"></i> Overhead &amp; margin</div>
+        <div class="ob-rate"><span class="rl">Overhead uplift</span><span class="ri"><input value="18" style="padding-left:10px"><span class="suf">%</span></span></div>
+        <div class="ob-rate"><span class="rl">Target margin</span><span class="ri"><input value="30" style="padding-left:10px"><span class="suf">%</span></span></div>
+      </div>
+
+      <div class="ob-btn-row">
+        <button class="ob-btn" onclick="sendPrompt('Save rates and quote my first job')">Save &amp; continue <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+        <button class="ob-skip" onclick="sendPrompt('Use all the default rates and skip to quoting')">Keep all defaults, skip</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="ob-cap green"><span class="step">4</span> Land on value — quote a real job now</p>
+  <div class="ob-screen">
+    <div class="ob-top">
+      <div class="ob-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <div class="ob-prog"><span class="ob-dot done"></span><span class="ob-dot done"></span><span class="ob-dot done"></span><span class="ob-dot now"></span></div>
+    </div>
+    <div class="ob-body">
+      <div class="ob-finalcard">
+        <i class="ti ti-circle-check big" aria-hidden="true"></i>
+        <h4>You're set up. Let's quote a real job.</h4>
+        <p>Have a job you quoted recently? Enter it now and see how fast it goes — then compare the price to what you charged.</p>
+        <button class="ob-btn" style="margin:0 auto" onclick="sendPrompt('Start my first quote')">Quote my first job <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      </div>
+      <div style="text-align:center;margin-top:14px">
+        <button class="ob-skip" onclick="sendPrompt('Take me to the dashboard instead')">Skip — go to dashboard</button>
+      </div>
+    </div>
+  </div>
+
+</div>

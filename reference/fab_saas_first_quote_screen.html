@@ -1,0 +1,153 @@
+
+<h2 class="sr-only">First-quote screen mockup where a fab shop enters job details on the left and watches the cost breakdown and price build live on the right</h2>
+<style>
+.fq{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.fq-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+.fq-top{padding:13px 20px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.fq-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.fq-logo i{color:#185FA5;font-size:18px}
+.fq-topright{display:flex;align-items:center;gap:14px}
+.fq-savestate{font-size:12px;color:#0F6E56;display:flex;align-items:center;gap:5px}
+.fq-banner{background:#E1F5EE;padding:11px 20px;font-size:13px;color:#0F6E56;display:flex;align-items:center;gap:9px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.fq-banner i{font-size:17px;flex-shrink:0}
+.fq-banner b{font-weight:500}
+.fq-grid{display:grid;grid-template-columns:1fr 290px}
+.fq-left{padding:20px 22px;border-right:0.5px solid var(--color-border-tertiary)}
+.fq-jobhead{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.fq-f{}
+.fq-f label{display:block;font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px}
+.fq-f input,.fq-f select{width:100%;height:34px}
+.fq-group{margin-bottom:16px}
+.fq-glabel{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#185FA5;margin-bottom:9px;display:flex;align-items:center;gap:6px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.fq-glabel i{font-size:15px}
+.fq-row{display:grid;grid-template-columns:1fr 96px;gap:10px;align-items:center;margin-bottom:8px}
+.fq-row .lbl{font-size:13px;color:var(--color-text-primary)}
+.fq-row .lbl small{display:block;font-size:11px;color:var(--color-text-tertiary)}
+.fq-row .inp{position:relative;display:flex;align-items:center}
+.fq-row .inp .suf{position:absolute;right:9px;font-size:11px;color:var(--color-text-tertiary);pointer-events:none}
+.fq-row .inp .pre{position:absolute;left:9px;font-size:12px;color:var(--color-text-tertiary);pointer-events:none}
+.fq-row input{width:100%;height:32px;text-align:right;padding-right:30px;font-size:13px}
+.fq-row input.haspre{padding-left:18px}
+.fq-right{padding:20px;background:var(--color-background-secondary);position:relative}
+.fq-rtitle{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-secondary);margin-bottom:12px}
+.fq-line{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);transition:background .2s}
+.fq-line.flash{background:#FAEEDA}
+.fq-line .ll{font-size:13px;color:var(--color-text-secondary)}
+.fq-line .ll small{display:block;font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono)}
+.fq-line .lv{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.fq-sub{display:flex;justify-content:space-between;padding:10px 0 8px;font-size:13px;color:var(--color-text-secondary)}
+.fq-sub .v{font-variant-numeric:tabular-nums}
+.fq-quote{margin-top:6px;padding:14px;border-radius:var(--border-radius-md);background:#E1F5EE;text-align:center}
+.fq-quote .ql{font-size:12px;color:#0F6E56;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.fq-quote .qv{font-size:30px;font-weight:500;color:#04342C;font-variant-numeric:tabular-nums;margin:2px 0}
+.fq-quote .qu{font-size:12px;color:#0F6E56}
+.fq-actions{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.fq-btn{font-size:14px;font-weight:500;padding:11px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.fq-btn2{font-size:13px;font-weight:500;padding:10px;border-radius:var(--border-radius-md);background:transparent;color:#185FA5;border:0.5px solid #185FA5;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.fq-hint{font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:8px;line-height:1.5}
+@media(max-width:560px){.fq-grid{grid-template-columns:1fr}.fq-right{border-top:0.5px solid var(--color-border-tertiary)}}
+</style>
+
+<div class="fq">
+<div class="fq-frame">
+
+  <div class="fq-top">
+    <div class="fq-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+    <div class="fq-topright">
+      <span class="fq-savestate"><i class="ti ti-check" aria-hidden="true"></i> Saved</span>
+    </div>
+  </div>
+
+  <div class="fq-banner">
+    <i class="ti ti-bulb" aria-hidden="true"></i>
+    <span><b>Your first quote.</b> Enter a job you priced recently — watch the total build as you type, then compare it to what you charged.</span>
+  </div>
+
+  <div class="fq-grid">
+
+    <div class="fq-left">
+      <div class="fq-jobhead">
+        <div class="fq-f"><label>Customer</label><input value="Apex Industrial" oninput="recalc()"></div>
+        <div class="fq-f"><label>Job name</label><input value="Stair stringers (pair)" oninput="recalc()"></div>
+      </div>
+
+      <div class="fq-group">
+        <div class="fq-glabel"><i class="ti ti-box" aria-hidden="true"></i> Material</div>
+        <div class="fq-row"><span class="lbl">Weight</span><span class="inp"><input id="m_wt" value="240" oninput="recalc()"><span class="suf">lb</span></span></div>
+        <div class="fq-row"><span class="lbl">Quantity</span><span class="inp"><input id="m_qty" value="2" oninput="recalc()"><span class="suf">ea</span></span></div>
+      </div>
+
+      <div class="fq-group">
+        <div class="fq-glabel"><i class="ti ti-flame" aria-hidden="true"></i> Labor (hours)</div>
+        <div class="fq-row"><span class="lbl">Cutting</span><span class="inp"><input id="h_cut" value="1.5" oninput="recalc()"><span class="suf">hr</span></span></div>
+        <div class="fq-row"><span class="lbl">Fitting</span><span class="inp"><input id="h_fit" value="3" oninput="recalc()"><span class="suf">hr</span></span></div>
+        <div class="fq-row"><span class="lbl">Welding</span><span class="inp"><input id="h_weld" value="4" oninput="recalc()"><span class="suf">hr</span></span></div>
+        <div class="fq-row"><span class="lbl">Finishing</span><span class="inp"><input id="h_fin" value="1.5" oninput="recalc()"><span class="suf">hr</span></span></div>
+      </div>
+
+      <div class="fq-group">
+        <div class="fq-glabel"><i class="ti ti-settings" aria-hidden="true"></i> Machine &amp; outside</div>
+        <div class="fq-row"><span class="lbl">Burn time</span><span class="inp"><input id="b_min" value="35" oninput="recalc()"><span class="suf">min</span></span></div>
+        <div class="fq-row"><span class="lbl">Outside services <small>coating, galv</small></span><span class="inp"><span class="pre">$</span><input class="haspre" id="o_out" value="85" oninput="recalc()"></span></div>
+      </div>
+    </div>
+
+    <div class="fq-right">
+      <div class="fq-rtitle">Cost breakdown</div>
+      <div class="fq-line" id="ln_mat"><span class="ll">Material<small id="c_mat">240lb x $0.85 +15%</small></span><span class="lv" id="v_mat">$234.60</span></div>
+      <div class="fq-line" id="ln_lab"><span class="ll">Labor<small id="c_lab">10 hrs across ops</small></span><span class="lv" id="v_lab">$745.00</span></div>
+      <div class="fq-line" id="ln_burn"><span class="ll">Burn / machine<small id="c_burn">35 min x $120/hr</small></span><span class="lv" id="v_burn">$70.00</span></div>
+      <div class="fq-line" id="ln_cons"><span class="ll">Consumables<small id="c_cons">4 weld-hr x $12</small></span><span class="lv" id="v_cons">$48.00</span></div>
+      <div class="fq-line" id="ln_out"><span class="ll">Outside services<small>pass-through</small></span><span class="lv" id="v_out">$85.00</span></div>
+
+      <div class="fq-sub"><span>Shop cost</span><span class="v" id="v_cost">$1,182.60</span></div>
+      <div class="fq-sub" style="padding-top:0"><span>+ Overhead 18%</span><span class="v" id="v_oh">$212.87</span></div>
+      <div class="fq-sub" style="padding-top:0;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:10px"><span>+ Margin 30%</span><span class="v" id="v_marg">$418.64</span></div>
+
+      <div class="fq-quote">
+        <div class="ql">Quoted price</div>
+        <div class="qv" id="v_quote">$1,814.11</div>
+        <div class="qu" id="v_unit">$907.06 per unit · qty 2</div>
+      </div>
+
+      <div class="fq-actions">
+        <button class="fq-btn" onclick="sendPrompt('Generate the branded PDF for this quote')"><i class="ti ti-file-text" aria-hidden="true"></i> Generate quote PDF</button>
+        <button class="fq-btn2" onclick="sendPrompt('Save this quote as a template to reuse')"><i class="ti ti-copy" aria-hidden="true"></i> Save as reusable template</button>
+      </div>
+      <p class="fq-hint">Every line updates as you type. Adjust hours or margin anytime — the price follows.</p>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+function $(i){return document.getElementById(i)}
+function n(i){return parseFloat($(i).value)||0}
+function money(x){return '$'+(Math.round(x*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+var R={cut:75,fit:80,weld:90,fin:65,burn:120,steel:0.85,scrap:15,cons:12,oh:18,margin:30};
+var prev={};
+function flash(id){var el=$(id);if(!el)return;el.classList.add('flash');setTimeout(function(){el.classList.remove('flash')},250)}
+function recalc(){
+  var wt=n('m_wt'),qty=n('m_qty')||1;
+  var hCut=n('h_cut'),hFit=n('h_fit'),hWeld=n('h_weld'),hFin=n('h_fin');
+  var bMin=n('b_min'),out=n('o_out');
+  var matBase=wt*R.steel, material=matBase*(1+R.scrap/100);
+  var labor=hCut*R.cut+hFit*R.fit+hWeld*R.weld+hFin*R.fin;
+  var burn=(bMin/60)*R.burn;
+  var cons=hWeld*R.cons;
+  var cost=material+labor+burn+cons+out;
+  var oh=cost*(R.oh/100);
+  var marg=(cost+oh)*(R.margin/100);
+  var quote=cost+oh+marg;
+  var unit=quote/qty;
+  var vals={v_mat:material,v_lab:labor,v_burn:burn,v_cons:cons,v_out:out,v_cost:cost,v_oh:oh,v_marg:marg,v_quote:quote};
+  for(var k in vals){var s=money(vals[k]);if($(k)){if(prev[k]!==undefined&&prev[k]!==s){var ln=$(k).closest('.fq-line');if(ln)flash(ln.id)}$(k).textContent=s;prev[k]=s}}
+  $('c_mat').textContent=wt+'lb x $'+R.steel.toFixed(2)+' +'+R.scrap+'%';
+  $('c_lab').textContent=(hCut+hFit+hWeld+hFin)+' hrs across ops';
+  $('c_burn').textContent=bMin+' min x $'+R.burn+'/hr';
+  $('c_cons').textContent=hWeld+' weld-hr x $'+R.cons;
+  $('v_unit').textContent=money(unit)+' per unit · qty '+qty;
+}
+recalc();
+</script>

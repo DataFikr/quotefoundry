@@ -1,0 +1,144 @@
+
+<h2 class="sr-only">Quote pipeline home screen: a searchable, filterable list of all quotes by status with new and clone actions, plus a summary of pending and won work</h2>
+<style>
+.qh{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.qh-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+.qh-top{padding:12px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.qh-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.qh-logo i{color:#185FA5;font-size:18px}
+.qh-avatar{width:30px;height:30px;border-radius:50%;background:#185FA5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500}
+.qh-body{padding:18px}
+.qh-greet{font-size:18px;font-weight:500;margin-bottom:2px}
+.qh-date{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
+.qh-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.qh-stat{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:11px 13px;cursor:pointer;transition:border-color .15s}
+.qh-stat:hover{border-color:#185FA5}
+.qh-stat .n{font-size:20px;font-weight:500}
+.qh-stat .l{font-size:11px;color:var(--color-text-secondary);margin-top:1px;display:flex;align-items:center;gap:4px}
+.qh-stat .l i{font-size:12px}
+.qh-stat.attn .n{color:#854F0B}
+.qh-stat.won .n{color:#0F6E56}
+.qh-controls{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.qh-search{flex:1;min-width:180px;position:relative;display:flex;align-items:center}
+.qh-search i{position:absolute;left:11px;font-size:16px;color:var(--color-text-tertiary)}
+.qh-search input{width:100%;height:38px;padding-left:34px}
+.qh-new{font-size:14px;font-weight:500;padding:9px 18px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.qh-filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.qh-fil{font-size:12px;font-weight:500;padding:5px 13px;border-radius:16px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:pointer}
+.qh-fil.on{background:#185FA5;color:#fff;border-color:transparent}
+.qh-fil .ct{opacity:.7;margin-left:4px}
+.qh-list{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+.qh-lh{display:grid;grid-template-columns:1.5fr 1.3fr 90px 110px 96px 70px;gap:10px;padding:9px 14px;background:var(--color-background-secondary);font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.03em}
+.qh-row{display:grid;grid-template-columns:1.5fr 1.3fr 90px 110px 96px 70px;gap:10px;padding:11px 14px;border-top:0.5px solid var(--color-border-tertiary);align-items:center;font-size:13px;cursor:pointer;transition:background .12s}
+.qh-row:hover{background:var(--color-background-secondary)}
+.qh-job{font-weight:500}
+.qh-job small{display:block;font-size:11px;color:var(--color-text-tertiary);font-weight:400;margin-top:1px}
+.qh-cust{color:var(--color-text-secondary)}
+.qh-amt{font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+.qh-st{font-size:11px;font-weight:500;padding:3px 9px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;width:fit-content}
+.qh-st i{font-size:11px}
+.st-draft{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.st-sent{background:#E6F1FB;color:#0C447C}
+.st-opened{background:#FAEEDA;color:#854F0B}
+.st-won{background:#E1F5EE;color:#04342C}
+.st-lost{background:#FAE9E5;color:#993C1D}
+.qh-date2{font-size:12px;color:var(--color-text-secondary)}
+.qh-clone{font-size:12px;color:#185FA5;cursor:pointer;display:inline-flex;align-items:center;gap:4px;justify-content:flex-end}
+.qh-clone i{font-size:13px}
+.qh-empty{padding:30px;text-align:center;color:var(--color-text-tertiary);font-size:13px;display:none}
+@media(max-width:600px){.qh-stats{grid-template-columns:1fr 1fr}.qh-lh{display:none}.qh-row{grid-template-columns:1fr auto;gap:6px}.qh-row>*:nth-child(n+3){display:none}}
+</style>
+
+<div class="qh">
+<div class="qh-frame">
+
+  <div class="qh-top">
+    <div class="qh-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+    <div class="qh-avatar">MT</div>
+  </div>
+
+  <div class="qh-body">
+    <div class="qh-greet">Good morning, Mike</div>
+    <div class="qh-date">Thursday, June 25 · Ironside Fabrication</div>
+
+    <div class="qh-stats">
+      <div class="qh-stat" onclick="setF('all')"><div class="n">14</div><div class="l"><i class="ti ti-files" aria-hidden="true"></i> Active quotes</div></div>
+      <div class="qh-stat attn" onclick="setF('opened')"><div class="n">3</div><div class="l"><i class="ti ti-bell" aria-hidden="true"></i> Need follow-up</div></div>
+      <div class="qh-stat" onclick="setF('sent')"><div class="n">$42.8k</div><div class="l"><i class="ti ti-clock" aria-hidden="true"></i> Out for bid</div></div>
+      <div class="qh-stat won" onclick="setF('won')"><div class="n">$18.2k</div><div class="l"><i class="ti ti-check" aria-hidden="true"></i> Won this month</div></div>
+    </div>
+
+    <div class="qh-controls">
+      <div class="qh-search"><i class="ti ti-search" aria-hidden="true"></i><input id="qsearch" placeholder="Search by job, customer, or quote #" oninput="render()"></div>
+      <button class="qh-new" onclick="sendPrompt('Start a new quote')"><i class="ti ti-plus" aria-hidden="true"></i> New quote</button>
+    </div>
+
+    <div class="qh-filters">
+      <button class="qh-fil on" data-f="all" onclick="setF('all')">All <span class="ct">14</span></button>
+      <button class="qh-fil" data-f="draft" onclick="setF('draft')">Draft <span class="ct">2</span></button>
+      <button class="qh-fil" data-f="sent" onclick="setF('sent')">Sent <span class="ct">5</span></button>
+      <button class="qh-fil" data-f="opened" onclick="setF('opened')">Opened <span class="ct">3</span></button>
+      <button class="qh-fil" data-f="won" onclick="setF('won')">Won <span class="ct">3</span></button>
+      <button class="qh-fil" data-f="lost" onclick="setF('lost')">Lost <span class="ct">1</span></button>
+    </div>
+
+    <div class="qh-list">
+      <div class="qh-lh">
+        <span>Job</span><span>Customer</span><span style="text-align:right">Amount</span><span>Status</span><span>Updated</span><span></span>
+      </div>
+      <div id="qrows"></div>
+      <div class="qh-empty" id="qempty">No quotes match. Try a different search or filter.</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+var quotes=[
+  {id:"Q-2026-051",job:"Stair stringers (pair)",cust:"Apex Industrial",amt:1814,st:"opened",upd:"2h ago"},
+  {id:"Q-2026-050",job:"Mezzanine railing, 48 ft",cust:"Vale Construction",amt:6240,st:"sent",upd:"Yesterday"},
+  {id:"Q-2026-049",job:"Equipment skid frame",cust:"Northgate Mfg",amt:3180,st:"opened",upd:"Yesterday"},
+  {id:"Q-2026-048",job:"Handrail, ADA compliant",cust:"Apex Industrial",amt:2475,st:"won",upd:"2 days ago"},
+  {id:"Q-2026-047",job:"Structural beam, W12x26",cust:"BuildRight LLC",amt:8950,st:"sent",upd:"2 days ago"},
+  {id:"Q-2026-046",job:"Bollards, qty 12",cust:"City of Lakewood",amt:4320,st:"opened",upd:"3 days ago"},
+  {id:"Q-2026-045",job:"Catwalk grating section",cust:"Northgate Mfg",amt:5680,st:"sent",upd:"4 days ago"},
+  {id:"Q-2026-044",job:"Loading dock plate",cust:"Vale Construction",amt:1290,st:"won",upd:"5 days ago"},
+  {id:"Q-2026-043",job:"Pipe supports, qty 30",cust:"Refinery Services",amt:9420,st:"sent",upd:"1 week ago"},
+  {id:"Q-2026-042",job:"Gate frame, custom",cust:"Lakeside Estates",amt:2150,st:"lost",upd:"1 week ago"},
+  {id:"Q-2026-041",job:"Conveyor support stand",cust:"BuildRight LLC",amt:3760,st:"won",upd:"1 week ago"},
+  {id:"Q-2026-040",job:"Ladder w/ safety cage",cust:"Northgate Mfg",amt:4890,st:"sent",upd:"2 weeks ago"},
+  {id:"Q-2026-039",job:"Trailer hitch reinforcement",cust:"Haul Co",amt:680,st:"draft",upd:"2 weeks ago"},
+  {id:"Q-2026-038",job:"Steel staircase, 2 flights",cust:"Vale Construction",amt:12400,st:"draft",upd:"3 weeks ago"}
+];
+var stMap={draft:["Draft","ti-pencil","st-draft"],sent:["Sent","ti-send","st-sent"],opened:["Opened","ti-eye","st-opened"],won:["Won","ti-check","st-won"],lost:["Lost","ti-x","st-lost"]};
+var filter="all";
+function money(x){return '$'+x.toLocaleString()}
+function setF(f){
+  filter=f;
+  document.querySelectorAll('.qh-fil').forEach(function(b){b.classList.toggle('on',b.dataset.f===f)});
+  render();
+}
+function render(){
+  var q=(document.getElementById('qsearch').value||'').toLowerCase();
+  var rows='';
+  var shown=0;
+  quotes.forEach(function(it){
+    if(filter!=='all'&&it.st!==filter)return;
+    if(q&&!(it.job.toLowerCase().includes(q)||it.cust.toLowerCase().includes(q)||it.id.toLowerCase().includes(q)))return;
+    shown++;
+    var s=stMap[it.st];
+    rows+='<div class="qh-row" onclick="sendPrompt(\'Open quote '+it.id+'\')">'+
+      '<div class="qh-job">'+it.job+'<small>'+it.id+'</small></div>'+
+      '<div class="qh-cust">'+it.cust+'</div>'+
+      '<div class="qh-amt">'+money(it.amt)+'</div>'+
+      '<div><span class="qh-st '+s[2]+'"><i class="ti '+s[1]+'" aria-hidden="true"></i>'+s[0]+'</span></div>'+
+      '<div class="qh-date2">'+it.upd+'</div>'+
+      '<div class="qh-clone" onclick="event.stopPropagation();sendPrompt(\'Clone quote '+it.id+'\')"><i class="ti ti-copy" aria-hidden="true"></i>Clone</div>'+
+      '</div>';
+  });
+  document.getElementById('qrows').innerHTML=rows;
+  document.getElementById('qempty').style.display=shown?'none':'block';
+}
+render();
+</script>

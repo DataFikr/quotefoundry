@@ -1,0 +1,205 @@
+
+<h2 class="sr-only">Complete screen inventory and build sequence for the fab quoting SaaS MVP, grouped by area with design status and a phased build order</h2>
+<style>
+.si{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary);font-size:14px}
+.si-tabs{display:flex;gap:6px;margin-bottom:18px}
+.si-tab{padding:7px 16px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:pointer;font-size:13px;font-weight:500}
+.si-tab.on{background:#185FA5;color:#fff;border-color:transparent}
+.si-view{display:none}.si-view.on{display:block}
+/* inventory */
+.si-legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.si-lg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.si-chip{width:11px;height:11px;border-radius:3px}
+.si-area{margin-bottom:18px}
+.si-ah{font-size:13px;font-weight:500;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.si-ah i{font-size:17px;color:#185FA5}
+.si-ah .ct{font-size:11px;color:var(--color-text-tertiary);font-weight:400}
+.si-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.si-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;position:relative}
+.si-card.done{background:#E1F5EE;border-color:#0F6E56}
+.si-card.need{background:#FAEEDA;border-color:#E0A93C}
+.si-card.later{background:var(--color-background-secondary)}
+.si-cn{font-size:12px;font-weight:500;line-height:1.3;margin-bottom:3px;padding-right:16px}
+.si-cd{font-size:11px;color:var(--color-text-secondary);line-height:1.4}
+.si-badge{position:absolute;top:9px;right:9px;font-size:13px}
+.si-badge.done{color:#0F6E56}.si-badge.need{color:#BA7517}.si-badge.later{color:var(--color-text-tertiary)}
+/* sequence */
+.si-phase{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:12px;overflow:hidden}
+.si-ph{padding:12px 16px;display:flex;align-items:center;gap:12px;background:var(--color-background-secondary)}
+.si-pn{width:28px;height:28px;border-radius:7px;background:#185FA5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.si-pt{flex:1}
+.si-ptt{font-size:14px;font-weight:500}
+.si-ptd{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+.si-pw{font-size:11px;color:var(--color-text-tertiary);white-space:nowrap}
+.si-pbody{padding:12px 16px}
+.si-pi{display:flex;align-items:flex-start;gap:9px;font-size:12px;padding:5px 0;color:var(--color-text-secondary);line-height:1.45}
+.si-pi i{flex-shrink:0;margin-top:2px;font-size:13px}
+.si-goal{font-size:12px;color:#04342C;background:#E1F5EE;border-radius:var(--border-radius-md);padding:8px 11px;margin-top:8px;line-height:1.5;display:flex;align-items:flex-start;gap:7px}
+.si-goal i{flex-shrink:0;margin-top:1px;font-size:14px;color:#0F6E56}
+@media(max-width:600px){.si-cards{grid-template-columns:1fr 1fr}}
+</style>
+
+<div class="si">
+<div class="si-tabs">
+  <button class="si-tab on" onclick="siV(0)">Screen inventory</button>
+  <button class="si-tab" onclick="siV(1)">Build sequence</button>
+</div>
+
+<div class="si-view on" id="siv0">
+  <div class="si-legend">
+    <span class="si-lg"><span class="si-chip" style="background:#0F6E56"></span> Designed in this conversation</span>
+    <span class="si-lg"><span class="si-chip" style="background:#E0A93C"></span> Still needed for MVP</span>
+    <span class="si-lg"><span class="si-chip" style="background:#C5CAD3"></span> Post-launch</span>
+  </div>
+
+  <div class="si-area">
+    <div class="si-ah"><i class="ti ti-login" aria-hidden="true"></i> Auth &amp; account <span class="ct">· 5 screens</span></div>
+    <div class="si-cards">
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Log in</div><div class="si-cd">SSO + email/password</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Sign up</div><div class="si-cd">Creates the shop tenant</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Password reset</div><div class="si-cd">Request + confirmation</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Account &amp; security</div><div class="si-cd">Profile, 2FA, sessions</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Data isolation</div><div class="si-cd">RLS architecture (not UI)</div></div>
+    </div>
+  </div>
+
+  <div class="si-area">
+    <div class="si-ah"><i class="ti ti-rocket" aria-hidden="true"></i> Onboarding <span class="ct">· 4 screens</span></div>
+    <div class="si-cards">
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Sign-up step</div><div class="si-cd">Account creation</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Pick industry</div><div class="si-cd">Loads fab template</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Enter shop rates</div><div class="si-cd">Pre-filled defaults</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">First-quote prompt</div><div class="si-cd">Lands on value</div></div>
+    </div>
+  </div>
+
+  <div class="si-area">
+    <div class="si-ah"><i class="ti ti-file-invoice" aria-hidden="true"></i> Quoting core <span class="ct">· 5 screens</span></div>
+    <div class="si-cards">
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Pipeline home</div><div class="si-cd">List of all quotes</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Quote editor (live)</div><div class="si-cd">Build with live total</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Quote detail view</div><div class="si-cd">Open existing quote</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Branded PDF</div><div class="si-cd">Customer-facing output</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Email send flow</div><div class="si-cd">Send + timestamp</div></div>
+    </div>
+  </div>
+
+  <div class="si-area">
+    <div class="si-ah"><i class="ti ti-settings" aria-hidden="true"></i> Data &amp; settings <span class="ct">· 3 screens</span></div>
+    <div class="si-cards">
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Customer list</div><div class="si-cd">Saved customers + history</div></div>
+      <div class="si-card done"><i class="ti ti-check si-badge done" aria-hidden="true"></i><div class="si-cn">Edit shop rates</div><div class="si-cd">Update rates, last-changed</div></div>
+      <div class="si-card need"><i class="ti ti-plus si-badge need" aria-hidden="true"></i><div class="si-cn">Add/edit customer form</div><div class="si-cd">Inline create — small</div></div>
+    </div>
+  </div>
+
+  <div class="si-area">
+    <div class="si-ah"><i class="ti ti-credit-card" aria-hidden="true"></i> Billing <span class="ct">· 2 screens, last blocker</span></div>
+    <div class="si-cards">
+      <div class="si-card need"><i class="ti ti-plus si-badge need" aria-hidden="true"></i><div class="si-cn">Trial / paywall prompt</div><div class="si-cd">Convert at trial end</div></div>
+      <div class="si-card need"><i class="ti ti-plus si-badge need" aria-hidden="true"></i><div class="si-cn">Manage plan</div><div class="si-cd">Stripe portal mostly</div></div>
+    </div>
+  </div>
+
+  <div class="si-area">
+    <div class="si-ah"><i class="ti ti-clock" aria-hidden="true"></i> Post-launch <span class="ct">· not for MVP</span></div>
+    <div class="si-cards">
+      <div class="si-card later"><i class="ti ti-clock si-badge later" aria-hidden="true"></i><div class="si-cn">Log actuals</div><div class="si-cd">Accuracy loop</div></div>
+      <div class="si-card later"><i class="ti ti-clock si-badge later" aria-hidden="true"></i><div class="si-cn">Win-rate analytics</div><div class="si-cd">Pipeline reporting</div></div>
+      <div class="si-card later"><i class="ti ti-clock si-badge later" aria-hidden="true"></i><div class="si-cn">Team invite / roles</div><div class="si-cd">Multi-user</div></div>
+      <div class="si-card later"><i class="ti ti-clock si-badge later" aria-hidden="true"></i><div class="si-cn">Auto follow-ups</div><div class="si-cd">Nudge unanswered</div></div>
+      <div class="si-card later"><i class="ti ti-clock si-badge later" aria-hidden="true"></i><div class="si-cn">Compliance module</div><div class="si-cd">Weld/MTR, paid tier</div></div>
+      <div class="si-card later"><i class="ti ti-clock si-badge later" aria-hidden="true"></i><div class="si-cn">CAD/DXF takeoff</div><div class="si-cd">Auto weight/length</div></div>
+    </div>
+  </div>
+
+  <div class="si-goal" style="margin-top:4px">
+    <i class="ti ti-flag" aria-hidden="true"></i>
+    <span><b>17 of 20 MVP screens designed.</b> Only 3 small ones remain — add/edit customer form, trial paywall, and manage plan — and two of those are mostly Stripe's hosted UI. The design phase is essentially complete; what's left is the build.</span>
+  </div>
+</div>
+
+<div class="si-view" id="siv1">
+  <div class="si-phase">
+    <div class="si-ph">
+      <div class="si-pn">1</div>
+      <div class="si-pt"><div class="si-ptt">Foundation &amp; auth</div><div class="si-ptd">Nothing works until this exists</div></div>
+      <div class="si-pw">~1 week</div>
+    </div>
+    <div class="si-pbody">
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Set up Supabase: database, auth provider, Row-Level Security policies keyed to shop_id</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Build login, sign-up (creates shop tenant), password reset</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Define the core data model: shops, users, quotes, customers, rates</div>
+      <div class="si-goal"><i class="ti ti-target" aria-hidden="true"></i>Milestone: a user can sign up, log in, and their data is isolated from every other shop.</div>
+    </div>
+  </div>
+
+  <div class="si-phase">
+    <div class="si-ph">
+      <div class="si-pn">2</div>
+      <div class="si-pt"><div class="si-ptt">The quote engine + editor</div><div class="si-ptd">The differentiating core — build it second, while energy is high</div></div>
+      <div class="si-pw">~1.5 weeks</div>
+    </div>
+    <div class="si-pbody">
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Onboarding: pick industry, enter rates (pre-filled), save to rate library</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Quote editor with the live cost build-up, snapshotting rates per quote</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Save a quote, reopen it (quote detail view)</div>
+      <div class="si-goal"><i class="ti ti-target" aria-hidden="true"></i>Milestone: a shop can build and save an accurate quote in minutes — the demo moment works.</div>
+    </div>
+  </div>
+
+  <div class="si-phase">
+    <div class="si-ph">
+      <div class="si-pn">3</div>
+      <div class="si-pt"><div class="si-ptt">Output: PDF + email send</div><div class="si-ptd">Turn a quote into something that wins work</div></div>
+      <div class="si-pw">~1 week</div>
+    </div>
+    <div class="si-pbody">
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Branded PDF generation (hide margin, show scope + total)</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Email send via transactional provider — the SPF/DKIM/DMARC work lives here</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Timestamp + open tracking logged to the quote</div>
+      <div class="si-goal"><i class="ti ti-target" aria-hidden="true"></i>Milestone: end-to-end — build a quote, send it, and it lands in the customer's inbox.</div>
+    </div>
+  </div>
+
+  <div class="si-phase">
+    <div class="si-ph">
+      <div class="si-pn">4</div>
+      <div class="si-pt"><div class="si-ptt">The spine: pipeline, customers, rates</div><div class="si-ptd">The daily-use connective tissue</div></div>
+      <div class="si-pw">~1.5 weeks</div>
+    </div>
+    <div class="si-pbody">
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Pipeline home — list, search, filters, status</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Customer list + inline add/edit form; wire into the editor</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Clone quote, edit-rates settings, mark won/lost</div>
+      <div class="si-goal"><i class="ti ti-target" aria-hidden="true"></i>Milestone: the full daily loop is usable — log in, find, clone, quote, send, track.</div>
+    </div>
+  </div>
+
+  <div class="si-phase">
+    <div class="si-ph">
+      <div class="si-pn">5</div>
+      <div class="si-pt"><div class="si-ptt">Billing — last</div><div class="si-ptd">Only needed the day before your first paid conversion</div></div>
+      <div class="si-pw">~1 week</div>
+    </div>
+    <div class="si-pbody">
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Stripe Checkout + Billing, trial logic, paywall at trial end</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Manage-plan screen (mostly Stripe's hosted portal)</div>
+      <div class="si-pi"><i class="ti ti-point g" aria-hidden="true" style="color:#185FA5"></i>Hand-invoice your first design partners while this is built in parallel</div>
+      <div class="si-goal"><i class="ti ti-target" aria-hidden="true"></i>Milestone: trials convert to paid automatically. You have a business, not just a product.</div>
+    </div>
+  </div>
+
+  <div class="si-goal" style="margin-top:4px">
+    <i class="ti ti-clock-bolt" aria-hidden="true"></i>
+    <span><b>Roughly 6 weeks of focused solo build</b> to a sellable MVP — though land your first design-partner shops during phase 3–4, not after phase 5. Get the product in front of shops the moment the quote-and-send loop works; billing can trail.</span>
+  </div>
+</div>
+</div>
+
+<script>
+function siV(i){
+  document.querySelectorAll('.si-tab').forEach(function(t,j){t.classList.toggle('on',j===i)});
+  document.querySelectorAll('.si-view').forEach(function(v,j){v.classList.toggle('on',j===i)});
+}
+</script>

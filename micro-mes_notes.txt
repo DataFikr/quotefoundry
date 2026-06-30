@@ -1,0 +1,18 @@
+
+6/21/2026
+=========
+create a prompt to generate the claude skill .md file as /micro-mes-researcher with your role as market researcher to understand the demand for manufacturing micro-manufacturing execution system (MES), template, documentation used in manufacturing industry in small shops, medium size industry. The goal is to study the existing micro-MES saas provider, their offerings, business model, pricing, generalization. Also study the competitor in the space, searching market if the demand is present in US  or global. Explore steps to build a business around this - from starting with selling digital product gradually evolve to saas.
+
+
+create a prompt to generate the claude skill .md file as /micro-mes-operation with your role as manufacturing saas solution system design. THe goal is to build a saas product to serve manufacturing industry in shops and small medium size industry with production important tools which will replace the manual documentation/tracker when running manufacturing operations (/production-dashboard,oee-dashboard,preventive-maintenance,capa-template,downtime-tracker,machine-maintenance,production-schedule.
+
+create a prompt to generate the claude skill .md file as /micro-mes-sampledata with your role as data analyst who has to analyze list of csv files which capture the different stages of manufacturing. These sample data will be used to feed into the system. Provide the typical common parameters required to build database to trak the manufacturing operations for all the process: (/production-dashboard,oee-dashboard,preventive-maintenance,capa-template,downtime-tracker,machine-maintenance,production-schedule.
+
+Production scheduling,Operator check-in,Downtime logging,OEE dashboards,Shift handovers,Quality checks,Maintenance requests,Digital work instructions,Daily management dashboards
+
+
+Use the plug-ins Product:
+
+/competitive-brief
+/product-brainstorming
+ 

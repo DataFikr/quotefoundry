@@ -1,0 +1,145 @@
+
+<h2 class="sr-only">Quote detail view for Q-2026-051, showing status, cost breakdown, customer activity timeline, and available actions</h2>
+<style>
+.qd{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.qd-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+.qd-top{padding:11px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:12px}
+.qd-back{font-size:13px;color:#185FA5;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.qd-back i{font-size:15px}
+.qd-crumb{font-size:13px;color:var(--color-text-tertiary)}
+.qd-crumb b{color:var(--color-text-primary);font-weight:500}
+.qd-head{padding:18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.qd-htitle{font-size:20px;font-weight:500;margin-bottom:3px}
+.qd-hmeta{font-size:13px;color:var(--color-text-secondary)}
+.qd-hmeta b{color:var(--color-text-primary);font-weight:500}
+.qd-status{font-size:12px;font-weight:500;padding:5px 13px;border-radius:14px;background:#FAEEDA;color:#854F0B;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.qd-status i{font-size:13px}
+.qd-grid{display:grid;grid-template-columns:1fr 280px}
+.qd-main{padding:18px;border-right:0.5px solid var(--color-border-tertiary)}
+.qd-side{padding:18px;background:var(--color-background-secondary)}
+.qd-sec{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#185FA5;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.qd-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.qd-ig{}
+.qd-ik{font-size:11px;color:var(--color-text-tertiary);margin-bottom:2px}
+.qd-iv{font-size:13px;font-weight:500}
+.qd-line{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.qd-line .ll{color:var(--color-text-secondary)}
+.qd-line .ll small{display:block;font-size:11px;color:var(--color-text-tertiary)}
+.qd-line .lv{font-weight:500;font-variant-numeric:tabular-nums}
+.qd-totrow{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;color:var(--color-text-secondary)}
+.qd-totrow .v{font-variant-numeric:tabular-nums}
+.qd-grand{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:12px 14px;border-radius:var(--border-radius-md);background:#E1F5EE}
+.qd-grand .l{font-size:13px;font-weight:500;color:#0F6E56}
+.qd-grand .v{font-size:19px;font-weight:500;color:#04342C;font-variant-numeric:tabular-nums}
+.qd-internal{font-size:11px;color:var(--color-text-tertiary);margin-top:8px;display:flex;align-items:center;gap:5px;font-style:italic}
+.qd-internal i{font-size:13px}
+/* actions */
+.qd-actions{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.qd-abtn{font-size:13px;font-weight:500;padding:10px;border-radius:var(--border-radius-md);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;border:none}
+.qd-ap{background:#0F6E56;color:#fff}
+.qd-as{background:transparent;color:#185FA5;border:0.5px solid #185FA5}
+.qd-ag{background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary)}
+.qd-wl{display:flex;gap:8px;margin-bottom:22px}
+.qd-wlbtn{flex:1;font-size:13px;font-weight:500;padding:9px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid}
+.qd-won{background:#E1F5EE;color:#04342C;border-color:#0F6E56}
+.qd-lost{background:transparent;color:#993C1D;border-color:#D85A30}
+/* timeline */
+.qd-tl{border-left:2px solid var(--color-border-tertiary);padding-left:15px;margin-left:4px}
+.qd-tli{position:relative;padding-bottom:14px}
+.qd-tli:last-child{padding-bottom:0}
+.qd-tli::before{content:"";position:absolute;left:-20px;top:3px;width:8px;height:8px;border-radius:50%;background:#0F6E56;border:2px solid var(--color-background-secondary)}
+.qd-tli.pend::before{background:var(--color-border-secondary)}
+.qd-tlt{font-size:12px;font-weight:500}
+.qd-tld{font-size:11px;color:var(--color-text-tertiary);margin-top:1px;line-height:1.4}
+.qd-tli.pend .qd-tlt{color:var(--color-text-tertiary)}
+@media(max-width:600px){.qd-grid{grid-template-columns:1fr}.qd-main{border-right:none;border-bottom:0.5px solid var(--color-border-tertiary)}}
+</style>
+
+<div class="qd">
+<div class="qd-frame">
+
+  <div class="qd-top">
+    <span class="qd-back" onclick="sendPrompt('Back to quote pipeline')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Pipeline</span>
+    <span class="qd-crumb">/ <b>Q-2026-051</b></span>
+  </div>
+
+  <div class="qd-head">
+    <div>
+      <div class="qd-htitle">Stair stringers (pair)</div>
+      <div class="qd-hmeta">Quote <b>Q-2026-051</b> · Apex Industrial · created June 25</div>
+    </div>
+    <span class="qd-status"><i class="ti ti-eye" aria-hidden="true"></i> Opened by customer</span>
+  </div>
+
+  <div class="qd-grid">
+    <div class="qd-main">
+
+      <div class="qd-sec">Job details</div>
+      <div class="qd-info">
+        <div class="qd-ig"><div class="qd-ik">Customer</div><div class="qd-iv">Apex Industrial</div></div>
+        <div class="qd-ig"><div class="qd-ik">PO reference</div><div class="qd-iv">AX-4471</div></div>
+        <div class="qd-ig"><div class="qd-ik">Material</div><div class="qd-iv">A36 structural steel</div></div>
+        <div class="qd-ig"><div class="qd-ik">Quantity</div><div class="qd-iv">2 ea</div></div>
+        <div class="qd-ig"><div class="qd-ik">Finish</div><div class="qd-iv">Primer + safety-green</div></div>
+        <div class="qd-ig"><div class="qd-ik">Lead time</div><div class="qd-iv">2–3 weeks</div></div>
+      </div>
+
+      <div class="qd-sec">Cost breakdown</div>
+      <div class="qd-line"><span class="ll">Material<small>240 lb + drop allowance</small></span><span class="lv">$234.60</span></div>
+      <div class="qd-line"><span class="ll">Labor<small>cut, fit, weld, finish · 10 hrs</small></span><span class="lv">$745.00</span></div>
+      <div class="qd-line"><span class="ll">Burn / machine<small>35 min</small></span><span class="lv">$70.00</span></div>
+      <div class="qd-line"><span class="ll">Consumables<small>wire, gas, abrasives</small></span><span class="lv">$48.00</span></div>
+      <div class="qd-line"><span class="ll">Outside services<small>coating</small></span><span class="lv">$85.00</span></div>
+
+      <div class="qd-totrow" style="margin-top:8px"><span>Shop cost</span><span class="v">$1,182.60</span></div>
+      <div class="qd-totrow"><span>+ Overhead (18%)</span><span class="v">$212.87</span></div>
+      <div class="qd-totrow"><span>+ Margin (30%)</span><span class="v">$418.64</span></div>
+
+      <div class="qd-grand">
+        <span class="l">Quoted price</span>
+        <span class="v">$1,814.11</span>
+      </div>
+      <div class="qd-internal"><i class="ti ti-lock" aria-hidden="true"></i> Cost, overhead &amp; margin are internal — the customer's PDF shows only scope and total.</div>
+
+    </div>
+
+    <div class="qd-side">
+
+      <div class="qd-sec">Actions</div>
+      <div class="qd-actions">
+        <button class="qd-abtn qd-ap" onclick="sendPrompt('Send a follow-up email for Q-2026-051')"><i class="ti ti-mail" aria-hidden="true"></i> Send follow-up</button>
+        <button class="qd-abtn qd-as" onclick="sendPrompt('Edit quote Q-2026-051')"><i class="ti ti-pencil" aria-hidden="true"></i> Edit quote</button>
+        <button class="qd-abtn qd-as" onclick="sendPrompt('Clone quote Q-2026-051')"><i class="ti ti-copy" aria-hidden="true"></i> Clone</button>
+        <button class="qd-abtn qd-ag" onclick="sendPrompt('Download the PDF for Q-2026-051')"><i class="ti ti-file-text" aria-hidden="true"></i> Download PDF</button>
+      </div>
+
+      <div class="qd-sec">Mark outcome</div>
+      <div class="qd-wl">
+        <button class="qd-wlbtn qd-won" onclick="sendPrompt('Mark Q-2026-051 as won')"><i class="ti ti-check" aria-hidden="true"></i> Won</button>
+        <button class="qd-wlbtn qd-lost" onclick="sendPrompt('Mark Q-2026-051 as lost')"><i class="ti ti-x" aria-hidden="true"></i> Lost</button>
+      </div>
+
+      <div class="qd-sec">Activity</div>
+      <div class="qd-tl">
+        <div class="qd-tli">
+          <div class="qd-tlt">Opened by customer</div>
+          <div class="qd-tld">Today · 4:12 PM · viewed PDF</div>
+        </div>
+        <div class="qd-tli">
+          <div class="qd-tlt">Quote sent</div>
+          <div class="qd-tld">Today · 2:47 PM<br>purchasing@apexindustrial.com</div>
+        </div>
+        <div class="qd-tli">
+          <div class="qd-tlt">Quote created</div>
+          <div class="qd-tld">Today · 2:31 PM · by Mike Torres</div>
+        </div>
+        <div class="qd-tli pend">
+          <div class="qd-tlt">Awaiting decision</div>
+          <div class="qd-tld">Follow up if no reply by June 30</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>

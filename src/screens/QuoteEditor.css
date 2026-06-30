@@ -1,0 +1,90 @@
+/* ============================================================================
+   QuoteEditor.css — styling for the vertical slice
+   Blue = trust/structure, green = action/value, matching the design system.
+   ============================================================================ */
+
+.qe { font-family: system-ui, -apple-system, sans-serif; color: #1a1a1a; }
+
+.qe-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  border: 1px solid #e2e6eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+@media (max-width: 560px) { .qe-grid { grid-template-columns: 1fr; } }
+
+.qe-inputs { padding: 20px; }
+.qe-summary {
+  padding: 20px;
+  background: #f5f7fa;
+  border-left: 1px solid #e2e6eb;
+}
+@media (max-width: 560px) { .qe-summary { border-left: none; border-top: 1px solid #e2e6eb; } }
+
+/* fields */
+.qe-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.qe-field, .qe-numfield { display: block; margin-bottom: 14px; }
+.qe-field > span, .qe-numfield > span {
+  display: block; font-size: 12px; font-weight: 500; color: #5f6b7a; margin-bottom: 5px;
+}
+.qe-field input, .qe-numfield input {
+  width: 100%; height: 36px; padding: 0 10px;
+  border: 1px solid #cfd6de; border-radius: 7px; font-size: 13px;
+}
+.qe-field input:focus, .qe-numfield input:focus {
+  outline: 2px solid #185fa5; outline-offset: -1px; border-color: #185fa5;
+}
+
+.qe-numwrap { position: relative; display: flex; align-items: center; }
+.qe-numwrap input { text-align: right; padding-right: 30px; }
+.qe-pre { position: absolute; left: 9px; font-size: 12px; color: #98a2b0; font-style: normal; }
+.qe-suf { position: absolute; right: 9px; font-size: 11px; color: #98a2b0; font-style: normal; }
+
+/* groups */
+.qe-group { margin-bottom: 16px; }
+.qe-glabel {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: #185fa5; margin-bottom: 9px; padding-bottom: 6px; border-bottom: 1px solid #e2e6eb;
+}
+.qe-group .qe-numfield { display: grid; grid-template-columns: 1fr 96px; align-items: center; margin-bottom: 8px; }
+.qe-group .qe-numfield > span { margin-bottom: 0; }
+
+/* summary */
+.qe-stitle {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: #5f6b7a; margin-bottom: 12px;
+}
+.qe-line, .qe-sub {
+  display: flex; justify-content: space-between; font-size: 13px;
+  padding: 7px 0; border-bottom: 1px solid #e8ecf1;
+}
+.qe-line span:first-child { color: #5f6b7a; }
+.qe-line span:last-child { font-weight: 500; font-variant-numeric: tabular-nums; }
+.qe-sub { color: #5f6b7a; border-bottom: none; padding: 5px 0; }
+.qe-sub span:last-child { font-variant-numeric: tabular-nums; }
+.qe-sub:first-of-type { margin-top: 8px; padding-top: 10px; border-top: 1px solid #e2e6eb; }
+
+.qe-total {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; padding: 12px 14px; border-radius: 8px; background: #e1f5ee;
+}
+.qe-total span { font-size: 13px; font-weight: 500; color: #0f6e56; }
+.qe-total strong { font-size: 19px; color: #04342c; font-variant-numeric: tabular-nums; }
+.qe-unit { font-size: 12px; color: #5f6b7a; margin-top: 6px; text-align: right; }
+
+.qe-save {
+  width: 100%; margin-top: 16px; padding: 12px;
+  background: #0f6e56; color: #fff; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.qe-save:disabled { opacity: .6; cursor: default; }
+.qe-save:focus-visible { outline: 2px solid #04342c; outline-offset: 2px; }
+
+.qe-saveerr { font-size: 12px; color: #993c1d; margin-top: 8px; }
+.qe-savedmsg { font-size: 12px; color: #0f6e56; margin-top: 8px; }
+
+/* load / error states */
+.qe-state { padding: 40px; text-align: center; color: #5f6b7a; font-size: 14px; }
+.qe-state--error { color: #993c1d; }
+.qe-hint { font-size: 12px; color: #98a2b0; margin-top: 6px; }

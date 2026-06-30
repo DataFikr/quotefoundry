@@ -1,0 +1,35 @@
+/* global.css — base reset + design tokens as CSS variables.
+   Token values mirror src/design/tokens.ts (the design-gate source of truth). */
+:root {
+  --accent: #5E81F4;
+  --accent-deep: #1B51E5;
+  --app-bg: #F4F4FB;
+  --surface: #FFFFFF;
+  --ink: #1C1D21;
+  --body: #46485F;
+  --muted: #9698D6;
+  --faint: #B0B0C8;
+  --border: #ECECF4;
+  --border-soft: #EEEEF4;
+  --success: #16A86A;
+  --danger: #EF5368;
+  --panel-from: #2B2D42;
+  --panel-to: #1C1D2B;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  color: var(--ink);
+  background: var(--app-bg);
+}
+input, textarea, button { font-family: 'Source Sans 3', sans-serif; }
+input:focus, textarea:focus { outline: none; }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: #D8D8E6; border-radius: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes qfFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes qfSpin { to { transform: rotate(360deg); } }

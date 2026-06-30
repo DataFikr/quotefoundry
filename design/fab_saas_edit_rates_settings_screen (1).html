@@ -1,0 +1,159 @@
+
+<h2 class="sr-only">Edit rates settings screen where a shop updates labor, material, machine, and margin rates, with last-changed dates and a note that changes affect only future quotes</h2>
+<style>
+.er{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.er-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+.er-top{padding:11px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:12px}
+.er-back{font-size:13px;color:#185FA5;cursor:pointer;display:flex;align-items:center;gap:4px}
+.er-back i{font-size:15px}
+.er-crumb{font-size:13px;color:var(--color-text-tertiary)}
+.er-crumb b{color:var(--color-text-primary);font-weight:500}
+.er-body{padding:18px;max-width:620px}
+.er-h{font-size:18px;font-weight:500;margin-bottom:3px}
+.er-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:16px}
+.er-safeguard{font-size:12px;color:#0C447C;background:#E6F1FB;border-radius:var(--border-radius-md);padding:10px 13px;line-height:1.5;display:flex;align-items:flex-start;gap:9px;margin-bottom:20px}
+.er-safeguard i{font-size:17px;flex-shrink:0;margin-top:1px;color:#185FA5}
+.er-group{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:14px;overflow:hidden}
+.er-glabel{font-size:13px;font-weight:500;color:#042C53;padding:11px 14px;background:var(--color-background-secondary);display:flex;align-items:center;gap:8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.er-glabel i{font-size:16px;color:#185FA5}
+.er-rate{display:grid;grid-template-columns:1fr 130px 120px;gap:12px;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.er-rate:last-child{border-bottom:none}
+.er-rl{font-size:13px;color:var(--color-text-primary)}
+.er-rl small{display:block;font-size:11px;color:var(--color-text-tertiary);margin-top:1px}
+.er-ri{position:relative;display:flex;align-items:center}
+.er-ri .pre{position:absolute;left:10px;font-size:13px;color:var(--color-text-tertiary);pointer-events:none}
+.er-ri .suf{position:absolute;right:10px;font-size:12px;color:var(--color-text-tertiary);pointer-events:none}
+.er-ri input{width:100%;height:36px;text-align:right;padding-right:32px;padding-left:20px;font-size:13px}
+.er-changed{font-size:11px;color:var(--color-text-tertiary);text-align:right}
+.er-changed.stale{color:#854F0B;font-weight:500}
+.er-changed.just{color:#0F6E56;font-weight:500}
+.er-bar{position:sticky;bottom:0;background:var(--color-background-primary);border-top:0.5px solid var(--color-border-tertiary);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin:18px -18px -18px}
+.er-barmsg{font-size:13px;color:var(--color-text-secondary);display:flex;align-items:center;gap:7px}
+.er-barmsg i{font-size:16px}
+.er-barmsg.dirty{color:#854F0B}
+.er-barmsg.saved{color:#0F6E56}
+.er-btns{display:flex;gap:8px}
+.er-cancel{font-size:13px;font-weight:500;padding:9px 16px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
+.er-save{font-size:13px;font-weight:500;padding:9px 20px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:7px}
+.er-save:disabled{opacity:.5;cursor:default}
+</style>
+
+<div class="er">
+<div class="er-frame">
+
+  <div class="er-top">
+    <span class="er-back" onclick="sendPrompt('Back to settings')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Settings</span>
+    <span class="er-crumb">/ <b>Shop rates</b></span>
+  </div>
+
+  <div class="er-body">
+    <div class="er-h">Shop rates</div>
+    <div class="er-sub">These rates drive every quote you build. Keep them current — especially steel price — so your quotes stay accurate.</div>
+
+    <div class="er-safeguard">
+      <i class="ti ti-info-circle" aria-hidden="true"></i>
+      <span>Changes here apply to <b>new quotes only</b>. Quotes you've already created keep the rates they were built with, so nothing you've sent will change.</span>
+    </div>
+
+    <div class="er-group">
+      <div class="er-glabel"><i class="ti ti-user-dollar" aria-hidden="true"></i> Labor rates (fully loaded, per hour)</div>
+      <div class="er-rate">
+        <span class="er-rl">Cutting / sawing</span>
+        <span class="er-ri"><span class="pre">$</span><input value="75" oninput="dirty()"><span class="suf">/hr</span></span>
+        <span class="er-changed">Changed 2 mo ago</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Fitting / assembly</span>
+        <span class="er-ri"><span class="pre">$</span><input value="80" oninput="dirty()"><span class="suf">/hr</span></span>
+        <span class="er-changed">Changed 2 mo ago</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Welding</span>
+        <span class="er-ri"><span class="pre">$</span><input value="90" oninput="dirty()"><span class="suf">/hr</span></span>
+        <span class="er-changed">Changed 2 mo ago</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Finishing / grinding</span>
+        <span class="er-ri"><span class="pre">$</span><input value="65" oninput="dirty()"><span class="suf">/hr</span></span>
+        <span class="er-changed">Changed 2 mo ago</span>
+      </div>
+    </div>
+
+    <div class="er-group">
+      <div class="er-glabel"><i class="ti ti-box" aria-hidden="true"></i> Machine &amp; material</div>
+      <div class="er-rate">
+        <span class="er-rl">Burn rate <small>plasma / laser run cost</small></span>
+        <span class="er-ri"><span class="pre">$</span><input value="120" oninput="dirty()"><span class="suf">/hr</span></span>
+        <span class="er-changed">Changed 5 mo ago</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Steel price <small>your primary grade</small></span>
+        <span class="er-ri"><span class="pre">$</span><input value="0.85" oninput="dirty()"><span class="suf">/lb</span></span>
+        <span class="er-changed stale">Changed 3 mo ago — check?</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Drop / scrap allowance</span>
+        <span class="er-ri"><input value="15" style="padding-left:10px" oninput="dirty()"><span class="suf">%</span></span>
+        <span class="er-changed">Changed 6 mo ago</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Consumables <small>per weld-hour</small></span>
+        <span class="er-ri"><span class="pre">$</span><input value="12" oninput="dirty()"><span class="suf">/hr</span></span>
+        <span class="er-changed">Changed 6 mo ago</span>
+      </div>
+    </div>
+
+    <div class="er-group">
+      <div class="er-glabel"><i class="ti ti-chart-pie" aria-hidden="true"></i> Overhead &amp; margin</div>
+      <div class="er-rate">
+        <span class="er-rl">Overhead uplift</span>
+        <span class="er-ri"><input value="18" style="padding-left:10px" oninput="dirty()"><span class="suf">%</span></span>
+        <span class="er-changed">Changed 4 mo ago</span>
+      </div>
+      <div class="er-rate">
+        <span class="er-rl">Target margin</span>
+        <span class="er-ri"><input value="30" style="padding-left:10px" oninput="dirty()"><span class="suf">%</span></span>
+        <span class="er-changed">Changed 4 mo ago</span>
+      </div>
+    </div>
+
+    <div class="er-bar">
+      <div class="er-barmsg saved" id="ermsg"><i class="ti ti-check" aria-hidden="true"></i> All changes saved</div>
+      <div class="er-btns">
+        <button class="er-cancel" id="ercancel" onclick="reset()" disabled>Cancel</button>
+        <button class="er-save" id="ersave" onclick="save()" disabled><i class="ti ti-device-floppy" aria-hidden="true"></i> Save changes</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+var isDirty=false;
+function dirty(){
+  if(isDirty)return;
+  isDirty=true;
+  var m=document.getElementById('ermsg');
+  m.className='er-barmsg dirty';
+  m.innerHTML='<i class="ti ti-alert-circle" aria-hidden="true"></i> Unsaved changes';
+  document.getElementById('ersave').disabled=false;
+  document.getElementById('ercancel').disabled=false;
+}
+function save(){
+  isDirty=false;
+  var m=document.getElementById('ermsg');
+  m.className='er-barmsg saved';
+  m.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> All changes saved · just now';
+  document.getElementById('ersave').disabled=true;
+  document.getElementById('ercancel').disabled=true;
+}
+function reset(){
+  isDirty=false;
+  var m=document.getElementById('ermsg');
+  m.className='er-barmsg saved';
+  m.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> All changes saved';
+  document.getElementById('ersave').disabled=true;
+  document.getElementById('ercancel').disabled=true;
+}
+</script>

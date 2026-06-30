@@ -1,0 +1,147 @@
+
+<h2 class="sr-only">Authentication and account screen mockups: login, sign-up, password reset, and account settings for the fab quoting SaaS</h2>
+<style>
+.au{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.au-cap{font-size:12px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;display:flex;align-items:center;gap:7px}
+.au-cap .s{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:#185FA5}
+.au-screen{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden;margin-bottom:22px}
+.au-card{max-width:380px;margin:0 auto;padding:30px 28px}
+.au-logo{display:flex;align-items:center;justify-content:center;gap:8px;font-size:17px;font-weight:500;margin-bottom:6px}
+.au-logo i{color:#185FA5;font-size:22px}
+.au-h{font-size:20px;font-weight:500;text-align:center;margin:14px 0 4px}
+.au-sub{font-size:13px;color:var(--color-text-secondary);text-align:center;margin:0 0 22px;line-height:1.5}
+.au-sso{width:100%;font-size:14px;font-weight:500;padding:11px;border-radius:var(--border-radius-md);background:transparent;border:0.5px solid var(--color-border-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.au-or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--color-text-tertiary);font-size:12px}
+.au-or::before,.au-or::after{content:"";flex:1;height:0.5px;background:var(--color-border-tertiary)}
+.au-f{margin-bottom:14px}
+.au-f label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:var(--color-text-secondary)}
+.au-f .lr{display:flex;justify-content:space-between;align-items:baseline}
+.au-f .lr a{font-size:12px;color:#185FA5;text-decoration:none;font-weight:400}
+.au-f input{width:100%;height:38px}
+.au-btn{width:100%;font-size:15px;font-weight:500;padding:12px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.au-foot{text-align:center;font-size:13px;color:var(--color-text-secondary);margin-top:18px}
+.au-foot a{color:#185FA5;text-decoration:none;font-weight:500}
+.au-fine{font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:14px;line-height:1.5}
+.au-sent{text-align:center;padding:8px 0}
+.au-sent .ring{width:54px;height:54px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.au-sent .ring i{font-size:28px;color:#185FA5}
+.au-sent .em{font-weight:500;color:var(--color-text-primary)}
+.au-back{font-size:13px;color:#185FA5;text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-top:18px;cursor:pointer}
+/* account settings */
+.au-set{padding:0}
+.au-settop{padding:14px 20px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:10px}
+.au-settop i{color:#185FA5;font-size:18px}
+.au-settop .t{font-size:15px;font-weight:500}
+.au-setbody{padding:20px;max-width:520px}
+.au-sec{margin-bottom:24px}
+.au-secl{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#185FA5;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.au-srow{display:flex;align-items:center;justify-content:space-between;padding:9px 0}
+.au-srow .sk{font-size:13px;color:var(--color-text-secondary)}
+.au-srow .sk small{display:block;font-size:11px;color:var(--color-text-tertiary);margin-top:1px}
+.au-srow .sv{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.au-mini{font-size:12px;color:#185FA5;cursor:pointer;text-decoration:none}
+.au-avatar{width:42px;height:42px;border-radius:50%;background:#185FA5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500}
+.au-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;background:#E1F5EE;color:#04342C}
+.au-danger{font-size:13px;color:#993C1D;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+</style>
+
+<div class="au">
+
+  <p class="au-cap"><span class="s">1</span> Log in</p>
+  <div class="au-screen">
+    <div class="au-card">
+      <div class="au-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <h3 class="au-h">Welcome back</h3>
+      <p class="au-sub">Log in to your shop's quotes</p>
+      <button class="au-sso"><i class="ti ti-brand-google" aria-hidden="true"></i> Continue with Google</button>
+      <div class="au-or">or</div>
+      <div class="au-f"><label>Email</label><input type="email" placeholder="you@yourshop.com"></div>
+      <div class="au-f"><label class="lr"><span>Password</span><a href="#" onclick="return false">Forgot?</a></label><input type="password" placeholder="••••••••"></div>
+      <button class="au-btn" onclick="sendPrompt('Log in to my account')">Log in</button>
+      <div class="au-foot">New here? <a href="#" onclick="return false">Start free trial</a></div>
+    </div>
+  </div>
+
+  <p class="au-cap"><span class="s">2</span> Sign up — creates the shop account</p>
+  <div class="au-screen">
+    <div class="au-card">
+      <div class="au-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <h3 class="au-h">Start quoting free</h3>
+      <p class="au-sub">No credit card. Your first quote is minutes away.</p>
+      <button class="au-sso"><i class="ti ti-brand-google" aria-hidden="true"></i> Sign up with Google</button>
+      <div class="au-or">or</div>
+      <div class="au-f"><label>Shop name</label><input type="text" placeholder="Ironside Fabrication"></div>
+      <div class="au-f"><label>Work email</label><input type="email" placeholder="you@yourshop.com"></div>
+      <div class="au-f"><label>Create password</label><input type="password" placeholder="8+ characters"></div>
+      <button class="au-btn" onclick="sendPrompt('Create my shop account')">Create account <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      <p class="au-fine">Your shop's data is private and isolated. Only people you invite can see your quotes.<br>By continuing you agree to the Terms &amp; Privacy Policy.</p>
+    </div>
+  </div>
+
+  <p class="au-cap"><span class="s">3</span> Forgot password — request reset</p>
+  <div class="au-screen">
+    <div class="au-card">
+      <div class="au-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+      <h3 class="au-h">Reset your password</h3>
+      <p class="au-sub">Enter your email and we'll send a reset link.</p>
+      <div class="au-f"><label>Email</label><input type="email" placeholder="you@yourshop.com"></div>
+      <button class="au-btn" onclick="sendPrompt('Send password reset link')">Send reset link</button>
+      <div style="text-align:center"><a class="au-back" onclick="sendPrompt('Back to login')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to login</a></div>
+    </div>
+  </div>
+
+  <p class="au-cap"><span class="s">4</span> Reset link sent — confirmation</p>
+  <div class="au-screen">
+    <div class="au-card">
+      <div class="au-sent">
+        <div class="ring"><i class="ti ti-mail-check" aria-hidden="true"></i></div>
+        <h3 class="au-h">Check your email</h3>
+        <p class="au-sub">We sent a reset link to <span class="em">you@yourshop.com</span>. It expires in 1 hour.</p>
+        <p class="au-fine">Didn't get it? Check spam, or <a href="#" onclick="return false" style="color:#185FA5">resend</a>.</p>
+        <a class="au-back" onclick="sendPrompt('Back to login')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to login</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="au-cap"><span class="s">5</span> Account &amp; security settings</p>
+  <div class="au-screen">
+    <div class="au-set">
+      <div class="au-settop"><i class="ti ti-user-cog" aria-hidden="true"></i><span class="t">Account &amp; Security</span></div>
+      <div class="au-setbody">
+
+        <div class="au-sec">
+          <div class="au-secl">Profile</div>
+          <div class="au-srow">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="au-avatar">MT</div>
+              <div class="sk">Mike Torres<small>quotes@ironsidefab.com</small></div>
+            </div>
+            <a class="au-mini" onclick="sendPrompt('Edit my profile')">Edit</a>
+          </div>
+        </div>
+
+        <div class="au-sec">
+          <div class="au-secl">Shop account</div>
+          <div class="au-srow"><span class="sk">Shop name<small>Ironside Fabrication</small></span><a class="au-mini" onclick="sendPrompt('Rename shop')">Rename</a></div>
+          <div class="au-srow"><span class="sk">Plan</span><span class="sv"><span class="au-badge">Shop · $149/mo</span><a class="au-mini" onclick="sendPrompt('Manage plan')">Manage</a></span></div>
+          <div class="au-srow"><span class="sk">Team members<small>1 of 3 seats used</small></span><a class="au-mini" onclick="sendPrompt('Invite a team member')">Invite</a></div>
+        </div>
+
+        <div class="au-sec">
+          <div class="au-secl">Security</div>
+          <div class="au-srow"><span class="sk">Password<small>Last changed 3 months ago</small></span><a class="au-mini" onclick="sendPrompt('Change password')">Change</a></div>
+          <div class="au-srow"><span class="sk">Two-factor authentication<small>Add an extra layer of security</small></span><a class="au-mini" onclick="sendPrompt('Set up two-factor authentication')">Enable</a></div>
+          <div class="au-srow"><span class="sk">Active sessions<small>2 devices signed in</small></span><a class="au-mini" onclick="sendPrompt('View active sessions')">View</a></div>
+        </div>
+
+        <div class="au-sec" style="margin-bottom:0">
+          <div class="au-secl">Data &amp; privacy</div>
+          <div class="au-srow"><span class="sk">Export your data<small>Download all quotes &amp; customers</small></span><a class="au-mini" onclick="sendPrompt('Export my data')">Export</a></div>
+          <div class="au-srow"><span class="sk">Delete account<small>Permanently remove your shop &amp; data</small></span><a class="au-danger" onclick="sendPrompt('Delete my account')"><i class="ti ti-trash" aria-hidden="true"></i> Delete</a></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

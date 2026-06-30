@@ -1,0 +1,169 @@
+
+<h2 class="sr-only">Email send flow for firing a quote from the app: compose screen with pre-filled draft, sent confirmation with timestamp, and the resulting quote record status</h2>
+<style>
+.es{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.es-cap{font-size:12px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;display:flex;align-items:center;gap:7px}
+.es-cap .step{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.es-cap .b{background:#185FA5}.es-cap .g{background:#0F6E56}
+.es-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden;margin-bottom:22px}
+.es-top{padding:12px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.es-ttl{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.es-ttl i{color:#185FA5;font-size:18px}
+.es-x{font-size:18px;color:var(--color-text-tertiary);cursor:pointer}
+.es-body{padding:18px}
+.es-fld{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.es-fld .k{font-size:12px;color:var(--color-text-tertiary);width:54px;flex-shrink:0}
+.es-fld .v{font-size:13px;flex:1}
+.es-chip{display:inline-flex;align-items:center;gap:6px;background:#E6F1FB;color:#042C53;font-size:12px;padding:3px 9px;border-radius:14px}
+.es-chip i{font-size:13px}
+.es-chip .rm{color:#185FA5;cursor:pointer;font-size:13px}
+.es-link{color:#185FA5;font-size:12px;cursor:pointer}
+.es-subj{font-size:13px;font-weight:500;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.es-msg{font-size:13px;color:var(--color-text-primary);line-height:1.6;padding:12px 0;white-space:pre-line}
+.es-attach{display:flex;align-items:center;gap:10px;padding:10px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);margin:8px 0 4px}
+.es-attach i.f{font-size:22px;color:#0F6E56}
+.es-attach .an{font-size:13px;font-weight:500}
+.es-attach .am{font-size:11px;color:var(--color-text-tertiary)}
+.es-attach .ap{font-size:11px;color:#0F6E56;display:flex;align-items:center;gap:4px;margin-left:auto}
+.es-foot{padding:14px 18px;border-top:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between;background:var(--color-background-secondary)}
+.es-opts{display:flex;align-items:center;gap:14px}
+.es-opt{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px;cursor:pointer}
+.es-opt input{width:14px;height:14px;accent-color:#0F6E56}
+.es-send{font-size:14px;font-weight:500;padding:10px 22px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+.es-ghost{font-size:13px;font-weight:500;padding:10px 16px;border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);cursor:pointer}
+
+.es-sent{padding:30px 24px;text-align:center}
+.es-sent .ring{width:56px;height:56px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.es-sent .ring i{font-size:30px;color:#0F6E56}
+.es-sent h3{font-size:19px;font-weight:500;color:#04342C;margin:0 0 4px}
+.es-sent p{font-size:13px;color:var(--color-text-secondary);margin:0 0 16px}
+.es-stamp{display:inline-flex;align-items:center;gap:8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 14px;font-size:12px;color:var(--color-text-secondary);margin-bottom:18px}
+.es-stamp i{font-size:15px;color:#185FA5}
+.es-stamp b{color:var(--color-text-primary);font-weight:500}
+.es-sentact{display:flex;gap:10px;justify-content:center}
+.es-sentbtn{font-size:13px;font-weight:500;padding:9px 16px;border-radius:var(--border-radius-md);cursor:pointer;display:flex;align-items:center;gap:6px}
+.es-sentbtn.p{background:#185FA5;color:#fff;border:none}
+.es-sentbtn.s{background:transparent;color:#185FA5;border:0.5px solid #185FA5}
+
+.es-rec{padding:16px 18px}
+.es-rectop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.es-recid{font-size:14px;font-weight:500}
+.es-recid small{display:block;font-size:12px;color:var(--color-text-secondary);font-weight:400}
+.es-status{font-size:12px;font-weight:500;padding:4px 12px;border-radius:14px;background:#FAEEDA;color:#854F0B;display:flex;align-items:center;gap:6px}
+.es-status i{font-size:13px}
+.es-timeline{border-left:2px solid var(--color-border-tertiary);padding-left:16px;margin-left:4px}
+.es-tl{position:relative;padding:0 0 14px}
+.es-tl:last-child{padding-bottom:0}
+.es-tl::before{content:"";position:absolute;left:-21px;top:3px;width:8px;height:8px;border-radius:50%;background:#0F6E56}
+.es-tl.pending::before{background:var(--color-border-secondary)}
+.es-tl .tt{font-size:13px;font-weight:500}
+.es-tl .td{font-size:11px;color:var(--color-text-tertiary);margin-top:1px}
+.es-recact{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--color-border-tertiary)}
+.es-wbtn{flex:1;font-size:13px;font-weight:500;padding:9px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid}
+.es-won{background:#E1F5EE;color:#04342C;border-color:#0F6E56}
+.es-lost{background:transparent;color:#993C1D;border-color:#D85A30}
+.es-followup{background:transparent;color:#185FA5;border-color:#185FA5}
+</style>
+
+<div class="es">
+
+  <p class="es-cap"><span class="step b">1</span> Compose — pre-filled, ready to fire</p>
+  <div class="es-frame">
+    <div class="es-top">
+      <div class="es-ttl"><i class="ti ti-mail" aria-hidden="true"></i> Send quote Q-2026-051</div>
+      <i class="ti ti-x es-x" aria-hidden="true"></i>
+    </div>
+    <div class="es-body">
+      <div class="es-fld">
+        <span class="k">To</span>
+        <span class="v"><span class="es-chip"><i class="ti ti-user" aria-hidden="true"></i> purchasing@apexindustrial.com <span class="rm">&times;</span></span></span>
+        <span class="es-link">Cc / Bcc</span>
+      </div>
+      <div class="es-fld">
+        <span class="k">From</span>
+        <span class="v">Mike Torres &lt;quotes@ironsidefab.com&gt;</span>
+      </div>
+      <div class="es-subj">Quote Q-2026-051 — Stair stringers (pair) — Ironside Fabrication</div>
+      <div class="es-msg">Hi,
+
+Thank you for the opportunity to quote your stair stringers. Our price for the pair is $1,814.11, with a 2–3 week lead time from approval.
+
+The full quote is attached as a PDF. It's valid for 30 days. To proceed, just sign and return it, or reply to this email.
+
+Happy to answer any questions.
+
+Mike Torres
+Ironside Fabrication
+(216) 555-0142</div>
+      <div class="es-attach">
+        <i class="ti ti-file-text f" aria-hidden="true"></i>
+        <div>
+          <div class="an">Quote_Q-2026-051.pdf</div>
+          <div class="am">148 KB · attached automatically</div>
+        </div>
+        <span class="ap"><i class="ti ti-check" aria-hidden="true"></i> Ready</span>
+      </div>
+    </div>
+    <div class="es-foot">
+      <div class="es-opts">
+        <label class="es-opt"><input type="checkbox" checked> Notify me when opened</label>
+        <label class="es-opt"><input type="checkbox" checked> Send me a copy</label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="es-ghost" onclick="sendPrompt('Edit the email message before sending')">Edit message</button>
+        <button class="es-send" onclick="sendPrompt('Send the quote email now')"><i class="ti ti-send" aria-hidden="true"></i> Send quote</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="es-cap"><span class="step g">2</span> Sent — instant confirmation with timestamp</p>
+  <div class="es-frame">
+    <div class="es-sent">
+      <div class="ring"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+      <h3>Quote sent to Apex Industrial</h3>
+      <p>Delivered to purchasing@apexindustrial.com</p>
+      <div class="es-stamp">
+        <i class="ti ti-clock" aria-hidden="true"></i>
+        Sent <b>June 25, 2026 · 2:47 PM EDT</b> · logged to this quote
+      </div>
+      <div class="es-sentact">
+        <button class="es-sentbtn p" onclick="sendPrompt('Go to the quote record')"><i class="ti ti-file-text" aria-hidden="true"></i> View quote record</button>
+        <button class="es-sentbtn s" onclick="sendPrompt('Start a new quote')"><i class="ti ti-plus" aria-hidden="true"></i> New quote</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="es-cap"><span class="step g">3</span> The timestamp lands on the quote record</p>
+  <div class="es-frame">
+    <div class="es-rec">
+      <div class="es-rectop">
+        <div class="es-recid">Q-2026-051 · Stair stringers (pair)<small>Apex Industrial · $1,814.11</small></div>
+        <span class="es-status"><i class="ti ti-clock" aria-hidden="true"></i> Awaiting response</span>
+      </div>
+      <div class="es-timeline">
+        <div class="es-tl">
+          <div class="tt">Quote created</div>
+          <div class="td">June 25, 2026 · 2:31 PM</div>
+        </div>
+        <div class="es-tl">
+          <div class="tt">Quote sent to customer</div>
+          <div class="td">June 25, 2026 · 2:47 PM · purchasing@apexindustrial.com</div>
+        </div>
+        <div class="es-tl">
+          <div class="tt">Opened by customer</div>
+          <div class="td">June 25, 2026 · 4:12 PM · viewed PDF</div>
+        </div>
+        <div class="es-tl pending">
+          <div class="tt" style="color:var(--color-text-tertiary)">Awaiting decision</div>
+          <div class="td">Follow up if no reply by June 30</div>
+        </div>
+      </div>
+      <div class="es-recact">
+        <button class="es-wbtn es-won" onclick="sendPrompt('Mark this quote as won')"><i class="ti ti-check" aria-hidden="true"></i> Mark won</button>
+        <button class="es-wbtn es-lost" onclick="sendPrompt('Mark this quote as lost')"><i class="ti ti-x" aria-hidden="true"></i> Mark lost</button>
+        <button class="es-wbtn es-followup" onclick="sendPrompt('Send a follow-up email')"><i class="ti ti-mail" aria-hidden="true"></i> Follow up</button>
+      </div>
+    </div>
+  </div>
+
+</div>

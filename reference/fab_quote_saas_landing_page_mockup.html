@@ -1,0 +1,140 @@
+
+<h2 class="sr-only">Landing page mockup for a metal fab quoting SaaS, using blue trust sections and green action sections with a frictionless sign-up flow</h2>
+<style>
+.lp{padding:0;font-family:var(--font-sans);color:var(--color-text-primary)}
+.lp-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+.lp-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.lp-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500}
+.lp-logo i{color:#185FA5;font-size:20px}
+.lp-navlinks{display:flex;gap:18px;align-items:center}
+.lp-navlinks a{font-size:13px;color:var(--color-text-secondary);text-decoration:none}
+.lp-navbtn{font-size:13px;font-weight:500;padding:7px 16px;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;border:none;cursor:pointer}
+.lp-hero{padding:36px 28px 32px;text-align:center;background:#E6F1FB}
+.lp-eyebrow{font-size:12px;font-weight:500;color:#185FA5;letter-spacing:.05em;margin-bottom:10px}
+.lp-h1{font-size:30px;font-weight:500;line-height:1.2;color:#042C53;margin:0 0 12px;max-width:520px;margin-left:auto;margin-right:auto}
+.lp-sub{font-size:15px;color:#0C447C;line-height:1.55;max-width:440px;margin:0 auto 22px}
+.lp-cta-row{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.lp-cta-main{font-size:15px;font-weight:500;padding:12px 26px;border-radius:var(--border-radius-md);background:#0F6E56;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+.lp-cta-ghost{font-size:14px;font-weight:500;padding:12px 20px;border-radius:var(--border-radius-md);background:transparent;color:#185FA5;border:0.5px solid #185FA5;cursor:pointer}
+.lp-trust{font-size:12px;color:#0C447C;margin-top:14px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.lp-trust span{display:flex;align-items:center;gap:5px}
+.lp-trust i{font-size:14px;color:#0F6E56}
+.lp-sec{padding:28px}
+.lp-sec-label{font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.lp-sec-h{font-size:20px;font-weight:500;margin:0 0 20px}
+.lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lp-step{padding:16px;border-radius:var(--border-radius-lg);background:#E6F1FB}
+.lp-step .n{width:26px;height:26px;border-radius:50%;background:#185FA5;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.lp-step h4{font-size:15px;font-weight:500;color:#042C53;margin:0 0 4px}
+.lp-step p{font-size:13px;color:#0C447C;line-height:1.5;margin:0}
+.lp-demo{background:#E1F5EE;padding:28px;border-top:0.5px solid var(--color-border-tertiary)}
+.lp-demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
+.lp-demo-copy h3{font-size:19px;font-weight:500;color:#04342C;margin:0 0 8px}
+.lp-demo-copy p{font-size:14px;color:#0F6E56;line-height:1.6;margin:0 0 14px}
+.lp-demo-card{background:#fff;border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:16px}
+.lp-demo-card .dh{font-size:12px;color:var(--color-text-tertiary);margin-bottom:10px;display:flex;justify-content:space-between}
+.lp-qline{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.lp-qline .l{color:var(--color-text-secondary)}
+.lp-qline .v{font-variant-numeric:tabular-nums;font-weight:500}
+.lp-qtotal{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:10px 12px;border-radius:var(--border-radius-md);background:#E1F5EE}
+.lp-qtotal .l{font-size:13px;font-weight:500;color:#0F6E56}
+.lp-qtotal .v{font-size:18px;font-weight:500;color:#04342C}
+.lp-proof{padding:24px 28px;border-top:0.5px solid var(--color-border-tertiary);display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lp-stat{text-align:center}
+.lp-stat .num{font-size:26px;font-weight:500;color:#185FA5}
+.lp-stat .lbl{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.lp-final{padding:32px 28px;text-align:center;background:#E1F5EE;border-top:0.5px solid var(--color-border-tertiary)}
+.lp-final h3{font-size:22px;font-weight:500;color:#04342C;margin:0 0 8px}
+.lp-final p{font-size:14px;color:#0F6E56;margin:0 0 18px}
+.lp-foot{padding:14px 20px;font-size:11px;color:var(--color-text-tertiary);display:flex;justify-content:space-between;border-top:0.5px solid var(--color-border-tertiary)}
+@media(max-width:520px){.lp-demo-grid,.lp-steps,.lp-proof{grid-template-columns:1fr}}
+</style>
+
+<div class="lp">
+<div class="lp-frame">
+
+  <div class="lp-nav">
+    <div class="lp-logo"><i class="ti ti-flame" aria-hidden="true"></i>QuoteForge</div>
+    <div class="lp-navlinks">
+      <a href="#">How it works</a>
+      <a href="#">Pricing</a>
+      <a href="#">Sign in</a>
+      <button class="lp-navbtn" onclick="sendPrompt('Walk me through what happens after I click Start free')">Start free</button>
+    </div>
+  </div>
+
+  <div class="lp-hero">
+    <div class="lp-eyebrow">BUILT FOR METAL FAB &amp; WELDING SHOPS</div>
+    <h1 class="lp-h1">Quote structural steel jobs in 10 minutes, not all afternoon</h1>
+    <p class="lp-sub">Stop losing jobs to slow quotes and losing margin to forgotten costs. Enter the job, get a branded quote, win more work.</p>
+    <div class="lp-cta-row">
+      <button class="lp-cta-main" onclick="sendPrompt('What happens when I start the free trial?')"><i class="ti ti-arrow-right" aria-hidden="true"></i> Quote your first job free</button>
+      <button class="lp-cta-ghost" onclick="sendPrompt('Show me the 2-minute demo')">Watch 2-min demo</button>
+    </div>
+    <div class="lp-trust">
+      <span><i class="ti ti-check" aria-hidden="true"></i> No credit card</span>
+      <span><i class="ti ti-check" aria-hidden="true"></i> Live in 15 minutes</span>
+      <span><i class="ti ti-check" aria-hidden="true"></i> Cancel anytime</span>
+    </div>
+  </div>
+
+  <div class="lp-sec">
+    <div class="lp-sec-label" style="color:#185FA5">GET SET UP ONCE</div>
+    <h2 class="lp-sec-h">Three steps to your first quote</h2>
+    <div class="lp-steps">
+      <div class="lp-step">
+        <div class="n">1</div>
+        <h4>Sign up free</h4>
+        <p>No card, no sales call. You're in the app in under a minute.</p>
+      </div>
+      <div class="lp-step">
+        <div class="n">2</div>
+        <h4>Pick your trade</h4>
+        <p>Loads a fab-specific template with realistic default rates you can keep or change.</p>
+      </div>
+      <div class="lp-step">
+        <div class="n">3</div>
+        <h4>Enter your rates</h4>
+        <p>Your labor, material, and margin — entered once, reused on every quote.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="lp-demo">
+    <div class="lp-demo-grid">
+      <div class="lp-demo-copy">
+        <div class="lp-sec-label" style="color:#0F6E56">THEN QUOTE, EVERY DAY</div>
+        <h3>Enter the job. Watch the price build.</h3>
+        <p>Every cost line updates as you type — material, labor, burn time, coating. Nothing forgotten, no arithmetic errors, no rebuilding the quote when the quantity changes.</p>
+        <button class="lp-cta-main" onclick="sendPrompt('Let me try the live quote tool')"><i class="ti ti-player-play" aria-hidden="true"></i> Try it live</button>
+      </div>
+      <div class="lp-demo-card">
+        <div class="dh"><span>Job #J-2026-051</span><span>Apex Industrial</span></div>
+        <div class="lp-qline"><span class="l">Material (240 lb + drop)</span><span class="v">$234.60</span></div>
+        <div class="lp-qline"><span class="l">Labor (cut, fit, weld, finish)</span><span class="v">$745.00</span></div>
+        <div class="lp-qline"><span class="l">Burn / machine time</span><span class="v">$70.00</span></div>
+        <div class="lp-qline"><span class="l">Coating (outside)</span><span class="v">$85.00</span></div>
+        <div class="lp-qtotal"><span class="l">Quoted price</span><span class="v">$1,184.20</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lp-proof">
+    <div class="lp-stat"><div class="num">10 min</div><div class="lbl">Average time per quote</div></div>
+    <div class="lp-stat"><div class="num">78%</div><div class="lbl">Of buyers pick the first to respond</div></div>
+    <div class="lp-stat"><div class="num">$99</div><div class="lbl">Flat per month, no per-user fees</div></div>
+  </div>
+
+  <div class="lp-final">
+    <h3>Your next quote could go out in 10 minutes</h3>
+    <p>Free trial. No credit card. Set up in 15 minutes.</p>
+    <button class="lp-cta-main" style="margin:0 auto" onclick="sendPrompt('Start my free trial')"><i class="ti ti-arrow-right" aria-hidden="true"></i> Quote your first job free</button>
+  </div>
+
+  <div class="lp-foot">
+    <span>QuoteForge — quoting for fab shops</span>
+    <span>Privacy · Terms · Contact</span>
+  </div>
+
+</div>
+</div>
