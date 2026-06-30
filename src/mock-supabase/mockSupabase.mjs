@@ -49,7 +49,7 @@ export function createMockClient() {
       _single: false,
       _maybe: false,
 
-      select() { return q; },
+      select(projection) { q._projection = projection || '*'; return q; },
       insert(payload) { q._op = 'insert'; q._payload = payload; return q; },
       update(payload) { q._op = 'update'; q._payload = payload; return q; },
       delete() { q._op = 'delete'; return q; },
@@ -124,6 +124,11 @@ export function createMockClient() {
       }
 
       // ---- SELECT ----
+      // Resolve a PostgREST-style embed, e.g. shop_users.select('..., shops(name)').
+      // The services only embed shops(name) on shop_users; support that generically.
+      if (q._projection && /shops\s*\(/.test(q._projection) && q._table === 'shop_users') {
+        rows = rows.map((r) => ({ ...r, shops: store.shops.get(r.shop_id) ?? null }));
+      }
       if (q._order) {
         rows.sort((a, b) => {
           const av = a[q._order.col], bv = b[q._order.col];

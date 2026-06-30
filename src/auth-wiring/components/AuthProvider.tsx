@@ -11,7 +11,7 @@
 // ============================================================================
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../data-access-layer/lib/supabase';
 import { authService, SessionContext } from '../services/authService';
 
 type AuthStatus = 'loading' | 'signedOut' | 'needsBootstrap' | 'ready';
