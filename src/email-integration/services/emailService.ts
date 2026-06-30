@@ -7,7 +7,7 @@
 // even if it tried.
 // ============================================================================
 
-import { supabase, run, ok, fail, Result } from '../lib/supabase';
+import { supabase, run, ok, fail, Result } from '../../data-access-layer/lib/supabase';
 
 export interface SendQuoteRequest {
   quoteId: string;

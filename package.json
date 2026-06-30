@@ -14,15 +14,18 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
+    "pdfkit": "^0.19.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "jsdom": "^25.0.0",
+    "pdf-parse": "^2.4.5",
     "typescript": "^5.5.4",
     "vite": "^5.4.3",
     "vitest": "^2.0.5"

@@ -21,7 +21,7 @@
   "comment": "Not-yet-wired modules are type-checked at their own stages (6+).",
   "exclude": [
     "src/doc-assist",
-    "src/email-integration",
+    "src/email-integration/server",
     "src/pdf-generation",
     "reference-screens"
   ]

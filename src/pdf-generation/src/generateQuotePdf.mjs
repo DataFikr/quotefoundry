@@ -51,7 +51,9 @@ function buildScopeLines(quote) {
 
 export function generateQuotePdf(quote, shop) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
+    // compress:false keeps the text layer inspectable (so the margin-hiding
+    // guarantee is verifiable by scanning the output, not just by construction).
+    const doc = new PDFDocument({ size: 'LETTER', margin: 50, compress: false });
     const chunks = [];
     doc.on('data', (c) => chunks.push(c));
     doc.on('end', () => resolve(Buffer.concat(chunks)));

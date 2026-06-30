@@ -8,9 +8,11 @@ import { quoteService } from '../data-access-layer/services/quoteService';
 import type { Quote } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money2, statusPill, heading, cardShadowLg, initials } from '../app/ui';
+import { CustomerPreviewModal } from './CustomerPreviewModal';
 
 export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: string; onBack: () => void; onEdit: (id: string) => void; onChanged: () => void }) {
   const [q, setQ] = useState<Quote | null>(null);
+  const [preview, setPreview] = useState(false);
 
   const load = useCallback(async () => {
     const res = await quoteService.get(quoteId);
@@ -73,6 +75,7 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
           </p>
 
           <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+            <button onClick={() => setPreview(true)} data-testid="preview-send" style={{ height: 46, padding: '0 22px', border: 'none', borderRadius: 13, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-file-invoice-dollar" />Preview &amp; send</button>
             <button onClick={() => onEdit(q.id)} style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-pen" />Edit quote</button>
             <button onClick={() => outcome('won')} data-testid="mark-won" style={{ height: 46, padding: '0 20px', border: '1.5px solid #C9EFD9', borderRadius: 13, background: color.successBg, color: color.success, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark won</button>
             <button onClick={() => outcome('lost')} data-testid="mark-lost" style={{ height: 46, padding: '0 20px', border: '1.5px solid #FAD7DD', borderRadius: 13, background: '#FFEFF1', color: color.danger, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark lost</button>
@@ -102,6 +105,9 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
           </div>
         </div>
       </div>
+      {preview && (
+        <CustomerPreviewModal quote={q} shopName="Ironside Fabrication" onClose={() => setPreview(false)} onSent={() => { onChanged(); load(); }} />
+      )}
     </div>
   );
 }

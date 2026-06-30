@@ -75,7 +75,7 @@ export function createMockClient() {
       if (q._op === 'insert') {
         const rows = Array.isArray(q._payload) ? q._payload : [q._payload];
         const inserted = rows.map((r) => {
-          const row = { id: id(q._table), ...r };
+          const row = { id: id(q._table), created_at: new Date().toISOString(), ...r };
           // RLS-style: shop-scoped inserts get the caller's shop stamped on.
           if (SHOP_SCOPED.has(q._table) && q._table !== 'shops') row.shop_id = shopId;
           tbl.set(row.id, row);
