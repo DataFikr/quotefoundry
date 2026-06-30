@@ -9,11 +9,15 @@ import { heading } from './ui';
 import { PipelineScreen } from '../screens/PipelineScreen';
 import { EditorScreen } from '../screens/EditorScreen';
 import { DetailScreen } from '../screens/DetailScreen';
+import { CustomersScreen } from '../screens/CustomersScreen';
+import { RatesScreen } from '../screens/RatesScreen';
 
 export type Screen =
   | { name: 'pipeline' }
   | { name: 'editor'; quoteId?: string }
-  | { name: 'detail'; quoteId: string };
+  | { name: 'detail'; quoteId: string }
+  | { name: 'customers' }
+  | { name: 'rates' };
 
 const NAV = [
   { name: 'pipeline', icon: 'la-stream', label: 'Pipeline' },
@@ -25,6 +29,8 @@ const TITLES: Record<string, { title: string; sub: string }> = {
   pipeline: { title: 'Quote pipeline', sub: 'Every quote, from draft to won' },
   editor: { title: 'New quote', sub: 'Enter the job — pricing updates live' },
   detail: { title: 'Quote detail', sub: 'Scope, totals, and activity' },
+  customers: { title: 'Customers', sub: 'Your saved customers' },
+  rates: { title: 'Rate settings', sub: 'Your shop rates — used on new quotes' },
 };
 
 export function AppShell({ shopName }: { shopName: string }) {
@@ -50,7 +56,7 @@ export function AppShell({ shopName }: { shopName: string }) {
               <a
                 key={item.name}
                 title={item.label}
-                onClick={() => item.name === 'pipeline' && go({ name: 'pipeline' })}
+                onClick={() => go({ name: item.name } as Screen)}
                 data-nav={item.name}
                 style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 14, cursor: 'pointer', fontSize: 22, color: active ? color.accentDeep : color.muted, background: active ? 'rgba(94,129,244,.12)' : 'transparent' }}
               >
@@ -92,6 +98,10 @@ export function AppShell({ shopName }: { shopName: string }) {
           {screen.name === 'detail' && (
             <DetailScreen quoteId={screen.quoteId} onBack={() => go({ name: 'pipeline' })} onEdit={(id) => go({ name: 'editor', quoteId: id })} onChanged={refresh} />
           )}
+          {screen.name === 'customers' && (
+            <CustomersScreen key={reloadKey} onNewQuote={() => go({ name: 'editor' })} />
+          )}
+          {screen.name === 'rates' && <RatesScreen />}
         </div>
       </main>
     </div>
