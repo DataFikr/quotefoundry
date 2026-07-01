@@ -11,7 +11,7 @@ import { useIsMobile } from '../app/useIsMobile';
 
 const AVATARS = ['linear-gradient(135deg,#5E81F4,#7C5CFC)', 'linear-gradient(135deg,#2BB6A8,#178F84)', 'linear-gradient(135deg,#F4806A,#E0533B)'];
 
-export function CustomersScreen({ onNewQuote }: { onNewQuote: () => void }) {
+export function CustomersScreen({ onNewQuote }: { onNewQuote: (c: { id?: string; name: string; email?: string }) => void }) {
   const [list, setList] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
@@ -73,7 +73,7 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: () => void }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
               <span style={{ flex: 1, textAlign: 'center', padding: 9, borderRadius: 11, background: color.appBg, color: color.body, fontSize: 12.5, fontWeight: 700, fontFamily: heading }}>{c.default_terms ?? 'Net 30'}</span>
-              <button onClick={onNewQuote} style={{ flex: 1, padding: 9, border: 'none', borderRadius: 11, background: 'rgba(94,129,244,.12)', color: color.accentDeep, fontSize: 12.5, fontWeight: 700, fontFamily: heading, cursor: 'pointer' }}>New quote</button>
+              <button onClick={() => onNewQuote({ id: c.id, name: c.company_name, email: c.email })} data-testid="cust-new-quote" style={{ flex: 1, padding: 9, border: 'none', borderRadius: 11, background: 'rgba(94,129,244,.12)', color: color.accentDeep, fontSize: 12.5, fontWeight: 700, fontFamily: heading, cursor: 'pointer' }}>New quote</button>
             </div>
           </div>
         ))}

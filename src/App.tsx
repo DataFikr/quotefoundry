@@ -1,14 +1,16 @@
-// App.tsx — boots the data layer (mock in dev, live in Stage 8), then gates the
-// app through AuthProvider: signed out → AuthScreen, authenticated-but-no-shop →
-// finish setup, ready → AppShell. In dev the mock auto-signs-in a demo shop, so
-// the daily-loop screens render immediately; with live env or ?auth the real
-// login flow is shown.
+// App.tsx — boots the data layer (mock in dev, live in Stage 8), then routes:
+//   Landing → Login/Sign-up → app.
+// In the no-auth demo any login just enters (the mock has a demo shop). With a
+// live Supabase env, the login is real and AuthProvider gates the app.
+// Query flags for tests/flows: ?app skips straight to the app; ?auth opens the
+// real auth flow on the mock (provisions a fresh shop).
 import { useEffect, useState } from 'react';
 import { color, font } from './design/tokens';
-import { devBootstrap } from './app/devBootstrap';
+import { devBootstrap, isLiveEnv } from './app/devBootstrap';
 import { AppShell } from './app/AppShell';
 import { AuthProvider, useAuth } from './auth-wiring/components/AuthProvider';
 import { AuthScreen } from './screens/AuthScreen';
+import { LandingScreen } from './screens/LandingScreen';
 import { authService } from './auth-wiring/services/authService';
 
 function Centered({ children }: { children: React.ReactNode }) {
@@ -53,9 +55,35 @@ function Gate() {
 }
 
 export function App() {
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const [ready, setReady] = useState(false);
+  const [entered, setEntered] = useState(params.has('app'));
+  const [view, setView] = useState<'landing' | 'auth'>(params.has('auth') ? 'auth' : 'landing');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const enforceAuth = isLiveEnv() || params.has('auth');
+
   useEffect(() => { devBootstrap().then(() => setReady(true)); }, []);
   if (!ready) return <Centered>Loading QuoteForge…</Centered>;
+
+  if (!entered) {
+    if (view === 'landing') {
+      return (
+        <LandingScreen
+          onStart={() => { setAuthMode('signup'); setView('auth'); }}
+          onLogin={() => { setAuthMode('login'); setView('auth'); }}
+        />
+      );
+    }
+    return (
+      <AuthScreen
+        enforceAuth={enforceAuth}
+        initialMode={authMode}
+        onReady={() => setEntered(true)}
+        onBack={params.has('auth') ? undefined : () => setView('landing')}
+      />
+    );
+  }
+
   return (
     <AuthProvider>
       <Gate />

@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test';
 
 async function openPreview(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/?app');
   await page.locator('[data-row="Q-2026-001"]').click();
   await page.getByTestId('preview-send').click();
   await expect(page.getByTestId('qf-print')).toBeVisible();

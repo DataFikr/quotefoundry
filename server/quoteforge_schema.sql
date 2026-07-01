@@ -95,6 +95,15 @@ create table shop_rates (
   overhead_pct    numeric(5,2)  not null default 18,
   margin_pct      numeric(5,2)  not null default 30,
 
+  -- material library: [{ "name": "A36 Steel", "price": 0.85 }, ...] ($/lb).
+  -- The quote's chosen material sets the effective price used by the engine.
+  materials       jsonb not null default '[
+    {"name":"A36 Steel","price":0.85},
+    {"name":"A500 Tube","price":0.95},
+    {"name":"304 Stainless","price":2.10},
+    {"name":"6061 Aluminum","price":1.85}
+  ]'::jsonb,
+
   -- per-field "last changed" tracking for the stale-rate nudge (jsonb keeps it
   -- flexible without 11 extra timestamp columns)
   changed_at      jsonb not null default '{}'::jsonb,

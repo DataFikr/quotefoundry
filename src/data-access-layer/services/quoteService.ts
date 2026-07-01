@@ -14,7 +14,7 @@
 // ============================================================================
 
 import { supabase, run, ok, fail, Result } from '../lib/supabase';
-import { computeQuote } from '../lib/quoteEngine';
+import { computeQuote, resolveRates } from '../lib/quoteEngine';
 import { rateService } from './rateService';
 import type { Quote, QuoteInputs, QuoteStatus, ShopRates } from '../lib/types';
 
@@ -48,6 +48,7 @@ function hydrate(row: any): Quote {
     totals: computeQuote(
       {
         job_name: row.job_name,
+        material_spec: row.material_spec ?? undefined,
         material_weight: Number(row.material_weight ?? 0),
         quantity: row.quantity,
         burn_minutes: Number(row.burn_minutes ?? 0),
@@ -57,7 +58,8 @@ function hydrate(row: any): Quote {
         hrs_finishing: Number(row.hrs_finishing ?? 0),
         outside_services: Number(row.outside_services ?? 0),
       },
-      row.rate_snapshot as ShopRates
+      // resolve the material price from the frozen snapshot's own library
+      resolveRates(row.rate_snapshot as ShopRates, row.material_spec ?? undefined)
     ),
     sent_at: row.sent_at ?? undefined,
     opened_at: row.opened_at ?? undefined,
@@ -97,12 +99,12 @@ export const quoteService = {
     inputs: QuoteInputs,
     customer?: { id?: string; name?: string; email?: string; po?: string }
   ): Promise<Result<Quote>> {
-    // 1. Read the shop's CURRENT rates (the snapshot source).
+    // 1. Read the shop's CURRENT rates, then resolve the chosen material's price.
     const ratesRes = await rateService.get();
     if (ratesRes.error) return fail(ratesRes.error);
-    const rates = ratesRes.data!;
+    const rates = resolveRates(ratesRes.data!, inputs.material_spec);
 
-    // 2. Compute totals from those rates now.
+    // 2. Compute totals from those (material-resolved) rates now.
     const totals = computeQuote(inputs, rates);
 
     // 3. Generate the per-shop quote number (app-side; see note in spec).
@@ -145,7 +147,9 @@ export const quoteService = {
     if (existing.data!.status !== 'draft') {
       return fail('Only draft quotes can be edited. Clone this quote to revise.');
     }
-    const totals = computeQuote(inputs, existing.data!.rate_snapshot);
+    // recompute from the EXISTING snapshot, re-pricing the (possibly changed)
+    // material from the snapshot's own frozen library — never from live rates.
+    const totals = computeQuote(inputs, resolveRates(existing.data!.rate_snapshot, inputs.material_spec));
     const res = await run<any>(() =>
       supabase
         .from('quotes')

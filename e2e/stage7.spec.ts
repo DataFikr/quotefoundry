@@ -7,7 +7,7 @@
 import { test, expect } from '@playwright/test';
 
 test('pipeline renders stacked cards (not the desktop table) on mobile', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?app');
   await expect(page.locator('[data-row-mobile]')).toHaveCount(3);
   // a quote card still opens detail
   await page.locator('[data-row="Q-2026-001"]').click();
@@ -15,7 +15,7 @@ test('pipeline renders stacked cards (not the desktop table) on mobile', async (
 });
 
 test('touch targets are at least 40px', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?app');
   for (const sel of ['[data-testid="new-quote"]', '[data-nav="rates"]', '[data-row-mobile] button']) {
     const box = await page.locator(sel).first().boundingBox();
     expect(box).not.toBeNull();
@@ -24,7 +24,7 @@ test('touch targets are at least 40px', async ({ page }) => {
 });
 
 test('editor stacks to a single column on mobile (cost panel not sticky)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?app');
   await page.getByTestId('new-quote').click();
   const pos = await page.getByTestId('cost-panel').evaluate((el) => getComputedStyle(el).position);
   expect(pos).toBe('static'); // sticky only on desktop
@@ -41,7 +41,7 @@ test('editor stacks to a single column on mobile (cost panel not sticky)', async
 });
 
 test('aesthetic: mobile pipeline matches baseline', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?app');
   await expect(page.locator('[data-row-mobile]').first()).toBeVisible();
   await page.evaluate(() => (document as any).fonts.ready);
   // screenshot the stable screen container (deterministic regardless of scroll)
@@ -52,7 +52,7 @@ test('aesthetic: mobile pipeline matches baseline', async ({ page }) => {
 });
 
 test('aesthetic: mobile detail matches baseline', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?app');
   await page.locator('[data-row="Q-2026-001"]').click();
   await expect(page.locator('[data-screen="detail"]')).toBeVisible();
   await page.evaluate(() => (document as any).fonts.ready);

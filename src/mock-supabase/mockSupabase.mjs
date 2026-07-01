@@ -193,6 +193,14 @@ export function createMockClient() {
       rate_cutting: 75, rate_fitting: 80, rate_welding: 90, rate_finishing: 65,
       rate_burn: 120, price_steel: 0.85, scrap_pct: 15, rate_consumables: 12,
       overhead_pct: 18, margin_pct: 30,
+      // default material library ($/lb). A36 Steel @ 0.85 keeps the canonical
+      // quote's price identical to price_steel.
+      materials: [
+        { name: 'A36 Steel', price: 0.85 },
+        { name: 'A500 Tube', price: 0.95 },
+        { name: '304 Stainless', price: 2.10 },
+        { name: '6061 Aluminum', price: 1.85 },
+      ],
     });
     return { data: shopId, error: null };
   }

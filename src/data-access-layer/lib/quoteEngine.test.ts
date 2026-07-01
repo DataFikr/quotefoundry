@@ -4,7 +4,7 @@
 // disagree with the saved number.
 // ============================================================================
 import { describe, it, expect } from 'vitest';
-import { computeQuote } from './quoteEngine';
+import { computeQuote, resolveRates, priceForMaterial } from './quoteEngine';
 import type { QuoteInputs, ShopRates } from './types';
 
 const rates: ShopRates = {
@@ -51,6 +51,32 @@ describe('computeQuote — canonical lock', () => {
     expect(five.per_unit).toBe(Math.round((five.quoted_price / 5) * 100) / 100);
     const zero = computeQuote({ ...inputs, quantity: 0 }, rates);
     expect(zero.per_unit).toBe(zero.quoted_price); // treated as qty 1
+  });
+});
+
+describe('material-driven pricing (resolveRates)', () => {
+  const withMaterials: ShopRates = {
+    ...rates,
+    materials: [
+      { name: 'A36 Steel', price: 0.85 },
+      { name: '304 Stainless', price: 2.10 },
+    ],
+  };
+
+  it('a matching material sets the effective $/lb; canonical stays 1913.82 for A36', () => {
+    expect(priceForMaterial(withMaterials, 'A36 steel')).toBe(0.85); // case-insensitive
+    const t = computeQuote({ ...inputs, material_spec: 'A36 steel' }, resolveRates(withMaterials, 'A36 steel'));
+    expect(t.quoted_price).toBe(1913.82);
+  });
+
+  it('a pricier material raises the quote', () => {
+    const t = computeQuote({ ...inputs, material_spec: '304 Stainless' }, resolveRates(withMaterials, '304 Stainless'));
+    expect(t.quoted_price).toBeGreaterThan(1913.82);
+  });
+
+  it('an unknown material falls back to price_steel', () => {
+    expect(priceForMaterial(withMaterials, 'Unobtainium')).toBe(rates.price_steel);
+    expect(priceForMaterial(withMaterials, undefined)).toBe(rates.price_steel);
   });
 });
 

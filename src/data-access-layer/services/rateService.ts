@@ -27,6 +27,7 @@ export const rateService = {
       rate_consumables: Number(r.rate_consumables),
       overhead_pct: Number(r.overhead_pct),
       margin_pct: Number(r.margin_pct),
+      materials: Array.isArray(r.materials) ? r.materials : [],
     });
   },
 

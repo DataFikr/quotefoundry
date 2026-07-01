@@ -7,14 +7,14 @@ import { useState, useCallback } from 'react';
 import { color } from '../design/tokens';
 import { heading } from './ui';
 import { PipelineScreen } from '../screens/PipelineScreen';
-import { EditorScreen } from '../screens/EditorScreen';
+import { EditorScreen, PresetCustomer } from '../screens/EditorScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { CustomersScreen } from '../screens/CustomersScreen';
 import { RatesScreen } from '../screens/RatesScreen';
 
 export type Screen =
   | { name: 'pipeline' }
-  | { name: 'editor'; quoteId?: string }
+  | { name: 'editor'; quoteId?: string; presetCustomer?: PresetCustomer }
   | { name: 'detail'; quoteId: string }
   | { name: 'customers' }
   | { name: 'rates' };
@@ -93,13 +93,13 @@ export function AppShell({ shopName }: { shopName: string }) {
             <PipelineScreen key={reloadKey} onOpen={(id) => go({ name: 'detail', quoteId: id })} onNew={() => go({ name: 'editor' })} onRefresh={refresh} />
           )}
           {screen.name === 'editor' && (
-            <EditorScreen quoteId={screen.quoteId} onSaved={(id) => go({ name: 'detail', quoteId: id })} onCancel={() => go({ name: 'pipeline' })} />
+            <EditorScreen quoteId={screen.quoteId} presetCustomer={screen.presetCustomer} onSaved={(id) => go({ name: 'detail', quoteId: id })} onCancel={() => go({ name: 'pipeline' })} />
           )}
           {screen.name === 'detail' && (
             <DetailScreen quoteId={screen.quoteId} onBack={() => go({ name: 'pipeline' })} onEdit={(id) => go({ name: 'editor', quoteId: id })} onChanged={refresh} />
           )}
           {screen.name === 'customers' && (
-            <CustomersScreen key={reloadKey} onNewQuote={() => go({ name: 'editor' })} />
+            <CustomersScreen key={reloadKey} onNewQuote={(c) => go({ name: 'editor', presetCustomer: c })} />
           )}
           {screen.name === 'rates' && <RatesScreen />}
         </div>

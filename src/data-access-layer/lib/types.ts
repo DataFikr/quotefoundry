@@ -5,6 +5,13 @@
 export type QuoteStatus = 'draft' | 'sent' | 'opened' | 'won' | 'lost';
 export type Plan = 'trial' | 'solo' | 'shop' | 'shop_plus';
 
+// A shop-defined material and its $/lb price. The quote's chosen material sets
+// the effective price used by the engine (see resolveRates).
+export interface Material {
+  name: string;
+  price: number; // $/lb
+}
+
 // The rate library — what the shop edits, and what gets snapshotted per quote.
 export interface ShopRates {
   rate_cutting: number;
@@ -12,11 +19,12 @@ export interface ShopRates {
   rate_welding: number;
   rate_finishing: number;
   rate_burn: number;        // $/hr machine
-  price_steel: number;      // $/lb
+  price_steel: number;      // $/lb — the effective/default material price
   scrap_pct: number;        // %
   rate_consumables: number; // $/weld-hr
   overhead_pct: number;     // %
   margin_pct: number;       // %
+  materials?: Material[];    // the shop's material library (name → $/lb)
 }
 
 // The job-specific inputs an estimator enters per quote.

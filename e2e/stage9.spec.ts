@@ -9,7 +9,7 @@
 import { test, expect } from '@playwright/test';
 
 async function openEditor(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/?app');
   await page.getByTestId('new-quote').click();
   await expect(page.getByTestId('doc-assist')).toBeVisible();
 }
@@ -41,7 +41,8 @@ test('Tier 2 — text PDF pre-fills at MEDIUM confidence (flagged to verify)', a
   await expect(page.getByTestId('doc-banner')).toContainText('PDF text', { timeout: 15000 });
 
   await expect(page.locator('[data-field="quantity"]')).toHaveValue('12');
-  await expect(page.locator('[data-field="material_spec"]')).toHaveValue(/A36 steel/);
+  // snapped to the shop's canonical material name
+  await expect(page.locator('[data-field="material_spec"]')).toHaveValue('A36 Steel');
 
   // Tier-2 fields are NEVER high confidence — badge nudges review
   const badge = page.locator('[data-prefill-badge]').first();

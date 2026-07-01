@@ -29,13 +29,13 @@ async function fillCanonical(page: Page) {
 
 test.describe('Pipeline', () => {
   test('functional: lists seeded quotes', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await expect(page.locator('[data-row]')).toHaveCount(3);
     await expect(page.locator('[data-row="Q-2026-001"]')).toContainText('Stair stringers');
   });
 
   test('design-guide: surfaces, accent button, status pills match tokens', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     const newBtn = page.getByTestId('new-quote');
     expect(await newBtn.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(rgb(color.accent));
     // won pill uses success green text
@@ -44,7 +44,7 @@ test.describe('Pipeline', () => {
   });
 
   test('aesthetic: pipeline matches baseline', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await expect(page.locator('[data-row]').first()).toBeVisible();
     await expect(page).toHaveScreenshot('pipeline.png', {
       mask: [page.locator('[data-mask]')],
@@ -55,13 +55,13 @@ test.describe('Pipeline', () => {
 
 test.describe('Editor', () => {
   test('functional: the ONE engine drives the live summary (canonical 1913.82)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await fillCanonical(page);
     await expect(page.getByTestId('quoted-price')).toHaveText('$1,914'); // money() rounds 1913.82
   });
 
   test('design-guide: dark cost panel + Lato price', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await fillCanonical(page);
     const panel = page.getByTestId('cost-panel');
     const bgImage = await panel.evaluate((el) => getComputedStyle(el).backgroundImage);
@@ -71,7 +71,7 @@ test.describe('Editor', () => {
   });
 
   test('aesthetic: editor matches baseline', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await fillCanonical(page);
     await expect(page).toHaveScreenshot('editor.png', { maxDiffPixelRatio: 0.02 });
   });
@@ -79,7 +79,7 @@ test.describe('Editor', () => {
 
 test.describe('Detail + round trip', () => {
   test('functional: save a new quote → it appears in the pipeline and detail shows full price', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await fillCanonical(page);
     await page.getByTestId('save-quote').click();
     // lands on detail
@@ -93,14 +93,14 @@ test.describe('Detail + round trip', () => {
   });
 
   test('design-guide: detail price uses accentDeep', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await page.locator('[data-row="Q-2026-001"]').click();
     const price = page.getByTestId('detail-price');
     expect(await price.evaluate((el) => getComputedStyle(el).color)).toBe(rgb(color.accentDeep));
   });
 
   test('aesthetic: detail matches baseline', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await page.locator('[data-row="Q-2026-001"]').click();
     await expect(page.locator('[data-screen="detail"]')).toBeVisible();
     await expect(page).toHaveScreenshot('detail.png', {

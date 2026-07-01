@@ -8,8 +8,10 @@ import { authService } from '../auth-wiring/services/authService';
 import { color } from '../design/tokens';
 import { heading, cardShadowLg } from '../app/ui';
 
-export function AuthScreen({ onReady }: { onReady: () => void }) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+export function AuthScreen({ onReady, onBack, enforceAuth = true, initialMode = 'login' }: {
+  onReady: () => void; onBack?: () => void; enforceAuth?: boolean; initialMode?: 'login' | 'signup';
+}) {
+  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [shopName, setShopName] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,6 +20,8 @@ export function AuthScreen({ onReady }: { onReady: () => void }) {
   const [busy, setBusy] = useState(false);
 
   async function submit() {
+    // No-auth demo: any login/signup just enters the app.
+    if (!enforceAuth) { onReady(); return; }
     setBusy(true); setError(null);
     const res = mode === 'signup'
       ? await authService.signUp({ email, password, shopName, fullName })
@@ -33,6 +37,11 @@ export function AuthScreen({ onReady }: { onReady: () => void }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: color.appBg, padding: 24 }} data-screen="auth">
       <div style={{ width: 420, maxWidth: '94vw', background: color.surface, borderRadius: 22, boxShadow: cardShadowLg, padding: '34px 34px 30px' }}>
+        {onBack && (
+          <div onClick={onBack} data-testid="auth-back" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: color.muted, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', marginBottom: 14 }}>
+            <i className="las la-arrow-left" /> Back
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
           <div style={{ width: 42, height: 42, borderRadius: 13, background: color.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 18px -6px ${color.accent}` }}>
             <i className="las la-bolt" style={{ color: '#fff', fontSize: 22 }} />
@@ -66,6 +75,9 @@ export function AuthScreen({ onReady }: { onReady: () => void }) {
           style={{ width: '100%', height: 50, border: 'none', borderRadius: 14, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
           {busy ? 'Please wait…' : mode === 'signup' ? 'Create shop & start' : 'Log in'}
         </button>
+        {!enforceAuth && (
+          <div style={{ textAlign: 'center', fontSize: 12, color: color.faint, marginTop: 10 }}>Demo mode — any details take you straight in.</div>
+        )}
 
         <div style={{ textAlign: 'center', fontSize: 13.5, color: color.muted, marginTop: 16 }}>
           {mode === 'signup' ? (

@@ -11,7 +11,7 @@ const rgb = (hex: string) => {
 
 test.describe('Customers', () => {
   test('functional: lists seeded customers, searches, and adds', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await page.locator('[data-nav="customers"]').click();
     await expect(page.locator('[data-customer]')).toHaveCount(3);
 
@@ -27,7 +27,7 @@ test.describe('Customers', () => {
   });
 
   test('aesthetic: customers grid matches baseline', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await page.locator('[data-nav="customers"]').click();
     await expect(page.locator('[data-customer]').first()).toBeVisible();
     await expect(page).toHaveScreenshot('customers.png', { maxDiffPixelRatio: 0.02 });
@@ -36,7 +36,7 @@ test.describe('Customers', () => {
 
 test.describe('Rates', () => {
   test('design-guide: amber "new quotes only" banner present', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await page.locator('[data-nav="rates"]').click();
     const banner = page.getByTestId('rates-banner');
     await expect(banner).toContainText('new quotes only');
@@ -44,15 +44,16 @@ test.describe('Rates', () => {
   });
 
   test('functional+invariant: editing rates changes NEW quotes only, never existing ones', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     // existing quote price before
     await page.locator('[data-row="Q-2026-001"]').click();
     await expect(page.getByTestId('detail-price')).toHaveText('$1,913.82');
     await page.locator('[data-screen="detail"] >> text=Pipeline').click();
 
-    // bump the steel price and save
+    // bump the A36 Steel material price (Material tab) and save
     await page.locator('[data-nav="rates"]').click();
-    await page.locator('[data-rate="price_steel"]').fill('1.20');
+    await page.locator('[data-tab="material"]').click();
+    await page.locator('[data-material-price="A36 Steel"]').fill('1.20');
     await page.getByTestId('save-rates').click();
     await expect(page.getByTestId('rates-status')).toHaveText('Saved');
 
@@ -61,8 +62,9 @@ test.describe('Rates', () => {
     await page.locator('[data-row="Q-2026-001"]').click();
     await expect(page.getByTestId('detail-price')).toHaveText('$1,913.82');
 
-    // a NEW quote picks up the new rate (price differs)
+    // a NEW quote on A36 Steel picks up the new material price (price differs)
     await page.getByTestId('new-quote').click();
+    await page.locator('[data-field="material_spec"]').selectOption('A36 Steel');
     const f = (n: string, v: string) => page.locator(`[data-field="${n}"]`).fill(v);
     await f('material_weight', '240'); await f('quantity', '1'); await f('burn_minutes', '35');
     await f('hrs_cutting', '1.5'); await f('hrs_fitting', '3'); await f('hrs_welding', '4');
@@ -71,7 +73,7 @@ test.describe('Rates', () => {
   });
 
   test('aesthetic: rates screen matches baseline', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?app');
     await page.locator('[data-nav="rates"]').click();
     await expect(page.getByTestId('rates-banner')).toBeVisible();
     await expect(page).toHaveScreenshot('rates.png', { maxDiffPixelRatio: 0.02 });

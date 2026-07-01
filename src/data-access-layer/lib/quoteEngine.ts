@@ -12,6 +12,26 @@ import type { QuoteInputs, ShopRates, QuoteTotals } from './types';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+const normName = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+
+// The effective $/lb for a quote: if its material_spec matches a material in the
+// shop's library, use that price; otherwise fall back to price_steel. The engine
+// itself stays pure — this just picks which price it's handed.
+export function priceForMaterial(rates: ShopRates, materialSpec?: string): number {
+  if (materialSpec && rates.materials?.length) {
+    const m = rates.materials.find((x) => normName(x.name) === normName(materialSpec));
+    if (m) return m.price;
+  }
+  return rates.price_steel;
+}
+
+// Return a rates copy whose price_steel reflects the chosen material. Both the
+// live editor and quoteService snapshot from THIS, so the frozen snapshot carries
+// the material's price (and the library, so a draft re-price stays deterministic).
+export function resolveRates(rates: ShopRates, materialSpec?: string): ShopRates {
+  return { ...rates, price_steel: priceForMaterial(rates, materialSpec) };
+}
+
 export function computeQuote(inputs: QuoteInputs, rates: ShopRates): QuoteTotals {
   const qty = inputs.quantity > 0 ? inputs.quantity : 1;
 
