@@ -35,6 +35,10 @@ async function seed(): Promise<void> {
   if (isLiveEnv()) return; // real client already created in supabase.ts
   setSupabaseClient(createMockClient());
 
+  // Test hook: ?auth installs the mock but skips auto-login + seeding, so the
+  // real AuthScreen → sign-up → app flow can be exercised on the mock.
+  if (typeof window !== 'undefined' && window.location.search.includes('auth')) return;
+
   await authService.signUp({
     email: 'demo@ironside.com', password: 'demo',
     shopName: 'Ironside Fabrication', fullName: 'Mike Torres',
