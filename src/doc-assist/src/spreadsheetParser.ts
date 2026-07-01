@@ -76,8 +76,11 @@ function v(h: string, variants: string[]): string {
   return variants.find((x) => norm(x) === h) ?? '';
 }
 
-export function parseSpreadsheet(fileBuffer: Buffer | ArrayBuffer): ParseResult {
-  const wb = XLSX.read(fileBuffer, { type: 'buffer' });
+export function parseSpreadsheet(fileBuffer: ArrayBuffer | Uint8Array): ParseResult {
+  // Works in both Node (Buffer is a Uint8Array) and the browser (ArrayBuffer →
+  // Uint8Array). type:'array' is SheetJS's cross-platform byte-array mode.
+  const data = fileBuffer instanceof ArrayBuffer ? new Uint8Array(fileBuffer) : fileBuffer;
+  const wb = XLSX.read(data, { type: 'array' });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   // rows as arrays so we can find the header row even if it's not row 1
   const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });

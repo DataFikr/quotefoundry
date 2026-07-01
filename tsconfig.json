@@ -20,7 +20,7 @@
   "include": ["src"],
   "comment": "Not-yet-wired modules are type-checked at their own stages (6+).",
   "exclude": [
-    "src/doc-assist",
+    "src/doc-assist/src/docAssistService.ts",
     "src/email-integration/server",
     "src/pdf-generation",
     "reference-screens"
