@@ -3,10 +3,29 @@
 // the full provisioning sequence (auth user → bootstrap_shop → seeded rates).
 // Shown when the live client has no session (Stage 8). Styled to the app brand.
 // ============================================================================
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { authService } from '../auth-wiring/services/authService';
 import { color } from '../design/tokens';
 import { heading, cardShadowLg } from '../app/ui';
+
+// Company logo upload: PNG/JPEG only (what the PDF generators embed), capped
+// so the data-URL stays a sane size in the shops row.
+export const LOGO_MAX_BYTES = 500 * 1024;
+
+export function readLogoFile(file: File): Promise<{ dataUrl?: string; error?: string }> {
+  if (!/^image\/(png|jpe?g)$/.test(file.type)) {
+    return Promise.resolve({ error: 'Logo must be a PNG or JPEG image.' });
+  }
+  if (file.size > LOGO_MAX_BYTES) {
+    return Promise.resolve({ error: 'Logo must be under 500 KB — export a smaller version.' });
+  }
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ dataUrl: String(reader.result) });
+    reader.onerror = () => resolve({ error: 'Could not read that file.' });
+    reader.readAsDataURL(file);
+  });
+}
 
 export function AuthScreen({ onReady, onBack, enforceAuth = true, initialMode = 'login' }: {
   onReady: () => void; onBack?: () => void; enforceAuth?: boolean; initialMode?: 'login' | 'signup';
@@ -16,15 +35,26 @@ export function AuthScreen({ onReady, onBack, enforceAuth = true, initialMode = 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [logo, setLogo] = useState<{ dataUrl: string; name: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const logoRef = useRef<HTMLInputElement>(null);
+
+  async function pickLogo(file: File) {
+    setError(null);
+    const res = await readLogoFile(file);
+    if (res.error) { setError(res.error); return; }
+    setLogo({ dataUrl: res.dataUrl!, name: file.name });
+  }
 
   async function submit() {
     // No-auth demo: any login/signup just enters the app.
     if (!enforceAuth) { onReady(); return; }
+    // Logo is required at sign-up — it brands every customer PDF (top-left).
+    if (mode === 'signup' && !logo) { setError('Add your company logo — it goes on every quote PDF.'); return; }
     setBusy(true); setError(null);
     const res = mode === 'signup'
-      ? await authService.signUp({ email, password, shopName, fullName })
+      ? await authService.signUp({ email, password, shopName, fullName, logoDataUrl: logo?.dataUrl })
       : await authService.logIn(email, password);
     setBusy(false);
     if (res.error) { setError(res.error); return; }
@@ -46,7 +76,7 @@ export function AuthScreen({ onReady, onBack, enforceAuth = true, initialMode = 
           <div style={{ width: 42, height: 42, borderRadius: 13, background: color.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 18px -6px ${color.accent}` }}>
             <i className="las la-bolt" style={{ color: '#fff', fontSize: 22 }} />
           </div>
-          <div style={{ fontFamily: heading, fontWeight: 900, fontSize: 22, color: color.accentDeep }}>QuoteForge</div>
+          <div style={{ fontFamily: heading, fontWeight: 900, fontSize: 22, color: color.accentDeep }}>QuoteFoundry</div>
         </div>
 
         <h2 style={{ margin: '0 0 4px', fontFamily: heading, fontWeight: 700, fontSize: 22 }}>
@@ -62,6 +92,28 @@ export function AuthScreen({ onReady, onBack, enforceAuth = true, initialMode = 
               <input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Ironside Fabrication" style={field} data-field="shopName" /></label>
             <label style={{ display: 'block', marginBottom: 12 }}><span style={labelCss}>Your name</span>
               <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Mike Torres" style={field} data-field="fullName" /></label>
+            <div style={{ marginBottom: 12 }}>
+              <span style={labelCss}>Company logo <span style={{ color: color.muted, fontWeight: 400 }}>(required — appears on your quote PDFs)</span></span>
+              <div onClick={() => logoRef.current?.click()} data-testid="logo-drop"
+                style={{ marginTop: 7, display: 'flex', alignItems: 'center', gap: 12, border: `1.5px dashed ${logo ? color.success : color.border}`, borderRadius: 12, padding: '10px 14px', cursor: 'pointer', background: logo ? color.successBg : '#FBFBFE' }}>
+                {logo ? (
+                  <>
+                    <img src={logo.dataUrl} alt="Company logo preview" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8, background: '#fff' }} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: color.success, fontFamily: heading }}>Logo added</div>
+                      <div style={{ fontSize: 12, color: color.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{logo.name} — click to replace</div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <i className="las la-image" style={{ fontSize: 24, color: '#B6B6CC' }} />
+                    <div style={{ fontSize: 13, color: '#71728F' }}>Click to upload — PNG or JPEG, under 500 KB</div>
+                  </>
+                )}
+                <input ref={logoRef} type="file" accept="image/png,image/jpeg" data-testid="logo-input" style={{ display: 'none' }}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) pickLogo(f); e.target.value = ''; }} />
+              </div>
+            </div>
           </>
         )}
         <label style={{ display: 'block', marginBottom: 12 }}><span style={labelCss}>Email</span>

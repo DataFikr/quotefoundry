@@ -13,6 +13,7 @@ export interface Prefill {
 // canonical doc field → the editor's input field
 export const FIELD_MAP: Record<string, string> = {
   description: 'job_name',
+  part_number: 'part_number',
   quantity: 'quantity',
   material: 'material_spec',
   material_grade: 'material_spec',

@@ -1,14 +1,19 @@
 // ============================================================================
-// tokens.ts — the design-token guide, extracted verbatim from
-// design/QuoteForge.dc.html. This is the SINGLE SOURCE the design-gate
+// tokens.ts — the design-token guide, originally extracted from
+// design/QuoteFoundry.dc.html. This is the SINGLE SOURCE the design-gate
 // Playwright tests assert computed styles against. If a screen's computed
 // color/font/radius doesn't match a value here, the design gate fails.
-// Do not invent values; every token below appears in the mockup.
+//
+// 2026-07-03 — WCAG AA contrast pass (design review 06 §6 / master plan 2.2):
+// five foreground tokens were darkened to clear 4.5:1 on their real surfaces.
+// Mockup originals, for reference: accent #5E81F4 (white label 3.55:1),
+// muted #9698D6 (2.47:1), faint #B0B0C8 (2.12:1), success #16A86A (2.86:1 on
+// successBg), danger #EF5368 (3.44:1 on white). Hues preserved.
 // ============================================================================
 
 export const color = {
   // brand
-  accent: '#5E81F4',
+  accent: '#4667DB',      // white text on this = 4.97:1
   accentDeep: '#1B51E5',
   // surfaces
   appBg: '#F4F4FB',
@@ -16,15 +21,15 @@ export const color = {
   // text
   ink: '#1C1D21',
   body: '#46485F',
-  muted: '#9698D6',
-  faint: '#B0B0C8',
+  muted: '#63659B',       // 4.96:1 on appBg, 5.43:1 on white
+  faint: '#6A6B83',       // 5.19:1 on white, 4.74:1 on appBg
   // borders / hairlines
   border: '#ECECF4',
   borderSoft: '#EEEEF4',
   // status
-  success: '#16A86A',
+  success: '#0E7A4C',     // 5.01:1 on successBg, 5.38:1 on white
   successBg: '#EAFBF2',
-  danger: '#EF5368',
+  danger: '#C92A42',      // 5.39:1 on white, 4.85:1 on lost-pill bg
   dangerDot: '#FF808B',
   warnBg: '#FFF8E9',
   warnBorder: '#F6E3B8',

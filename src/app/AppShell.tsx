@@ -1,16 +1,17 @@
 // ============================================================================
 // AppShell.tsx — icon rail + top bar + a simple screen router, matching the
-// mockup's app chrome (design/QuoteForge.dc.html). Screens mount in the scroll
+// mockup's app chrome (design/QuoteFoundry.dc.html). Screens mount in the scroll
 // area. State-based routing keeps it dependency-free for the MVP.
 // ============================================================================
 import { useState, useCallback } from 'react';
 import { color } from '../design/tokens';
-import { heading } from './ui';
+import { heading, initials } from './ui';
 import { PipelineScreen } from '../screens/PipelineScreen';
 import { EditorScreen, PresetCustomer } from '../screens/EditorScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { CustomersScreen } from '../screens/CustomersScreen';
 import { RatesScreen } from '../screens/RatesScreen';
+import { AccountModal } from '../screens/AccountModal';
 
 export type Screen =
   | { name: 'pipeline' }
@@ -33,9 +34,11 @@ const TITLES: Record<string, { title: string; sub: string }> = {
   rates: { title: 'Rate settings', sub: 'Your shop rates — used on new quotes' },
 };
 
-export function AppShell({ shopName }: { shopName: string }) {
+export function AppShell({ shopName, userName, onLogout }: { shopName: string; userName?: string; onLogout?: () => void }) {
   const [screen, setScreen] = useState<Screen>({ name: 'pipeline' });
   const [reloadKey, setReloadKey] = useState(0);
+  const [userMenu, setUserMenu] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   const go = useCallback((s: Screen) => setScreen(s), []);
   const refresh = useCallback(() => setReloadKey((k) => k + 1), []);
@@ -53,22 +56,47 @@ export function AppShell({ shopName }: { shopName: string }) {
           {NAV.map((item) => {
             const active = item.name === screen.name || (item.name === 'pipeline' && (screen.name === 'editor' || screen.name === 'detail'));
             return (
-              <a
+              <button
                 key={item.name}
                 title={item.label}
+                aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
                 onClick={() => go({ name: item.name } as Screen)}
                 data-nav={item.name}
-                style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 14, cursor: 'pointer', fontSize: 22, color: active ? color.accentDeep : color.muted, background: active ? 'rgba(94,129,244,.12)' : 'transparent' }}
+                style={{ width: 46, height: 46, border: 'none', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 14, cursor: 'pointer', fontSize: 22, color: active ? color.accentDeep : color.muted, background: active ? 'rgba(70,103,219,.12)' : 'transparent' }}
               >
-                <i className={`las ${item.icon}`} />
-              </a>
+                <i className={`las ${item.icon}`} aria-hidden="true" />
+              </button>
             );
           })}
         </nav>
-        <div style={{ marginTop: 'auto', width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#5E81F4,#7C5CFC)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14 }}>
-          MT
+        {/* user menu — Account / Log out */}
+        <div style={{ marginTop: 'auto', position: 'relative' }}>
+          <button onClick={() => setUserMenu((v) => !v)} data-testid="user-menu-trigger"
+            aria-label="Account menu" aria-expanded={userMenu} title="Account"
+            style={{ width: 38, height: 38, border: 'none', padding: 0, borderRadius: 12, background: 'linear-gradient(135deg,#4667DB,#7C5CFC)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+            {initials(userName || shopName)}
+          </button>
+          {userMenu && (
+            <>
+              {/* click-away catcher */}
+              <div onClick={() => setUserMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+              <div data-testid="user-menu" style={{ position: 'absolute', left: 50, bottom: 0, zIndex: 45, width: 190, background: color.surface, border: `1px solid ${color.borderSoft}`, borderRadius: 14, boxShadow: '0 18px 40px -18px rgba(30,30,80,.4)', padding: 6 }}>
+                <div style={{ padding: '9px 12px 7px', fontSize: 12, color: color.muted, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName || shopName}</div>
+                <button onClick={() => { setUserMenu(false); setAccountOpen(true); }} data-testid="menu-account"
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', height: 40, padding: '0 12px', border: 'none', borderRadius: 10, background: 'transparent', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 13.5, cursor: 'pointer', textAlign: 'left' }}>
+                  <i className="las la-user-circle" style={{ fontSize: 17 }} />Account
+                </button>
+                <button onClick={() => { setUserMenu(false); onLogout?.(); }} data-testid="menu-logout"
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', height: 40, padding: '0 12px', border: 'none', borderRadius: 10, background: 'transparent', color: color.danger, fontFamily: heading, fontWeight: 700, fontSize: 13.5, cursor: 'pointer', textAlign: 'left' }}>
+                  <i className="las la-sign-out-alt" style={{ fontSize: 17 }} />Log out
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </aside>
+      {accountOpen && <AccountModal onClose={() => setAccountOpen(false)} />}
 
       {/* MAIN */}
       <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

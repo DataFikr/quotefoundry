@@ -17,6 +17,7 @@ async function fillCanonical(page: Page) {
   await expect(page.locator('[data-screen="editor"]')).toBeVisible();
   const f = (name: string, val: string) => page.locator(`[data-field="${name}"]`).fill(val);
   await f('job_name', 'Stair stringers');
+  await f('customer_email', 'purchasing@apex.com'); // required to save
   await f('material_weight', '240');
   await f('quantity', '1');
   await f('burn_minutes', '35');

@@ -50,6 +50,17 @@ const SYNONYMS: Record<string, string[]> = {
 
 const norm = (s: string) => String(s ?? '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
 
+// SheetJS coerces date-like cells (e.g. "2026-07-30") into Excel date serials
+// (46232.79…). With cellDates:true they arrive as JS Date objects instead; we
+// render them back to an ISO date string. toISOString() reads UTC, which is
+// tz-safe here because cellDates builds the Date at UTC midnight — using the
+// local getDate() would drift a day in negative-offset zones (the "7/29/26" bug).
+function cellValue(v: unknown): string | number {
+  if (v == null) return '';
+  if (v instanceof Date) return isNaN(v.getTime()) ? '' : v.toISOString().slice(0, 10);
+  return v as string | number;
+}
+
 // Build a reverse lookup: normalized header -> { field, exact }
 function matchHeader(header: string): { field: string; confidence: Confidence } | null {
   const h = norm(header);
@@ -80,7 +91,8 @@ export function parseSpreadsheet(fileBuffer: ArrayBuffer | Uint8Array): ParseRes
   // Works in both Node (Buffer is a Uint8Array) and the browser (ArrayBuffer →
   // Uint8Array). type:'array' is SheetJS's cross-platform byte-array mode.
   const data = fileBuffer instanceof ArrayBuffer ? new Uint8Array(fileBuffer) : fileBuffer;
-  const wb = XLSX.read(data, { type: 'array' });
+  // cellDates:true → date cells become JS Dates, not Excel serial numbers.
+  const wb = XLSX.read(data, { type: 'array', cellDates: true });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   // rows as arrays so we can find the header row even if it's not row 1
   const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
@@ -110,7 +122,7 @@ export function parseSpreadsheet(fileBuffer: ArrayBuffer | Uint8Array): ParseRes
   const first = dataRows[0] || [];
   const fields: ExtractedField[] = colMap
     .map(({ col, field, confidence, header }) => ({
-      field, confidence, sourceHeader: header, value: first[col] ?? '',
+      field, confidence, sourceHeader: header, value: cellValue(first[col]),
     }))
     .filter((f) => f.value !== '' && f.value != null);
 

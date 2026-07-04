@@ -21,9 +21,25 @@ test.describe('Customers', () => {
 
     await page.getByTestId('add-customer').click();
     await page.getByTestId('new-company').fill('Granite Steelworks');
+    await page.getByTestId('new-email').fill('office@granitesteel.com'); // email is required
+    await page.getByTestId('new-phone').fill('7135550142');              // auto-formats
     await page.getByTestId('save-customer').click();
     await expect(page.locator('[data-customer="Granite Steelworks"]')).toBeVisible();
     await expect(page.locator('[data-customer]')).toHaveCount(4);
+    // phone displays on the card, auto-formatted to +1 (xxx) xxx-xxxx
+    await expect(page.locator('[data-customer="Granite Steelworks"]')).toContainText('+1 (713) 555-0142');
+  });
+
+  test('functional: deleting a customer is a two-step confirm', async ({ page }) => {
+    await page.goto('/?app');
+    await page.locator('[data-nav="customers"]').click();
+    await expect(page.locator('[data-customer]')).toHaveCount(3);
+    const del = page.locator('[data-customer="Vulcan Mfg"] [data-testid="delete-customer"]');
+    await del.click();                        // arms the button
+    await expect(page.locator('[data-customer]')).toHaveCount(3); // nothing deleted yet
+    await del.click();                        // confirms
+    await expect(page.locator('[data-customer]')).toHaveCount(2);
+    await expect(page.locator('[data-customer="Vulcan Mfg"]')).toHaveCount(0);
   });
 
   test('aesthetic: customers grid matches baseline', async ({ page }) => {

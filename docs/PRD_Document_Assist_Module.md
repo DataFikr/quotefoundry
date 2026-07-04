@@ -1,11 +1,11 @@
-# QuoteForge — Document Assist Module (PRD)
+# QuoteFoundry — Document Assist Module (PRD)
 
 ## Optional RFQ Document Pre-Fill — Tiered by Cost & Reliability (Add-On to the Quoting MVP)
 
 Version: 3.0 (tiered model: spreadsheet priority + best-effort text-PDF)
 Status: Scoped add-on specification
 Audience: Claude Code / Cursor / Copilot / AI coding agents
-Depends on: QuoteForge quoting MVP (manual quote editor, customer list, quote engine, services layer)
+Depends on: QuoteFoundry quoting MVP (manual quote editor, customer list, quote engine, services layer)
 
 ---
 

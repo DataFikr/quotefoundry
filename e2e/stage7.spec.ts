@@ -40,6 +40,29 @@ test('editor stacks to a single column on mobile (cost panel not sticky)', async
   await expect(page.getByTestId('quoted-price')).toHaveText('$1,914');
 });
 
+// design P0 2.4: the live price must never be off-screen while typing on a
+// phone — the fixed mini-total bar carries it, and tracks the engine live.
+test('mobile editor keeps the live quoted price visible (sticky mini-total)', async ({ page }) => {
+  await page.goto('/?app');
+  await page.getByTestId('new-quote').click();
+  const bar = page.getByTestId('mobile-total-bar');
+  await expect(bar).toBeVisible();
+  // scroll to the top of the form — the bar must still be in the viewport
+  await page.locator('[data-field="job_name"]').scrollIntoViewIfNeeded();
+  await expect(bar).toBeInViewport();
+  // and it tracks the live engine total (canonical job → $1,914)
+  await page.locator('[data-field="material_weight"]').fill('240');
+  await page.locator('[data-field="quantity"]').fill('1');
+  await page.locator('[data-field="burn_minutes"]').fill('35');
+  await page.locator('[data-field="hrs_cutting"]').fill('1.5');
+  await page.locator('[data-field="hrs_fitting"]').fill('3');
+  await page.locator('[data-field="hrs_welding"]').fill('4');
+  await page.locator('[data-field="hrs_finishing"]').fill('1.5');
+  await page.locator('[data-field="outside_services"]').fill('85');
+  await expect(page.getByTestId('mobile-total')).toHaveText('$1,914');
+  await expect(bar).toBeInViewport();
+});
+
 test('aesthetic: mobile pipeline matches baseline', async ({ page }) => {
   await page.goto('/?app');
   await expect(page.locator('[data-row-mobile]').first()).toBeVisible();

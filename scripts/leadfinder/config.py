@@ -6,7 +6,7 @@ from the CLI (see main.py) or environment (.env).
 from __future__ import annotations
 
 # Identify ourselves honestly to sites we crawl.
-USER_AGENT = "LeadFinderBot/1.0 (+https://quoteforge.app; B2B research)"
+USER_AGENT = "LeadFinderBot/1.0 (+https://quotefoundry.app; B2B research)"
 
 # Brave Web Search API endpoint.
 BRAVE_ENDPOINT = "https://api.search.brave.com/res/v1/web/search"

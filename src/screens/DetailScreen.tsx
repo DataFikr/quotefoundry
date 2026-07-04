@@ -1,19 +1,24 @@
 // ============================================================================
 // DetailScreen.tsx — the internal quote-detail view. Shows the FULL breakdown
 // (margin/overhead) labeled internal-only, plus customer + activity. Wired to
-// quoteService. Styled to design/QuoteForge.dc.html.
+// quoteService. Styled to design/QuoteFoundry.dc.html.
 // ============================================================================
 import { useState, useEffect, useCallback } from 'react';
 import { quoteService } from '../data-access-layer/services/quoteService';
-import type { Quote } from '../data-access-layer/lib/types';
+import { shopService } from '../data-access-layer/services/rateService';
+import type { Quote, ShopInfo } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money2, statusPill, heading, cardShadowLg, initials } from '../app/ui';
 import { CustomerPreviewModal } from './CustomerPreviewModal';
 import { useIsMobile } from '../app/useIsMobile';
+import { Toast, useToast } from '../app/Toast';
 
 export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: string; onBack: () => void; onEdit: (id: string) => void; onChanged: () => void }) {
   const [q, setQ] = useState<Quote | null>(null);
+  const [shop, setShop] = useState<ShopInfo | null>(null);
   const [preview, setPreview] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const { toast, show, dismiss } = useToast();
   const mobile = useIsMobile();
 
   const load = useCallback(async () => {
@@ -21,11 +26,35 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
     if (res.data) setQ(res.data);
   }, [quoteId]);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { shopService.get().then((r) => r.data && setShop(r.data)); }, []);
 
+  // Client-side PDF from the quote's frozen snapshot + stored template choice —
+  // the download always reproduces the document that was sent. jsPDF is
+  // lazy-loaded so it stays out of the main bundle.
+  async function downloadPdf() {
+    if (!q) return;
+    setDownloading(true);
+    const { downloadQuotePdf } = await import('../pdf-generation/src/clientQuotePdf');
+    downloadQuotePdf(q, { name: shop?.name ?? 'Your shop', logo_url: shop?.logo_url });
+    setDownloading(false);
+  }
+
+  // Outcome applies immediately, but a 5-second undo toast makes a misclick
+  // recoverable — pipeline stats the owner trusts shouldn't hinge on one tap.
   async function outcome(o: 'won' | 'lost') {
+    const previous = q?.status ?? 'draft';
     await quoteService.markOutcome(quoteId, o);
     onChanged();
     load();
+    show({
+      message: `Marked ${o}.`,
+      actionLabel: 'Undo',
+      onAction: async () => {
+        await quoteService.revertOutcome(quoteId, previous);
+        onChanged();
+        load();
+      },
+    });
   }
   async function clone() {
     const res = await quoteService.clone(quoteId);
@@ -36,6 +65,9 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
   if (!q) return <div style={{ padding: 40, color: color.muted }}>Loading…</div>;
   const pill = statusPill(q.status);
   const t = q.totals;
+  // Once sent, a quote is frozen — quoteService.update() enforces this; the UI
+  // disables Edit and offers Clone (re-priced at today's rates) instead.
+  const editable = q.status === 'draft';
 
   const lines: Array<[string, string, boolean]> = [
     ['Material', money2(t.line_material), false],
@@ -78,7 +110,15 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
 
           <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
             <button onClick={() => setPreview(true)} data-testid="preview-send" style={{ height: 46, padding: '0 22px', border: 'none', borderRadius: 13, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-file-invoice-dollar" />Preview &amp; send</button>
-            <button onClick={() => onEdit(q.id)} style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-pen" />Edit quote</button>
+            <button onClick={() => editable && onEdit(q.id)} disabled={!editable} data-testid="edit-quote"
+              title={editable ? undefined : 'Sent quotes are frozen — clone to revise at today’s rates'}
+              style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: editable ? color.body : color.faint, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: editable ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, opacity: editable ? 1 : 0.6 }}><i className="las la-pen" />Edit quote</button>
+            {q.status !== 'draft' && (
+              <button onClick={downloadPdf} disabled={downloading} data-testid="download-pdf"
+                style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: downloading ? 0.7 : 1 }}>
+                <i className={downloading ? 'las la-spinner' : 'las la-download'} style={downloading ? { animation: 'qfSpin 1s linear infinite' } : undefined} />{downloading ? 'Preparing…' : 'Download PDF'}
+              </button>
+            )}
             <button onClick={() => outcome('won')} data-testid="mark-won" style={{ height: 46, padding: '0 20px', border: '1.5px solid #C9EFD9', borderRadius: 13, background: color.successBg, color: color.success, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark won</button>
             <button onClick={() => outcome('lost')} data-testid="mark-lost" style={{ height: 46, padding: '0 20px', border: '1.5px solid #FAD7DD', borderRadius: 13, background: '#FFEFF1', color: color.danger, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark lost</button>
             <button onClick={clone} style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-copy" />Clone</button>
@@ -90,7 +130,7 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
           <div style={{ background: color.surface, borderRadius: 22, boxShadow: cardShadowLg, padding: '24px 26px' }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px' }}>Customer</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginTop: 14 }}>
-              <div style={{ width: 46, height: 46, borderRadius: 14, background: 'linear-gradient(135deg,#5E81F4,#7C5CFC)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 16 }}>{initials(q.customer_name)}</div>
+              <div style={{ width: 46, height: 46, borderRadius: 14, background: 'linear-gradient(135deg,#4667DB,#7C5CFC)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 16 }}>{initials(q.customer_name)}</div>
               <div><div style={{ fontFamily: heading, fontWeight: 700, fontSize: 15.5 }}>{q.customer_name ?? '—'}</div><div style={{ fontSize: 13, color: color.muted }}>{q.customer_email ?? ''}</div></div>
             </div>
           </div>
@@ -100,7 +140,7 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
               .filter(Boolean)
               .map((ev) => (
                 <div key={(ev as string[])[0]} style={{ display: 'flex', gap: 13, padding: '11px 0' }}>
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(94,129,244,.12)', color: color.accentDeep, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}><i className="las la-circle" /></div>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(70,103,219,.12)', color: color.accentDeep, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}><i className="las la-circle" /></div>
                   <div><div style={{ fontFamily: heading, fontWeight: 700, fontSize: 14 }}>{(ev as string[])[0]}</div><div style={{ fontSize: 12.5, color: color.muted, marginTop: 1 }} data-mask>{new Date((ev as string[])[1]).toLocaleDateString()}</div></div>
                 </div>
               ))}
@@ -108,8 +148,9 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
         </div>
       </div>
       {preview && (
-        <CustomerPreviewModal quote={q} shopName="Ironside Fabrication" onClose={() => setPreview(false)} onSent={() => { onChanged(); load(); }} />
+        <CustomerPreviewModal quote={q} shopName={shop?.name ?? 'Your shop'} shopLogoUrl={shop?.logo_url} onClose={() => setPreview(false)} onSent={() => { onChanged(); load(); }} />
       )}
+      <Toast toast={toast} onDismiss={dismiss} />
     </div>
   );
 }

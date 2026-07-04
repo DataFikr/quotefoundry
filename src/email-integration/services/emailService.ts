@@ -17,10 +17,39 @@ export interface SendQuoteRequest {
   pdfBase64: string;   // generated client- or server-side from the quote
 }
 
+// Live deployments send through the Vercel API route (same origin as the app);
+// the mock keeps the functions.invoke path so all existing tests/dev flows hold.
+function isLiveEnv(): boolean {
+  try { return Boolean(import.meta.env?.VITE_SUPABASE_URL); } catch { return false; }
+}
+
+// Sentinel error: the /api routes only exist on the deployed app (Vercel).
+// A 404 in live mode means "running locally against live data" — the UI offers
+// to mark the quote sent without emailing, instead of failing silently.
+export const EMAIL_ENDPOINT_MISSING = 'EMAIL_ENDPOINT_MISSING';
+
 export const emailService = {
-  // Calls the deployed edge function / API route. The caller's session token
-  // rides along so the server can resolve their shop and verify ownership.
+  // Calls the deployed API route. The caller's session token rides along so
+  // the server can resolve their shop and verify ownership; the PDF itself is
+  // generated server-side from the quote's frozen snapshot.
   async sendQuote(req: SendQuoteRequest): Promise<Result<{ emailId: string }>> {
+    if (isLiveEnv()) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return fail('Not signed in.');
+        const r = await fetch('/api/send-quote-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ quoteId: req.quoteId, recipient: req.recipient, subject: req.subject, message: req.message }),
+        });
+        if (r.status === 404) return fail(EMAIL_ENDPOINT_MISSING);
+        const json = await r.json().catch(() => null);
+        if (!r.ok || !json?.ok) return fail(json?.error ?? `Send failed (${r.status}).`);
+        return ok({ emailId: json.emailId });
+      } catch (e) {
+        return fail(e instanceof Error ? e.message : 'Send failed.');
+      }
+    }
     const res = await run<any>(() =>
       supabase.functions.invoke('send-quote-email', { body: req })
     );

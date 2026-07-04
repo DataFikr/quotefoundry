@@ -1,4 +1,4 @@
-# QuoteForge Product Requirements Document (PRD)
+# QuoteFoundry Product Requirements Document (PRD)
 
 ## RFQ & AI-Assisted Quoting Workflow (MVP)
 
@@ -10,13 +10,13 @@ Audience: Claude Code / Cursor / Copilot / AI Coding Agents
 
 # 1. Product Vision
 
-QuoteForge is an AI-assisted estimating platform for custom manufacturers.
+QuoteFoundry is an AI-assisted estimating platform for custom manufacturers.
 
-QuoteForge **does not replace the estimator**.
+QuoteFoundry **does not replace the estimator**.
 
 Its goal is to eliminate repetitive administrative work by automatically extracting information from manufacturing documents and preparing a draft estimate.
 
-QuoteForge is **NOT**:
+QuoteFoundry is **NOT**:
 
 * CAD software
 * CAM software
@@ -24,7 +24,7 @@ QuoteForge is **NOT**:
 * MRP
 * Toolpath generator
 
-QuoteForge **IS**:
+QuoteFoundry **IS**:
 
 * RFQ Manager
 * AI Document Assistant
@@ -705,6 +705,6 @@ The MVP is complete when a user can:
 
 # 18. Guiding Principle
 
-QuoteForge's mission is not to automate engineering decisions.
+QuoteFoundry's mission is not to automate engineering decisions.
 
 Its mission is to remove repetitive administrative work so manufacturing estimators can produce accurate quotations faster, with full control over pricing and engineering judgment.

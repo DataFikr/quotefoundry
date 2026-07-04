@@ -1,7 +1,7 @@
 # LeadFinder
 
 Discovers North American sheet-metal / custom fabrication companies (prospects
-for QuoteForge) via the **Brave Search API**, crawls a few pages per site,
+for QuoteFoundry) via the **Brave Search API**, crawls a few pages per site,
 extracts contact details, dedupes by domain, and exports `companies.csv`.
 
 ## Install

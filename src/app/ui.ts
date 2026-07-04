@@ -22,8 +22,8 @@ export const bodyFont = "'Source Sans 3', sans-serif";
 
 const STATUS_STYLE: Record<QuoteStatus, { label: string; bg: string; color: string }> = {
   draft:  { label: 'Draft',  bg: '#F0F0F8', color: color.muted },
-  sent:   { label: 'Sent',   bg: 'rgba(94,129,244,.12)', color: color.accentDeep },
-  opened: { label: 'Opened', bg: 'rgba(94,129,244,.16)', color: color.accentDeep },
+  sent:   { label: 'Sent',   bg: 'rgba(70,103,219,.12)', color: color.accentDeep },
+  opened: { label: 'Opened', bg: 'rgba(70,103,219,.16)', color: color.accentDeep },
   won:    { label: 'Won',    bg: color.successBg, color: color.success },
   lost:   { label: 'Lost',   bg: '#FFEFF1', color: color.danger },
 };

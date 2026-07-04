@@ -7,6 +7,12 @@
 // ============================================================================
 import { test, expect } from '@playwright/test';
 
+// tiny valid 1x1 PNG — the sign-up flow requires a company logo upload
+const LOGO_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'base64'
+);
+
 test('signed-out users see the auth screen', async ({ page }) => {
   await page.goto('/?auth');
   await expect(page.locator('[data-screen="auth"]')).toBeVisible();
@@ -19,6 +25,9 @@ test('sign-up provisions a shop and lands in the app', async ({ page }) => {
   await page.locator('[data-field="fullName"]').fill('Dana Reyes');
   await page.locator('[data-field="email"]').fill('dana@granite.com');
   await page.locator('[data-field="password"]').fill('passw0rd');
+  // company logo is REQUIRED at sign-up (branded onto every quote PDF)
+  await page.getByTestId('logo-input').setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: LOGO_PNG });
+  await expect(page.getByTestId('logo-drop')).toContainText('Logo added');
   await page.getByTestId('auth-submit').click();
 
   // lands on the pipeline of the NEW shop (its name in the subheader, no quotes)

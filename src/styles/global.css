@@ -1,18 +1,18 @@
 /* global.css — base reset + design tokens as CSS variables.
    Token values mirror src/design/tokens.ts (the design-gate source of truth). */
 :root {
-  --accent: #5E81F4;
+  --accent: #4667DB;
   --accent-deep: #1B51E5;
   --app-bg: #F4F4FB;
   --surface: #FFFFFF;
   --ink: #1C1D21;
   --body: #46485F;
-  --muted: #9698D6;
-  --faint: #B0B0C8;
+  --muted: #63659B;
+  --faint: #6A6B83;
   --border: #ECECF4;
   --border-soft: #EEEEF4;
-  --success: #16A86A;
-  --danger: #EF5368;
+  --success: #0E7A4C;
+  --danger: #C92A42;
   --panel-from: #2B2D42;
   --panel-to: #1C1D2B;
 }
@@ -25,7 +25,16 @@ body {
   background: var(--app-bg);
 }
 input, textarea, button { font-family: 'Source Sans 3', sans-serif; }
-input:focus, textarea:focus { outline: none; }
+
+/* Focus visibility (a11y P0): keyboard focus always shows a brand-colored
+   ring; mouse/touch interaction stays ring-free via :focus-visible. Never
+   remove outlines without a replacement. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2.5px solid var(--accent-deep);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-thumb { background: #D8D8E6; border-radius: 9px; }

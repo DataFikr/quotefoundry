@@ -163,7 +163,9 @@ export function createMockClient() {
     },
     async signInWithOAuth() { return { error: null }; },
     async getUser() {
-      return { data: { user: session ? { id: session.userId } : null }, error: null };
+      if (!session) return { data: { user: null }, error: null };
+      const u = store.auth_users.get(session.userId);
+      return { data: { user: { id: session.userId, email: u?.email } }, error: null };
     },
     async getSession() {
       return { data: { session: session ? { user: { id: session.userId } } : null } };

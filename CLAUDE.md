@@ -1,4 +1,4 @@
-# CLAUDE.md — QuoteForge
+# CLAUDE.md — QuoteFoundry
 
 Guidance for Claude Code. Read this fully before writing code. It encodes
 decisions already made, invariants that must not break, and what is
@@ -7,7 +7,7 @@ over inventing new ones.
 
 ---
 
-## 1. What QuoteForge is
+## 1. What QuoteFoundry is
 
 A quoting micro-SaaS for **US metal-fab / sheet-metal / welding job shops**
 (5–50 employees). It lets an estimator turn a custom job into an accurate,
@@ -46,7 +46,7 @@ source of truth and wire them to live Supabase. Do not re-architect them.
 
 | Area | Files | Status |
 |------|-------|--------|
-| DB schema + RLS | `quoteforge_schema.sql` | 6 tables, RLS on all, validated |
+| DB schema + RLS | `quotefoundry_schema.sql` | 6 tables, RLS on all, validated |
 | Engine + types | `data-access-layer/lib/quoteEngine.ts`, `types.ts` | canonical values locked by test |
 | Services | `data-access-layer/services/quoteService.ts`, `rateService.ts` | snapshot + compute-on-save |
 | Supabase client wrapper | `data-access-layer/lib/supabase.ts` | `Result<T>` pattern, `run()` helper |
@@ -107,7 +107,7 @@ Each module has a sibling `*.test.mjs`. Run them. Keep them green.
   quote. Don't leak the internal view into the customer document.
 
 ### 4.5 Email deliverability
-- Send from YOUR authenticated subdomain (e.g. quotes@send.quoteforge.app) with
+- Send from YOUR authenticated subdomain (e.g. quotes@send.quotefoundry.app) with
   the shop NAME as display sender and the shop's real email as reply-to. You
   cannot send "as" the shop's domain without their DNS — faking it = spam.
 - Server re-verifies the quote belongs to the caller's shop (service-role key
@@ -147,7 +147,7 @@ files. Log unmatched headers; expand from real misses. Don't over-anticipate.
 
 ---
 
-## 6. Data model (see quoteforge_schema.sql for the real thing)
+## 6. Data model (see quotefoundry_schema.sql for the real thing)
 
 Tables: `shops`, `shop_users`, `shop_rates`, `customers`, `quotes`,
 `quote_events` (+ add `quote_files` for doc-assist). All shop-scoped tables have
@@ -161,7 +161,7 @@ if the customer record changes later).
 
 ## 7. Build order (do them in this sequence)
 
-1. **Live Supabase wiring** — create project, load `quoteforge_schema.sql`,
+1. **Live Supabase wiring** — create project, load `quotefoundry_schema.sql`,
    connect services/auth/editor, confirm a real sign-up → save-quote round-trip.
    This converts all the proven-in-test code into a running app. DO THIS FIRST.
 2. **The daily loop screens** against live services: auth → pipeline → editor →

@@ -1,6 +1,6 @@
-# QuoteForge Design Guide
+# QuoteFoundry Design Guide
 
-Extracted from `design/QuoteForge.dc.html` (the Claude Design mockup / handoff).
+Extracted from `design/QuoteFoundry.dc.html` (the Claude Design mockup / handoff).
 This is the human-readable companion to `src/design/tokens.ts`, which is the
 machine source the Playwright **design-guide gate** asserts computed styles
 against. When the two disagree, `tokens.ts` wins and this doc gets updated.

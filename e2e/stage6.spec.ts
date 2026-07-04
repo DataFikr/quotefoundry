@@ -29,11 +29,15 @@ test('functional+invariant: customer preview hides margin/overhead/cost, shows s
   await expect(doc).toContainText('Fabrication labor & machine time');
 });
 
-test('functional: sending advances the quote to "sent"', async ({ page }) => {
+test('functional: sending confirms the recipient, then advances the quote to "sent"', async ({ page }) => {
   await openPreview(page);
   await page.getByTestId('send-quote').click();
-  await expect(page.getByTestId('send-quote')).toContainText('Sent');
-  await page.getByText('Close').click();
+  // confirm-recipient step: address is prefilled from the quote and editable
+  await expect(page.getByTestId('send-recipient')).toHaveValue('purchasing@apex.com');
+  await page.getByTestId('confirm-send').click();
+  // explicit success feedback, then the status advances
+  await expect(page.getByTestId('send-success')).toBeVisible();
+  await page.getByText('Done').click();
   // detail status pill now reads Sent
   await expect(page.locator('[data-screen="detail"]')).toContainText('Sent');
 });

@@ -9,9 +9,10 @@ import { color, font } from './design/tokens';
 import { devBootstrap, isLiveEnv } from './app/devBootstrap';
 import { AppShell } from './app/AppShell';
 import { AuthProvider, useAuth } from './auth-wiring/components/AuthProvider';
-import { AuthScreen } from './screens/AuthScreen';
+import { AuthScreen, readLogoFile } from './screens/AuthScreen';
 import { LandingScreen } from './screens/LandingScreen';
 import { authService } from './auth-wiring/services/authService';
+import { LogoutSuccessModal } from './screens/AccountModal';
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
@@ -23,11 +24,20 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 function FinishSetup({ onDone }: { onDone: () => void }) {
   const [shopName, setShopName] = useState('');
+  const [logo, setLogo] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  async function pick(f: File) {
+    setErr(null);
+    const res = await readLogoFile(f);
+    if (res.error) { setErr(res.error); return; }
+    setLogo(res.dataUrl!);
+  }
   async function go() {
     if (!shopName.trim()) return;
+    if (!logo) { setErr('Add your company logo — it goes on every quote PDF.'); return; }
     setBusy(true);
-    await authService.bootstrap(shopName, '');
+    await authService.bootstrap(shopName, '', logo);
     setBusy(false);
     onDone();
   }
@@ -35,9 +45,16 @@ function FinishSetup({ onDone }: { onDone: () => void }) {
     <Centered>
       <div style={{ background: color.surface, borderRadius: 22, padding: 32, width: 380, textAlign: 'center' }} data-screen="finish-setup">
         <h2 style={{ marginTop: 0, color: color.ink }}>Finish setting up</h2>
-        <p style={{ fontSize: 14 }}>Name your shop to start quoting.</p>
+        <p style={{ fontSize: 14 }}>Name your shop and add your logo to start quoting.</p>
         <input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Shop name"
           style={{ width: '100%', height: 46, border: `1.5px solid ${color.border}`, borderRadius: 12, padding: '0 14px', marginBottom: 14 }} />
+        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: `1.5px dashed ${logo ? '#0E7A4C' : color.border}`, borderRadius: 12, padding: '10px 14px', marginBottom: 14, cursor: 'pointer', fontSize: 13, color: color.muted }}>
+          {logo ? <img src={logo} alt="Logo preview" style={{ width: 36, height: 36, objectFit: 'contain' }} /> : <i className="las la-image" style={{ fontSize: 22 }} />}
+          {logo ? 'Logo added — click to replace' : 'Company logo (PNG/JPEG, required)'}
+          <input type="file" accept="image/png,image/jpeg" style={{ display: 'none' }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) pick(f); e.target.value = ''; }} />
+        </label>
+        {err && <div style={{ color: '#C92A42', fontSize: 13, marginBottom: 12 }}>{err}</div>}
         <button onClick={go} disabled={busy} style={{ width: '100%', height: 48, border: 'none', borderRadius: 13, background: color.accent, color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
           {busy ? 'Setting up…' : 'Create shop'}
         </button>
@@ -48,10 +65,32 @@ function FinishSetup({ onDone }: { onDone: () => void }) {
 
 function Gate() {
   const { status, context, refresh } = useAuth();
-  if (status === 'loading') return <Centered>Loading QuoteForge…</Centered>;
-  if (status === 'signedOut') return <AuthScreen onReady={refresh} />;
+  // Logout success lives HERE, not in AppShell: on live Supabase, signOut()
+  // fires onAuthStateChange and unmounts the shell before a modal inside it
+  // could be seen. The flag survives the swap to the auth screen.
+  const [loggedOut, setLoggedOut] = useState(false);
+
+  async function handleLogout() {
+    await authService.logOut();
+    setLoggedOut(true);
+    refresh(); // mock client has no auth events — refresh explicitly
+  }
+
+  if (status === 'loading') return <Centered>Loading QuoteFoundry…</Centered>;
+  if (status === 'signedOut') return (
+    <>
+      <AuthScreen onReady={refresh} />
+      {loggedOut && <LogoutSuccessModal onClose={() => setLoggedOut(false)} />}
+    </>
+  );
   if (status === 'needsBootstrap') return <FinishSetup onDone={refresh} />;
-  return <AppShell shopName={context?.shopName || 'Your shop'} />;
+  return (
+    <AppShell
+      shopName={context?.shopName || 'Your shop'}
+      userName={context?.fullName || undefined}
+      onLogout={handleLogout}
+    />
+  );
 }
 
 export function App() {
@@ -63,7 +102,7 @@ export function App() {
   const enforceAuth = isLiveEnv() || params.has('auth');
 
   useEffect(() => { devBootstrap().then(() => setReady(true)); }, []);
-  if (!ready) return <Centered>Loading QuoteForge…</Centered>;
+  if (!ready) return <Centered>Loading QuoteFoundry…</Centered>;
 
   if (!entered) {
     if (view === 'landing') {

@@ -8,10 +8,12 @@ const outDir = path.resolve('public/samples');
 fs.mkdirSync(outDir, { recursive: true });
 
 // --- Tier 1: CSV ---
+// Headers match the editor's Project fields (Part #, Description, Due Date)
+// plus quantity/material/finish — all high-confidence Doc Assist synonyms.
 const csv = [
-  'Part Number,Quantity,Material,Finish,Due Date',
-  'SS-4471,12,A36 Steel,Powder Coat,2026-07-15',
-  'BRK-88,8,A36 Steel,Primer,2026-07-20',
+  'Part Number,Description,Due Date,Quantity,Material,Finish',
+  'SS-4471,Stair stringers,2026-07-15,12,A36 Steel,Powder Coat',
+  'BRK-88,Handrail brackets,2026-07-20,8,A36 Steel,Primer',
 ].join('\n');
 fs.writeFileSync(path.join(outDir, 'rfq.csv'), csv);
 
@@ -28,10 +30,11 @@ doc.moveDown();
 doc.font('Helvetica').fontSize(12);
 [
   'Part Number: SS-4471',
-  'Qty: 12',
+  'Description: Stair stringers',
+  'Due Date: 2026-07-15',
+  'Quantity: 12',
   'Material: A36 steel',
   'Finish: powder coat',
-  'Due Date: 2026-07-15',
   'PO #: AX-4471',
   'Notes: two matching stair stringers, galvanized.',
 ].forEach((l) => doc.text(l));

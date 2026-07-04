@@ -33,7 +33,13 @@ export const rateService = {
 
   // Partial update — only changed fields. Also stamps changed_at per field for
   // the stale-rate nudge on the settings screen.
+  // NOTE: PostgREST (Supabase default) rejects UPDATE without a WHERE clause
+  // (error 21000), so we target the shop's single row by id — RLS already
+  // guarantees that id can only be the caller's own row.
   async update(patch: Partial<ShopRates>): Promise<Result<ShopRates>> {
+    const cur = await run<any>(() => supabase.from('shop_rates').select('id').single());
+    if (cur.error) return cur;
+
     const now = new Date().toISOString();
     const changed: Record<string, string> = {};
     for (const key of Object.keys(patch)) changed[key] = now;
@@ -42,6 +48,7 @@ export const rateService = {
       supabase
         .from('shop_rates')
         .update({ ...patch, changed_at: changed })
+        .eq('id', cur.data.id)
         .select()
         .single()
     );
@@ -82,6 +89,14 @@ export const customerService = {
       supabase.from('customers').update(patch).eq('id', id).select().single()
     );
   },
+
+  // Existing quotes keep their snapshotted customer name/email, so deleting a
+  // customer never breaks a sent quote (quotes.customer_id is ON DELETE SET NULL).
+  async remove(id: string): Promise<Result<Customer[]>> {
+    return run<Customer[]>(() =>
+      supabase.from('customers').delete().eq('id', id).select()
+    );
+  },
 };
 
 // ============================================================================
@@ -93,6 +108,8 @@ export const customerService = {
 // no shop and RLS will (correctly) block everything.
 // ============================================================================
 
+import type { ShopInfo } from '../lib/types';
+
 export const shopService = {
   async bootstrap(shopName: string, fullName: string): Promise<Result<string>> {
     return run<string>(() =>
@@ -102,5 +119,31 @@ export const shopService = {
         p_industry: 'metal_fab',
       }).then((r: any) => ({ data: r.data, error: r.error }))
     );
+  },
+
+  // The caller's own shop (RLS scopes the read — no shop_id passed).
+  async get(): Promise<Result<ShopInfo>> {
+    const res = await run<any>(() => supabase.from('shops').select('*').single());
+    if (res.error) return res;
+    return ok({
+      id: res.data.id,
+      name: res.data.name,
+      logo_url: res.data.logo_url ?? undefined,
+      plan: res.data.plan ?? undefined,
+      created_at: res.data.created_at ?? undefined,
+    });
+  },
+
+  // Store the shop logo (data-URL for now; a storage URL once files move to
+  // Supabase Storage). RLS restricts the update to the caller's own shop row;
+  // the explicit id satisfies PostgREST's no-WHERE-no-UPDATE rule.
+  async setLogo(logoDataUrl: string): Promise<Result<ShopInfo>> {
+    const cur = await this.get();
+    if (cur.error) return cur as Result<ShopInfo>;
+    const res = await run<any>(() =>
+      supabase.from('shops').update({ logo_url: logoDataUrl }).eq('id', cur.data!.id).select().single()
+    );
+    if (res.error) return res;
+    return ok({ id: res.data.id, name: res.data.name, logo_url: res.data.logo_url ?? undefined });
   },
 };

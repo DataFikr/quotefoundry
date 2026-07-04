@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Price a Fabrication or Welding Job (Step-by-Step, 2026) — QuoteFoundry</title>
+  <meta name="description" content="A working formula for pricing custom metal fabrication: material + labor + machine time + consumables + outside services, then overhead, then margin — in that order. With a fully worked example." />
+  <link rel="canonical" href="https://quotefoundry.app/guides/how-to-price-a-fabrication-job.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="How to price a fabrication or welding job — the formula shops actually use" />
+  <meta property="og:description" content="Material + labor + burn + consumables + outside services → overhead → margin. Worked example included." />
+  <meta property="og:url" content="https://quotefoundry.app/guides/how-to-price-a-fabrication-job.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --accent:#4667DB; --accent-deep:#1B51E5; --ink:#1C1D21; --body:#46485F; --muted:#63659B; --tint:#EEF1FF; --border:#ECECF4; --dk:#2B2D42; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'Source Sans 3',sans-serif; color:var(--ink); line-height:1.65; background:#fff; }
+    header { border-bottom:1px solid var(--border); padding:14px 24px; }
+    header a { font-family:Lato,sans-serif; font-weight:900; font-size:18px; color:var(--dk); text-decoration:none; }
+    main { max-width:760px; margin:0 auto; padding:40px 24px 70px; }
+    h1 { font-family:Lato,sans-serif; font-weight:900; font-size:34px; line-height:1.15; letter-spacing:-.5px; color:var(--dk); }
+    h2 { font-family:Lato,sans-serif; font-weight:700; font-size:23px; color:var(--dk); margin-top:42px; }
+    .answer { background:var(--tint); border-radius:14px; padding:14px 18px; font-size:16.5px; }
+    table { border-collapse:collapse; width:100%; font-size:15px; margin:14px 0; }
+    th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); }
+    th { font-family:Lato,sans-serif; color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:.04em; }
+    td.num { text-align:right; font-variant-numeric:tabular-nums; }
+    .total td { font-weight:700; border-top:2px solid var(--dk); }
+    .cta { margin-top:52px; background:linear-gradient(160deg,#2B2D42,#1C1D2B); border-radius:18px; padding:28px; color:#fff; }
+    .cta a.btn { display:inline-block; margin-top:14px; background:var(--accent); color:#fff; font-family:Lato,sans-serif; font-weight:700; padding:12px 24px; border-radius:12px; text-decoration:none; }
+    .cta p { color:#C7C8E0; margin:6px 0 0; }
+    code { background:var(--tint); border-radius:6px; padding:1px 7px; font-size:14.5px; }
+    footer { border-top:1px solid var(--border); padding:22px 24px; font-size:13.5px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do you price a custom metal fabrication job?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Add up direct costs — material (with a scrap allowance), labor hours at your shop rates, machine burn time, weld consumables, and outside services — then apply your overhead percentage to that cost, then apply your target margin to the cost-plus-overhead figure. The order matters: margin applied to bare cost silently under-prices every job." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the formula for a welding or fabrication quote?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Quote price = (material + labor + machine time + consumables + outside services) × (1 + overhead %) × (1 + margin %). Material should include a drop/scrap allowance, typically 10–20% for plate and structural work." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do fabrication shops lose money on jobs they quoted?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The usual causes are forgetting consumables (gas, wire, abrasives), pricing material without a drop allowance, applying margin to bare cost instead of cost plus overhead, and re-quoting repeat jobs from stale material prices. Manual spreadsheet costing typically underbids by 8–15%." }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header><a href="/">⚡ QuoteFoundry</a></header>
+  <main>
+    <h1>How to price a fabrication or welding job — the formula, step by step</h1>
+    <p class="answer"><strong>Short answer:</strong> add up direct costs — material with a scrap allowance, labor hours at your rates, machine burn time, consumables, and outside services — then apply overhead to that cost, <em>then</em> apply margin to the cost-plus-overhead number. Sequential, not additive. Getting the order wrong under-prices every job you win.</p>
+
+    <h2>What goes into the price of a fab job?</h2>
+    <p>Five direct cost lines, then two percentages:</p>
+    <table>
+      <tr><th>Line</th><th>How to figure it</th></tr>
+      <tr><td>Material</td><td>weight (lb) × your $/lb for that alloy × (1 + drop/scrap %)</td></tr>
+      <tr><td>Labor</td><td>hours per discipline (cutting, fitting, welding, finishing) × that discipline's shop rate</td></tr>
+      <tr><td>Machine / burn time</td><td>plasma/laser minutes × your burn rate per hour</td></tr>
+      <tr><td>Consumables</td><td>gas, wire, abrasives — a per-weld-hour rate beats guessing per job</td></tr>
+      <tr><td>Outside services</td><td>galvanizing, powder coat, heat treat — vendor price passed through</td></tr>
+      <tr><td>Overhead</td><td>× (1 + overhead %) on the cost subtotal — rent, power, insurance, office time</td></tr>
+      <tr><td>Margin</td><td>× (1 + margin %) on cost <em>plus</em> overhead — this is your profit</td></tr>
+    </table>
+
+    <h2>Why does the order of overhead and margin matter?</h2>
+    <p class="answer">Because margin applied to bare cost ignores your overhead. On a $1,248 job with 18% overhead and a 30% target margin, sequencing correctly quotes <strong>$1,914</strong>; adding 48% to bare cost quotes $1,847 — you'd silently give away $67 on one job, on every job.</p>
+
+    <h2>A fully worked example</h2>
+    <p>One weldment: 240 lb of A36 at $0.85/lb with 15% drop, 35 minutes of burn at $120/hr, labor of 1.5 h cutting ($75), 3 h fitting ($80), 4 h welding ($90), 1.5 h finishing ($65), consumables at $12 per weld-hour, $85 of outside galvanizing, 18% overhead, 30% margin:</p>
+    <table>
+      <tr><th>Line</th><th></th><th style="text-align:right">Amount</th></tr>
+      <tr><td>Material</td><td>240 × $0.85 × 1.15</td><td class="num">$234.60</td></tr>
+      <tr><td>Labor</td><td>1.5×75 + 3×80 + 4×90 + 1.5×65</td><td class="num">$810.00</td></tr>
+      <tr><td>Burn time</td><td>35 min × $120/hr</td><td class="num">$70.00</td></tr>
+      <tr><td>Consumables</td><td>4 weld-h × $12</td><td class="num">$48.00</td></tr>
+      <tr><td>Outside services</td><td>galvanizing</td><td class="num">$85.00</td></tr>
+      <tr><td>Shop cost</td><td></td><td class="num">$1,247.60</td></tr>
+      <tr><td>+ Overhead 18%</td><td></td><td class="num">$224.57</td></tr>
+      <tr><td>+ Margin 30%</td><td>on cost + overhead</td><td class="num">$441.65</td></tr>
+      <tr class="total"><td>Quoted price</td><td></td><td class="num">$1,913.82</td></tr>
+    </table>
+
+    <h2>What are the most common underbidding mistakes?</h2>
+    <p class="answer">Forgetting consumables (one shop's $75 job cost $85 in shielding gas alone), pricing material without drop allowance, applying margin before overhead, and cloning old quotes at last year's steel price. Each one is invisible on the quote and very visible on the year-end P&amp;L.</p>
+
+    <h2>Spreadsheet or software?</h2>
+    <p>A spreadsheet with the formula above is genuinely fine — until you're re-typing rates into every copy, a broken cell reference under-prices a month of quotes, or the customer wants a clean PDF and you're screenshotting Excel. Purpose-built quoting keeps one rate library, applies the same math every time, and produces a branded document in minutes. <a href="/guides/free-fabrication-quote-template.html">Start with our free template</a> either way.</p>
+
+    <div class="cta">
+      <strong style="font-family:Lato,sans-serif;font-size:19px">This formula, as software — priced from your own rates</strong>
+      <p>QuoteFoundry runs exactly this math from your shop's stored rates — no AI guesswork — and turns it into a branded PDF quote in about 10 minutes. Free during the founding-partner beta; flat per-shop pricing, no per-user fees.</p>
+      <a class="btn" href="/">Quote your first job free →</a>
+    </div>
+  </main>
+  <footer>
+    <a href="/">QuoteFoundry</a> · <a href="/guides/free-fabrication-quote-template.html">Free fabrication quote template</a> · Built for US metal fab &amp; welding job shops
+  </footer>
+</body>
+</html>

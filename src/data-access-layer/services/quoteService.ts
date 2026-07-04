@@ -32,6 +32,7 @@ function hydrate(row: any): Quote {
     rate_snapshot: row.rate_snapshot,
     inputs: {
       job_name: row.job_name,
+      part_number: row.part_number ?? undefined,
       material_spec: row.material_spec ?? undefined,
       material_weight: Number(row.material_weight ?? 0),
       quantity: row.quantity,
@@ -61,6 +62,7 @@ function hydrate(row: any): Quote {
       // resolve the material price from the frozen snapshot's own library
       resolveRates(row.rate_snapshot as ShopRates, row.material_spec ?? undefined)
     ),
+    pdf_style: row.pdf_style ?? 'classic',
     sent_at: row.sent_at ?? undefined,
     opened_at: row.opened_at ?? undefined,
     created_at: row.created_at,
@@ -213,6 +215,15 @@ export const quoteService = {
     return ok(hydrate(res.data));
   },
 
+  // Persist the customer-PDF template choice (from the preview modal). Frozen
+  // on the quote so a later download reproduces the document that was sent.
+  async setPdfStyle(id: string, style: 'classic' | 'modern' | 'minimal'): Promise<Result<Quote>> {
+    const res = await run<any>(() =>
+      supabase.from('quotes').update({ pdf_style: style }).eq('id', id).select().single()
+    );
+    return res.error ? res : ok(hydrate(res.data));
+  },
+
   async markOutcome(id: string, outcome: 'won' | 'lost'): Promise<Result<Quote>> {
     const res = await run<any>(() =>
       supabase
@@ -224,6 +235,23 @@ export const quoteService = {
     );
     if (res.error) return res;
     await this.logEvent(id, outcome);
+    return ok(hydrate(res.data));
+  },
+
+  // Undo for markOutcome (the 5-second toast): restore the pre-outcome status
+  // and clear decided_at. Logged as its own event so the timeline stays honest
+  // — the original won/lost event is history, not double-counted.
+  async revertOutcome(id: string, previousStatus: QuoteStatus): Promise<Result<Quote>> {
+    const res = await run<any>(() =>
+      supabase
+        .from('quotes')
+        .update({ status: previousStatus, decided_at: null })
+        .eq('id', id)
+        .select()
+        .single()
+    );
+    if (res.error) return res;
+    await this.logEvent(id, 'reverted', `back to ${previousStatus}`);
     return ok(hydrate(res.data));
   },
 

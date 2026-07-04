@@ -5,6 +5,19 @@
 export type QuoteStatus = 'draft' | 'sent' | 'opened' | 'won' | 'lost';
 export type Plan = 'trial' | 'solo' | 'shop' | 'shop_plus';
 
+// Customer-facing PDF template. Chosen in the preview modal, frozen on the
+// quote so a later download reproduces the document that was sent.
+export type PdfStyle = 'classic' | 'modern' | 'minimal';
+
+// The shop's own public identity (name + logo shown on quotes/PDFs).
+export interface ShopInfo {
+  id: string;
+  name: string;
+  logo_url?: string;   // data-URL or storage URL; rendered top-left on the PDF
+  plan?: Plan;         // trial | solo | shop | shop_plus (account screen)
+  created_at?: string; // "member since" on the account screen
+}
+
 // A shop-defined material and its $/lb price. The quote's chosen material sets
 // the effective price used by the engine (see resolveRates).
 export interface Material {
@@ -30,6 +43,7 @@ export interface ShopRates {
 // The job-specific inputs an estimator enters per quote.
 export interface QuoteInputs {
   job_name: string;
+  part_number?: string;     // from RFQ metadata (Doc Assist) or typed
   material_spec?: string;
   material_weight: number;  // lb
   quantity: number;
@@ -65,6 +79,7 @@ export interface Customer {
   contact_role?: string;
   email?: string;
   phone?: string;
+  website?: string;
   address?: string;
   default_terms?: string;
   po_reference?: string;
@@ -82,6 +97,7 @@ export interface Quote {
   rate_snapshot: ShopRates;
   inputs: QuoteInputs;
   totals: QuoteTotals;
+  pdf_style?: PdfStyle;
   sent_at?: string;
   opened_at?: string;
   created_at: string;

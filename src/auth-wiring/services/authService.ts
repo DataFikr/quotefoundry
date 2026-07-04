@@ -18,6 +18,7 @@ export interface SessionContext {
   authUserId: string;
   shopId: string;
   shopName: string;
+  shopLogoUrl?: string;    // shop logo (data-URL/storage URL) for quote PDFs
   fullName: string | null;
   needsBootstrap: boolean; // true = authenticated but no shop yet
 }
@@ -31,6 +32,7 @@ export const authService = {
     password: string;
     shopName: string;
     fullName: string;
+    logoDataUrl?: string; // required by the sign-up UI; optional here so existing flows/tests stay valid
   }): Promise<Result<SessionContext>> {
     // 1. create the auth user
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -53,20 +55,27 @@ export const authService = {
     }
 
     // 2. session exists immediately (email confirmation off) — bootstrap now
-    return this.bootstrap(opts.shopName, opts.fullName);
+    return this.bootstrap(opts.shopName, opts.fullName, opts.logoDataUrl);
   },
 
   // -- BOOTSTRAP -----------------------------------------------------------
   // Calls the SECURITY DEFINER Postgres function that creates the shop, links
   // the current auth user, and seeds default rates — all in one transaction.
   // Safe to call only when a session exists (it relies on auth.uid()).
-  async bootstrap(shopName: string, fullName: string): Promise<Result<SessionContext>> {
+  async bootstrap(shopName: string, fullName: string, logoDataUrl?: string): Promise<Result<SessionContext>> {
     const { data, error } = await supabase.rpc('bootstrap_shop', {
       p_shop_name: shopName,
       p_full_name: fullName,
       p_industry: 'metal_fab',
     });
     if (error) return fail(error.message);
+    // Store the shop logo on the freshly provisioned shop. Non-fatal: a failed
+    // logo write must not strand the user shopless (they can re-upload later).
+    if (logoDataUrl && data) {
+      await run(() =>
+        supabase.from('shops').update({ logo_url: logoDataUrl }).eq('id', data).select().single()
+      );
+    }
     return this.resolveSession();
   },
 
@@ -96,7 +105,7 @@ export const authService = {
     const linkRes = await run<any>(() =>
       supabase
         .from('shop_users')
-        .select('shop_id, full_name, shops(name)')
+        .select('shop_id, full_name, shops(name, logo_url)')
         .eq('auth_user_id', user.id)
         .maybeSingle()
     );
@@ -116,6 +125,7 @@ export const authService = {
       authUserId: user.id,
       shopId: linkRes.data.shop_id,
       shopName: linkRes.data.shops?.name ?? '',
+      shopLogoUrl: linkRes.data.shops?.logo_url ?? undefined,
       fullName: linkRes.data.full_name,
       needsBootstrap: false,
     });

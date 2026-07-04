@@ -1,5 +1,5 @@
 -- ============================================================================
--- QuoteForge — Phase 1 Database Schema (Supabase / Postgres)
+-- QuoteFoundry — Phase 1 Database Schema (Supabase / Postgres)
 -- ============================================================================
 -- Foundation for the fab-shop quoting SaaS. Two non-negotiables are baked in:
 --   1. RATE SNAPSHOTTING — every quote stores its own copy of the rates it was
@@ -23,6 +23,7 @@ create extension if not exists "pgcrypto";        -- gen_random_uuid()
 create table shops (
   id              uuid primary key default gen_random_uuid(),
   name            text not null,
+  logo_url        text,                                 -- shop logo (data-URL or storage URL); top-left on quote PDFs
   industry        text not null default 'metal_fab',   -- future: cnc, wood, etc.
   -- billing (Stripe) -- populated when they subscribe
   stripe_customer_id      text,
@@ -119,12 +120,15 @@ create index idx_shop_rates_shop on shop_rates(shop_id);
 -- ============================================================================
 create table customers (
   id              uuid primary key default gen_random_uuid(),
-  shop_id         uuid not null references shops(id) on delete cascade,
+  -- default stamps the caller's shop on insert — services NEVER pass shop_id
+  -- (CLAUDE.md §4.1); the RLS with-check then verifies it matches.
+  shop_id         uuid not null references shops(id) on delete cascade default current_shop_id(),
   company_name    text not null,
   contact_name    text,
   contact_role    text,
   email           text,
   phone           text,
+  website         text,
   address         text,
   default_terms   text default 'Net 30',
   po_reference    text,
@@ -147,7 +151,8 @@ create index idx_customers_search on customers
 -- ============================================================================
 create table quotes (
   id              uuid primary key default gen_random_uuid(),
-  shop_id         uuid not null references shops(id) on delete cascade,
+  -- default stamps the caller's shop on insert (services never pass shop_id)
+  shop_id         uuid not null references shops(id) on delete cascade default current_shop_id(),
   quote_number    text not null,                         -- e.g. Q-2026-051
   customer_id     uuid references customers(id) on delete set null,
 
@@ -159,6 +164,7 @@ create table quotes (
 
   -- job inputs (what the estimator enters)
   job_name        text not null,
+  part_number     text,                                   -- RFQ metadata (Doc Assist or typed)
   material_spec   text,
   material_weight numeric(10,2),                          -- lb
   quantity        integer not null default 1,
@@ -180,6 +186,10 @@ create table quotes (
   total_overhead  numeric(12,2),
   total_margin    numeric(12,2),
   quoted_price    numeric(12,2),
+
+  -- customer-facing document template chosen at send time (frozen so a later
+  -- download reproduces exactly what was sent)
+  pdf_style       text not null default 'classic',        -- classic|modern|minimal
 
   -- lifecycle
   status          text not null default 'draft',          -- draft|sent|opened|won|lost
@@ -204,7 +214,8 @@ create index idx_quotes_created on quotes(shop_id, created_at desc);
 -- ============================================================================
 create table quote_events (
   id              uuid primary key default gen_random_uuid(),
-  shop_id         uuid not null references shops(id) on delete cascade,
+  -- default stamps the caller's shop on insert (services never pass shop_id)
+  shop_id         uuid not null references shops(id) on delete cascade default current_shop_id(),
   quote_id        uuid not null references quotes(id) on delete cascade,
   event_type      text not null,                          -- created|sent|opened|won|lost|followup
   detail          text,                                   -- e.g. recipient email

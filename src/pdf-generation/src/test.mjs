@@ -35,7 +35,7 @@ const shop = {
 };
 
 const buf = await generateQuotePdf(quote, shop);
-fs.writeFileSync(path.join(OUT_DIR, 'QuoteForge_Quote_J-2026-051.pdf'), buf);
+fs.writeFileSync(path.join(OUT_DIR, 'QuoteFoundry_Quote_J-2026-051.pdf'), buf);
 
 // --- verify it's a valid PDF ---
 let pass=0, fail=0;

@@ -1,6 +1,6 @@
 // ============================================================================
 // PipelineScreen.tsx — the landing screen. Stat cards + filterable/searchable
-// quote list, styled to design/QuoteForge.dc.html, wired to quoteService.list.
+// quote list, styled to design/QuoteFoundry.dc.html, wired to quoteService.list.
 // ============================================================================
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { quoteService } from '../data-access-layer/services/quoteService';
@@ -117,9 +117,11 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
             // table → card on phones
             return (
               <div key={q.id} onClick={() => onOpen(q.id)} data-row={q.quote_number} data-row-mobile
+                role="button" tabIndex={0} aria-label={`Open quote ${q.quote_number} — ${q.inputs.job_name}`}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(q.id); } }}
                 style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, margin: '8px 0', borderRadius: 16, border: `1px solid ${color.border}`, cursor: 'pointer', minHeight: 44 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 40, height: 40, flex: 'none', borderRadius: 12, background: 'rgba(94,129,244,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color.accentDeep, fontSize: 18 }}><i className="las la-drafting-compass" /></div>
+                  <div style={{ width: 40, height: 40, flex: 'none', borderRadius: 12, background: 'rgba(70,103,219,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color.accentDeep, fontSize: 18 }}><i className="las la-drafting-compass" /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.inputs.job_name}</div>
                     <div style={{ fontSize: 12.5, color: color.muted }}>{q.quote_number} · {q.customer_name ?? '—'}</div>
@@ -135,9 +137,11 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
           }
           return (
             <div key={q.id} onClick={() => onOpen(q.id)} data-row={q.quote_number}
+              role="button" tabIndex={0} aria-label={`Open quote ${q.quote_number} — ${q.inputs.job_name}`}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(q.id); } }}
               style={{ display: 'grid', gridTemplateColumns: ROW_COLS, gap: 14, alignItems: 'center', padding: '14px 22px', margin: '4px 0', borderRadius: 16, cursor: 'pointer', border: '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
-                <div style={{ width: 44, height: 44, flex: 'none', borderRadius: 13, background: 'rgba(94,129,244,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color.accentDeep, fontSize: 19 }}>
+                <div style={{ width: 44, height: 44, flex: 'none', borderRadius: 13, background: 'rgba(70,103,219,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color.accentDeep, fontSize: 19 }}>
                   <i className="las la-drafting-compass" />
                 </div>
                 <div style={{ minWidth: 0 }}>

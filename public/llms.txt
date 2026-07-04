@@ -1,0 +1,33 @@
+# QuoteFoundry
+
+> Quoting software for US metal fabrication and welding job shops (5–50 people).
+> An estimator turns a custom job into an accurate, branded PDF quote in about
+> 10 minutes, priced from the shop's OWN stored rates through a deterministic
+> engine — never AI guesswork. Flat per-shop pricing with no per-user fees.
+
+## What it does
+
+- Rate library per shop: material $/lb, labor rates (cutting/fitting/welding/finishing), machine burn rate, consumables, drop/scrap %, overhead %, target margin %.
+- Live quote editor: enter weight, hours, and outside services; the price updates on every keystroke using the same pure pricing engine that saves the quote.
+- Rate snapshotting: every quote freezes the rates it was priced with — editing shop rates never changes an existing quote.
+- Branded customer PDF (three templates) that shows scope and total only; internal cost, overhead, and margin never appear on the customer document.
+- Tracked email send from an authenticated domain, with open detection.
+- Document Assist: drop an RFQ spreadsheet and the editor pre-fills deterministically (zero AI tokens); PDFs and CAD files are stored with the quote.
+- Bulk import for customer lists and material price lists (CSV/XLSX).
+
+## Who it's for
+
+Small US metal-fab, sheet-metal, structural-steel, and welding job shops that
+quote by hand in spreadsheets today and lose jobs to slow turnaround or lose
+margin to underbidding. It is not CAD, CAM, ERP, or MRP.
+
+## Pricing
+
+Currently in a founding-partner beta: free during beta, with a founding price
+locked in when it becomes paid. Pricing is flat per shop — no per-user fees.
+
+## Key pages
+
+- Home: https://quotefoundry.app/
+- Guide — How to price a fabrication job: https://quotefoundry.app/guides/how-to-price-a-fabrication-job.html
+- Free fabrication quote template (CSV): https://quotefoundry.app/guides/free-fabrication-quote-template.html

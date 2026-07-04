@@ -8,13 +8,23 @@
 // the inbox?). The decisions that determine that are baked in here:
 //   1. Send from YOUR authenticated domain, with the shop as reply-to.
 //      (You can't send "as" the shop's domain without their DNS; faking it
-//       guarantees spam. So: from quotes@send.quoteforge.app, reply-to the shop.)
+//       guarantees spam. So: from quotes@send.quotefoundry.app, reply-to the shop.)
 //   2. Plain, quote-shaped content — no spammy markup, real text + the PDF.
 //   3. One tracked open pixel, honestly treated as a soft signal.
 //   4. Every send recorded to quote_events with the timestamp.
 // ============================================================================
 
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'node:crypto';
+
+// HMAC over the quote id, embedded in the tracking-pixel URL and verified by
+// the /api/track-open endpoint before it advances sent → opened.
+export function signTracking(quoteId: string): string {
+  return createHmac('sha256', process.env.TRACKING_SECRET || 'dev-secret')
+    .update(quoteId)
+    .digest('hex')
+    .slice(0, 32);
+}
 
 // --- provider abstraction --------------------------------------------------
 // Wrap the transactional provider (Resend / Postmark / SendGrid) behind one
@@ -31,6 +41,12 @@ interface SendArgs {
   trackingPixelUrl: string;
 }
 
+// The authenticated sending subdomain (verified in Resend + DNS). Configurable
+// so the code doesn't hard-couple to one domain (prod: send.quotefoundry.app).
+function sendDomain(): string {
+  return process.env.EMAIL_SEND_DOMAIN || 'send.quotefoundry.app';
+}
+
 async function providerSend(args: SendArgs): Promise<{ id: string }> {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -41,7 +57,7 @@ async function providerSend(args: SendArgs): Promise<{ id: string }> {
     body: JSON.stringify({
       // From: authenticated sending subdomain (set up once in DNS). The shop's
       // NAME shows as sender; replies route to the shop's real inbox.
-      from: `${args.fromName} <quotes@send.quoteforge.app>`,
+      from: `${args.fromName} <quotes@${sendDomain()}>`,
       reply_to: args.replyTo,
       to: [args.to],
       subject: args.subject,
@@ -114,11 +130,13 @@ export async function sendQuoteEmail(req: {
   const { data: authUser } = await admin.auth.admin.getUserById(
     shopUser?.auth_user_id ?? ''
   );
-  const replyTo = authUser?.user?.email ?? 'no-reply@quoteforge.app';
+  const replyTo = authUser?.user?.email ?? `no-reply@${sendDomain()}`;
 
-  // 3. Tracking pixel URL — a tiny endpoint that marks the quote opened.
+  // 3. Tracking pixel URL — a tiny endpoint that marks the quote opened. The
+  //    HMAC signature stops anyone who guesses a quote id from flipping its
+  //    status by hitting the (necessarily unauthenticated) pixel endpoint.
   const trackingPixelUrl =
-    `${process.env.PUBLIC_URL}/api/track-open?q=${quote.id}&t=${Date.now()}`;
+    `${process.env.PUBLIC_URL}/api/track-open?q=${quote.id}&s=${signTracking(quote.id)}`;
 
   // 4. Send.
   let emailId: string;

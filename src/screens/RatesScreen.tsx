@@ -6,11 +6,12 @@
 // The amber banner promises "applies to new quotes only" — TRUE in code: quotes
 // price from their own frozen snapshot (CLAUDE.md §4.2).
 // ============================================================================
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { rateService } from '../data-access-layer/services/rateService';
 import type { ShopRates, Material } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { heading, cardShadowLg } from '../app/ui';
+import { materialsTemplateCsv, parseMaterialsFile, mergeMaterials, downloadCsv, MATERIALS_TEMPLATE_FILENAME } from '../app/bulkImport';
 
 type Tab = 'material' | 'labor' | 'margin';
 type NumKey = keyof Omit<ShopRates, 'materials'>;
@@ -32,8 +33,11 @@ const MARGIN: Field[] = [
 export function RatesScreen() {
   const [rates, setRates] = useState<ShopRates | null>(null);
   const [tab, setTab] = useState<Tab>('material');
-  const [status, setStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved'>('clean');
+  const [status, setStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved' | 'error'>('clean');
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [draft, setDraft] = useState({ name: '', price: '' });
+  const [importMsg, setImportMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { rateService.get().then((r) => r.data && setRates(r.data)); }, []);
 
@@ -57,17 +61,46 @@ export function RatesScreen() {
     patch({ materials: (rates.materials ?? []).filter((_, j) => j !== i) });
   }
 
+  // Bulk upload: merge into the library (same name updates price, new names
+  // append), mark dirty — the user reviews and hits Save like any other edit,
+  // so imported prices only reach NEW quotes via the normal snapshot path.
+  async function importFile(file: File) {
+    if (!rates) return;
+    setImportMsg(null);
+    const parsed = parseMaterialsFile(await file.arrayBuffer());
+    if (parsed.error || parsed.materials.length === 0) {
+      setImportMsg({ text: parsed.error ?? 'No materials found in that file.', ok: false });
+      return;
+    }
+    const { materials, added, updated } = mergeMaterials(rates.materials ?? [], parsed.materials);
+    patch({ materials });
+    const parts = [];
+    if (added) parts.push(`${added} material${added === 1 ? '' : 's'} added`);
+    if (updated) parts.push(`${updated} price${updated === 1 ? '' : 's'} updated`);
+    if (!added && !updated) parts.push('No changes — library already matches the file');
+    if (parsed.skipped) parts.push(`${parsed.skipped} row${parsed.skipped === 1 ? '' : 's'} skipped`);
+    setImportMsg({ text: parts.join(' · ') + (added || updated ? ' — review and Save' : ''), ok: true });
+  }
+
   async function save() {
     if (!rates) return;
     setStatus('saving');
-    await rateService.update(rates);
+    setSaveError(null);
+    const res = await rateService.update(rates);
+    if (res.error) {
+      // never claim "Saved" on a failed write — that's how data silently vanishes
+      setStatus('error');
+      setSaveError(res.error);
+      return;
+    }
+    setRates(res.data); // reflect exactly what the DB now holds
     setStatus('saved');
   }
 
   if (!rates) return <div style={{ padding: 40, color: color.muted }}>Loading rates…</div>;
 
-  const statusText = { clean: 'All changes saved', dirty: 'Unsaved changes', saving: 'Saving…', saved: 'Saved' }[status];
-  const statusColor = status === 'dirty' ? color.danger : status === 'saved' ? color.success : color.muted;
+  const statusText = { clean: 'All changes saved', dirty: 'Unsaved changes', saving: 'Saving…', saved: 'Saved', error: `Save failed — ${saveError ?? 'try again'}` }[status];
+  const statusColor = status === 'dirty' || status === 'error' ? color.danger : status === 'saved' ? color.success : color.muted;
 
   const numField = (f: Field) => (
     <label key={f.key} style={{ display: 'block' }}>
@@ -110,7 +143,24 @@ export function RatesScreen() {
       <div style={{ background: color.surface, borderRadius: 22, padding: '28px 30px', boxShadow: cardShadowLg }}>
         {tab === 'material' && (
           <div data-panel="material">
-            <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 14 }}>Material library ($/lb)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px' }}>Material library ($/lb)</div>
+              <button onClick={() => downloadCsv(MATERIALS_TEMPLATE_FILENAME, materialsTemplateCsv())} data-testid="material-template" title="Download a CSV template for bulk upload"
+                style={{ marginLeft: 'auto', height: 38, padding: '0 14px', border: `1.5px solid ${color.border}`, borderRadius: 11, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                <i className="las la-download" />Template
+              </button>
+              <button onClick={() => fileRef.current?.click()} data-testid="material-import"
+                style={{ height: 38, padding: '0 14px', border: `1.5px solid ${color.border}`, borderRadius: 11, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                <i className="las la-file-upload" />Import list
+              </button>
+              <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" data-testid="material-import-input" style={{ display: 'none' }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
+            </div>
+            {importMsg && (
+              <div data-testid="material-import-result" style={{ display: 'flex', alignItems: 'center', gap: 9, background: importMsg.ok ? color.successBg : '#FFEFF1', border: `1px solid ${importMsg.ok ? '#C9EFD9' : '#FAD7DD'}`, borderRadius: 12, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: importMsg.ok ? color.success : color.danger, fontWeight: 600 }}>
+                <i className={importMsg.ok ? 'las la-check-circle' : 'las la-exclamation-circle'} style={{ fontSize: 16 }} />{importMsg.text}
+              </div>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(rates.materials ?? []).map((m, i) => (
                 <div key={i} data-material={m.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

@@ -471,7 +471,7 @@
   <div style="position:absolute;inset:0;z-index:40;overflow-y:auto;background:#FFFFFF;font-family:'Source Sans 3',sans-serif;color:#1C1D21;">
     <!-- nav -->
     <div style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid #EAECF1;">
-      <div style="display:flex;align-items:center;gap:10px;font-family:'Lato';font-weight:900;font-size:19px;color:#042C53;letter-spacing:-.3px;"><i class="ti ti-flame" style="color:#185FA5;font-size:24px;"></i>QuoteForge</div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:'Lato';font-weight:900;font-size:19px;color:#042C53;letter-spacing:-.3px;"><i class="ti ti-flame" style="color:#185FA5;font-size:24px;"></i>QuoteFoundry</div>
       <div style="display:flex;align-items:center;gap:26px;">
         <a onClick="{{ startOnboarding }}" style="font-size:14.5px;color:#5A6473;cursor:pointer;">How it works</a>
         <a onClick="{{ startOnboarding }}" style="font-size:14.5px;color:#5A6473;cursor:pointer;">Pricing</a>
@@ -555,7 +555,7 @@
 
     <!-- footer -->
     <div style="padding:22px 40px;font-size:12.5px;color:#9098A4;display:flex;justify-content:space-between;border-top:1px solid #EAECF1;flex-wrap:wrap;gap:10px;">
-      <span>QuoteForge — quoting for fab shops</span>
+      <span>QuoteFoundry — quoting for fab shops</span>
       <span>Privacy · Terms · Contact</span>
     </div>
   </div>
@@ -567,7 +567,7 @@
     <div style="max-width:540px;margin:0 auto;padding:28px 24px 60px;">
       <!-- header -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-        <div onClick="{{ goLanding }}" style="display:flex;align-items:center;gap:9px;font-family:'Lato';font-weight:900;font-size:17px;color:#042C53;cursor:pointer;"><i class="ti ti-flame" style="color:#185FA5;font-size:21px;"></i>QuoteForge</div>
+        <div onClick="{{ goLanding }}" style="display:flex;align-items:center;gap:9px;font-family:'Lato';font-weight:900;font-size:17px;color:#042C53;cursor:pointer;"><i class="ti ti-flame" style="color:#185FA5;font-size:21px;"></i>QuoteFoundry</div>
         <div style="display:flex;gap:6px;align-items:center;">
           <sc-for list="{{ obDots }}" as="d" hint-placeholder-count="4">
             <span style="width:30px;height:5px;border-radius:3px;background:{{ d.bg }};transition:background .2s;"></span>
@@ -688,7 +688,7 @@
       <div style="width:100%;max-width:400px;animation:qfFade .3s ease;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
           <div style="width:44px;height:44px;border-radius:13px;background:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="las la-bolt" style="color:#fff;font-size:23px;"></i></div>
-          <span style="font-family:'Lato';font-weight:900;font-size:22px;letter-spacing:-.4px;">QuoteForge</span>
+          <span style="font-family:'Lato';font-weight:900;font-size:22px;letter-spacing:-.4px;">QuoteFoundry</span>
         </div>
         <h2 style="margin:0;font-family:'Lato';font-weight:700;font-size:28px;letter-spacing:-.4px;">{{ authTitle }}</h2>
         <p style="color:#9698D6;font-size:14.5px;margin:8px 0 24px;">{{ authSub }}</p>
@@ -1197,7 +1197,7 @@ class Component extends DCLogic {
       detail:['Quote detail','Internal breakdown — margin included'],
       customers:['Customers','Saved companies and contacts'],
       rates:['Rate library','The numbers behind every quote'],
-      auth:['QuoteForge',''],
+      auth:['QuoteFoundry',''],
     };
     const [screenTitle,screenSub] = titles[s.screen]||titles.pipeline;
 
