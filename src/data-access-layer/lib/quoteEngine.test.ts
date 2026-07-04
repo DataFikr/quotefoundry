@@ -94,3 +94,59 @@ describe('rate snapshot deep-copy invariant (CLAUDE.md §4.2)', () => {
     expect(computeQuote(inputs, live).quoted_price).not.toBe(1913.82);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Multi-material lines: each line prices its own type from the library
+// (weight/pc × pieces × $/lb × scrap); unknown types fall back to BASE steel.
+// The legacy single-material path above is untouched (canonical stays locked).
+// ---------------------------------------------------------------------------
+describe('computeQuote — multi-material lines', () => {
+  const libRates: ShopRates = {
+    ...rates,
+    materials: [
+      { name: 'A36 Steel', price: 0.85 },
+      { name: '304 Stainless', price: 2.10 },
+    ],
+  };
+
+  it('sums weight × qty × per-type price × scrap across lines', () => {
+    const t = computeQuote({
+      ...inputs,
+      material_weight: 0, // ignored when lines present
+      material_lines: [
+        { type: 'A36 Steel', weight: 100, qty: 2 },      // 100×2×0.85×1.15 = 195.50
+        { type: '304 Stainless', weight: 40, qty: 1 },   // 40×1×2.10×1.15  = 96.60
+      ],
+    }, libRates);
+    expect(t.line_material).toBe(292.1); // 195.50 + 96.60
+  });
+
+  it('unknown line type falls back to base steel price, not another line’s', () => {
+    const t = computeQuote({
+      ...inputs,
+      material_lines: [
+        { type: '304 Stainless', weight: 10, qty: 1 },   // 10×2.10×1.15 = 24.15
+        { type: 'Mystery Alloy', weight: 10, qty: 1 },   // 10×0.85×1.15 =  9.775
+      ],
+    }, libRates);
+    expect(t.line_material).toBeCloseTo(33.925, 1); // 24.15 + 9.775 (FP rounds the cents)
+  });
+
+  it('a single legacy-equivalent line reproduces the canonical material figure', () => {
+    const t = computeQuote({
+      ...inputs,
+      material_lines: [{ type: '', weight: 240, qty: 1 }],
+    }, libRates);
+    expect(t.line_material).toBe(234.6);   // same as canonical
+    expect(t.quoted_price).toBe(1913.82);  // whole quote unchanged through the lines path
+  });
+
+  it('legacy material_weight is ignored when lines are present (no double count)', () => {
+    const withLines = computeQuote({
+      ...inputs,
+      material_weight: 9999,
+      material_lines: [{ type: 'A36 Steel', weight: 240, qty: 1 }],
+    }, libRates);
+    expect(withLines.line_material).toBe(234.6);
+  });
+});

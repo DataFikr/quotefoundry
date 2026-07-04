@@ -11,7 +11,7 @@
 
 import type { VercelRequest } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { computeQuote, resolveRates } from '../src/data-access-layer/lib/quoteEngine';
+import { computeQuote, ratesForInputs } from '../src/data-access-layer/lib/quoteEngine';
 
 function env(name: string, fallback?: string): string {
   const v = process.env[name] ?? (fallback !== undefined ? process.env[fallback] : undefined);
@@ -67,6 +67,7 @@ export async function loadQuoteForPdf(caller: Caller, quoteId: string): Promise<
     part_number: row.part_number ?? undefined,
     material_spec: row.material_spec ?? undefined,
     material_weight: Number(row.material_weight ?? 0),
+    material_lines: Array.isArray(row.material_lines) && row.material_lines.length ? row.material_lines : undefined,
     quantity: row.quantity,
     burn_minutes: Number(row.burn_minutes ?? 0),
     hrs_cutting: Number(row.hrs_cutting ?? 0),
@@ -87,7 +88,7 @@ export async function loadQuoteForPdf(caller: Caller, quoteId: string): Promise<
     created_at: row.created_at,
     pdf_style: row.pdf_style ?? 'classic',
     inputs,
-    totals: computeQuote(inputs, resolveRates(row.rate_snapshot, inputs.material_spec)),
+    totals: computeQuote(inputs, ratesForInputs(row.rate_snapshot, inputs)),
   };
   return { quote, shop: { name: shopRow?.name ?? 'Your shop', logo_url: shopRow?.logo_url ?? undefined } };
 }

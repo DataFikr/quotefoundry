@@ -62,6 +62,21 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
     if (res.data) onEdit(res.data.id);
   }
 
+  // Delete (drafts only; the service enforces it too). Two-step confirm —
+  // first click arms the button, second click deletes and returns to pipeline.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  async function removeQuote() {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      setTimeout(() => setConfirmDelete(false), 3500);
+      return;
+    }
+    const res = await quoteService.remove(quoteId);
+    if (res.error) { show({ message: res.error }); setConfirmDelete(false); return; }
+    onChanged();
+    onBack();
+  }
+
   if (!q) return <div style={{ padding: 40, color: color.muted }}>Loading…</div>;
   const pill = statusPill(q.status);
   const t = q.totals;
@@ -122,6 +137,12 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
             <button onClick={() => outcome('won')} data-testid="mark-won" style={{ height: 46, padding: '0 20px', border: '1.5px solid #C9EFD9', borderRadius: 13, background: color.successBg, color: color.success, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark won</button>
             <button onClick={() => outcome('lost')} data-testid="mark-lost" style={{ height: 46, padding: '0 20px', border: '1.5px solid #FAD7DD', borderRadius: 13, background: '#FFEFF1', color: color.danger, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark lost</button>
             <button onClick={clone} style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-copy" />Clone</button>
+            <button onClick={() => editable && removeQuote()} disabled={!editable} data-testid="detail-delete"
+              title={!editable ? 'Only drafts can be deleted — sent quotes are history' : confirmDelete ? 'Click again to delete this draft' : 'Delete draft'}
+              aria-label={confirmDelete ? 'Confirm delete draft' : 'Delete draft'}
+              style={{ width: 46, height: 46, border: editable ? '1.5px solid #FAD7DD' : `1.5px solid ${color.border}`, borderRadius: 13, background: !editable ? '#fff' : confirmDelete ? color.danger : '#FFEFF1', color: !editable ? color.faint : confirmDelete ? '#fff' : color.danger, fontSize: 17, cursor: editable ? 'pointer' : 'not-allowed', opacity: editable ? 1 : 0.6 }}>
+              <i className={confirmDelete && editable ? 'las la-exclamation' : 'las la-trash'} />
+            </button>
           </div>
         </div>
 

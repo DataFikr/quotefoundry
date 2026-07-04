@@ -14,12 +14,32 @@
 // ============================================================================
 
 import { supabase, run, ok, fail, Result } from '../lib/supabase';
-import { computeQuote, resolveRates } from '../lib/quoteEngine';
+import { computeQuote, ratesForInputs } from '../lib/quoteEngine';
 import { rateService } from './rateService';
 import type { Quote, QuoteInputs, QuoteStatus, ShopRates } from '../lib/types';
 
 // Shape a DB row into the app's Quote type.
 function hydrate(row: any): Quote {
+  // ONE inputs object, used both as the quote's inputs and for the totals
+  // recompute — a second inline copy is exactly how a field like
+  // material_lines would get silently dropped from the math.
+  const inputs = {
+    job_name: row.job_name,
+    part_number: row.part_number ?? undefined,
+    material_spec: row.material_spec ?? undefined,
+    material_weight: Number(row.material_weight ?? 0),
+    material_lines: Array.isArray(row.material_lines) && row.material_lines.length ? row.material_lines : undefined,
+    quantity: row.quantity,
+    burn_minutes: Number(row.burn_minutes ?? 0),
+    hrs_cutting: Number(row.hrs_cutting ?? 0),
+    hrs_fitting: Number(row.hrs_fitting ?? 0),
+    hrs_welding: Number(row.hrs_welding ?? 0),
+    hrs_finishing: Number(row.hrs_finishing ?? 0),
+    outside_services: Number(row.outside_services ?? 0),
+    finish_spec: row.finish_spec ?? undefined,
+    lead_time: row.lead_time ?? undefined,
+    notes: row.notes ?? undefined,
+  };
   return {
     id: row.id,
     quote_number: row.quote_number,
@@ -30,38 +50,9 @@ function hydrate(row: any): Quote {
     status: row.status,
     quoted_price: Number(row.quoted_price),
     rate_snapshot: row.rate_snapshot,
-    inputs: {
-      job_name: row.job_name,
-      part_number: row.part_number ?? undefined,
-      material_spec: row.material_spec ?? undefined,
-      material_weight: Number(row.material_weight ?? 0),
-      quantity: row.quantity,
-      burn_minutes: Number(row.burn_minutes ?? 0),
-      hrs_cutting: Number(row.hrs_cutting ?? 0),
-      hrs_fitting: Number(row.hrs_fitting ?? 0),
-      hrs_welding: Number(row.hrs_welding ?? 0),
-      hrs_finishing: Number(row.hrs_finishing ?? 0),
-      outside_services: Number(row.outside_services ?? 0),
-      finish_spec: row.finish_spec ?? undefined,
-      lead_time: row.lead_time ?? undefined,
-      notes: row.notes ?? undefined,
-    },
-    totals: computeQuote(
-      {
-        job_name: row.job_name,
-        material_spec: row.material_spec ?? undefined,
-        material_weight: Number(row.material_weight ?? 0),
-        quantity: row.quantity,
-        burn_minutes: Number(row.burn_minutes ?? 0),
-        hrs_cutting: Number(row.hrs_cutting ?? 0),
-        hrs_fitting: Number(row.hrs_fitting ?? 0),
-        hrs_welding: Number(row.hrs_welding ?? 0),
-        hrs_finishing: Number(row.hrs_finishing ?? 0),
-        outside_services: Number(row.outside_services ?? 0),
-      },
-      // resolve the material price from the frozen snapshot's own library
-      resolveRates(row.rate_snapshot as ShopRates, row.material_spec ?? undefined)
-    ),
+    inputs,
+    // resolve material price(s) from the frozen snapshot's own library
+    totals: computeQuote(inputs, ratesForInputs(row.rate_snapshot as ShopRates, inputs)),
     pdf_style: row.pdf_style ?? 'classic',
     sent_at: row.sent_at ?? undefined,
     opened_at: row.opened_at ?? undefined,
@@ -104,7 +95,7 @@ export const quoteService = {
     // 1. Read the shop's CURRENT rates, then resolve the chosen material's price.
     const ratesRes = await rateService.get();
     if (ratesRes.error) return fail(ratesRes.error);
-    const rates = resolveRates(ratesRes.data!, inputs.material_spec);
+    const rates = ratesForInputs(ratesRes.data!, inputs);
 
     // 2. Compute totals from those (material-resolved) rates now.
     const totals = computeQuote(inputs, rates);
@@ -150,8 +141,8 @@ export const quoteService = {
       return fail('Only draft quotes can be edited. Clone this quote to revise.');
     }
     // recompute from the EXISTING snapshot, re-pricing the (possibly changed)
-    // material from the snapshot's own frozen library — never from live rates.
-    const totals = computeQuote(inputs, resolveRates(existing.data!.rate_snapshot, inputs.material_spec));
+    // material(s) from the snapshot's own frozen library — never from live rates.
+    const totals = computeQuote(inputs, ratesForInputs(existing.data!.rate_snapshot, inputs));
     const res = await run<any>(() =>
       supabase
         .from('quotes')
@@ -236,6 +227,21 @@ export const quoteService = {
     if (res.error) return res;
     await this.logEvent(id, outcome);
     return ok(hydrate(res.data));
+  },
+
+  // -- DELETE (drafts only) --------------------------------------------------
+  // A sent/won/lost quote is business history — the pipeline stats and the
+  // customer's copy both reference it. Only unsent drafts may be deleted.
+  async remove(id: string): Promise<Result<{ id: string }>> {
+    const existing = await this.get(id);
+    if (existing.error) return fail(existing.error);
+    if (existing.data!.status !== 'draft') {
+      return fail('Only draft quotes can be deleted. Sent quotes are history — mark them lost instead.');
+    }
+    const res = await run<any[]>(() =>
+      supabase.from('quotes').delete().eq('id', id).select()
+    );
+    return res.error ? fail(res.error) : ok({ id });
   },
 
   // Undo for markOutcome (the 5-second toast): restore the pre-outcome status

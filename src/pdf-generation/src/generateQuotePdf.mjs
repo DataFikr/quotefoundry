@@ -56,8 +56,14 @@ const money = (n) =>
 function buildScopeLines(quote) {
   const t = quote.totals;
   const lines = [];
-  if (t.line_material > 0)
-    lines.push(['Material', quote.inputs.material_spec || 'Steel + drop allowance', t.line_material]);
+  if (t.line_material > 0) {
+    // multi-material quotes list their distinct types (mirrors customerScope.ts)
+    const types = (quote.inputs.material_lines ?? []).map((l) => l.type).filter(Boolean);
+    const detail = types.length
+      ? [...new Set(types)].join(', ')
+      : quote.inputs.material_spec || 'Steel + drop allowance';
+    lines.push(['Material', detail, t.line_material]);
+  }
 
   // group labor + machine into one "fabrication labor & machine time" line
   const fab = t.line_labor + t.line_burn + t.line_consumables;

@@ -40,12 +40,22 @@ export interface ShopRates {
   materials?: Material[];    // the shop's material library (name → $/lb)
 }
 
+// One material line on a quote: a type from the shop's library (or free text),
+// its per-piece weight, and how many pieces. Metal work often mixes types
+// (plate + tube + stainless), so a quote carries a LIST of these.
+export interface MaterialLine {
+  type: string;    // material name — priced from the snapshot's library
+  weight: number;  // lb per piece
+  qty: number;     // pieces of this material
+}
+
 // The job-specific inputs an estimator enters per quote.
 export interface QuoteInputs {
   job_name: string;
   part_number?: string;     // from RFQ metadata (Doc Assist) or typed
-  material_spec?: string;
-  material_weight: number;  // lb
+  material_spec?: string;   // first line's type (kept for display/back-compat)
+  material_weight: number;  // lb — legacy single-material path; ignored when material_lines present
+  material_lines?: MaterialLine[]; // multi-material: engine sums these when non-empty
   quantity: number;
   burn_minutes: number;
   hrs_cutting: number;

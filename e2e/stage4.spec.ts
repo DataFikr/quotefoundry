@@ -110,3 +110,49 @@ test.describe('Detail + round trip', () => {
     });
   });
 });
+
+test.describe('Draft deletion', () => {
+  test('pipeline: draft rows delete with two-step confirm; non-drafts have no bin', async ({ page }) => {
+    await page.goto('/?app');
+    await expect(page.locator('[data-row]')).toHaveCount(3);
+    // seeded: Q-2026-001 draft, Q-2026-002 won, Q-2026-003 sent
+    const draftRow = page.locator('[data-row="Q-2026-001"]');
+    await expect(draftRow.getByTestId('delete-quote')).toBeVisible();
+    await expect(page.locator('[data-row="Q-2026-002"] [data-testid="delete-quote"]')).toHaveCount(0);
+    await draftRow.getByTestId('delete-quote').click();          // arm
+    await expect(page.locator('[data-row]')).toHaveCount(3);     // nothing yet
+    await draftRow.getByTestId('delete-quote').click();          // confirm
+    await expect(page.locator('[data-row]')).toHaveCount(2);
+    await expect(page.locator('[data-row="Q-2026-001"]')).toHaveCount(0);
+  });
+
+  test('detail: bin enabled only for drafts; deleting returns to pipeline', async ({ page }) => {
+    await page.goto('/?app');
+    // sent quote → bin disabled
+    await page.locator('[data-row="Q-2026-003"]').click();
+    await expect(page.getByTestId('detail-delete')).toBeDisabled();
+    await page.locator('[data-screen="detail"] >> text=Pipeline').click();
+    // draft quote → two-step delete, lands back on pipeline
+    await page.locator('[data-row="Q-2026-001"]').click();
+    const bin = page.getByTestId('detail-delete');
+    await expect(bin).toBeEnabled();
+    await bin.click();  // arm
+    await bin.click();  // confirm
+    await expect(page.locator('[data-screen="pipeline"]')).toBeVisible();
+    await expect(page.locator('[data-row]')).toHaveCount(2);
+  });
+
+  test('editor: multiple material types sum into the live total', async ({ page }) => {
+    await page.goto('/?app');
+    await fillCanonical(page);
+    await page.locator('[data-field="material_spec"]').selectOption('A36 Steel');
+    await expect(page.getByTestId('quoted-price')).toHaveText('$1,914');
+    // add a second material line: 304 Stainless, 40 lb × 1 pc
+    await page.getByTestId('add-material-line').click();
+    await page.locator('[data-field="material_spec_1"]').selectOption('304 Stainless');
+    await page.locator('[data-field="material_weight_1"]').fill('40');
+    await page.locator('[data-field="material_qty_1"]').fill('1');
+    // 40×2.10×1.15 = 96.60 more material → new price > canonical
+    await expect(page.getByTestId('quoted-price')).not.toHaveText('$1,914');
+  });
+});

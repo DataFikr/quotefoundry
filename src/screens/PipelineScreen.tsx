@@ -30,11 +30,12 @@ function StatCard({ label, value, foot, footColor }: { label: string; value: str
 
 export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: string) => void; onNew: () => void; onRefresh: () => void }) {
   const mobile = useIsMobile();
-  const ROW_COLS = '2.4fr 1.7fr 1fr 1.1fr 1fr 44px';
+  const ROW_COLS = '2.4fr 1.7fr 1fr 1.1fr 1fr 86px';
   const [all, setAll] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<QuoteStatus | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null); // quote id armed for delete
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -73,6 +74,30 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
     onRefresh();
     load();
   }
+
+  // Drafts only (the service enforces it too). Two-step confirm, same pattern
+  // as customer delete: first tap arms the button, second tap deletes.
+  async function removeQuote(id: string) {
+    if (confirmDelete !== id) {
+      setConfirmDelete(id);
+      setTimeout(() => setConfirmDelete((v) => (v === id ? null : v)), 3500);
+      return;
+    }
+    setConfirmDelete(null);
+    await quoteService.remove(id);
+    onRefresh();
+    load();
+  }
+
+  const deleteBtn = (q: Quote, size: number) =>
+    q.status === 'draft' ? (
+      <button onClick={(e) => { e.stopPropagation(); removeQuote(q.id); }} data-testid="delete-quote"
+        title={confirmDelete === q.id ? 'Click again to delete this draft' : 'Delete draft'}
+        aria-label={confirmDelete === q.id ? `Confirm delete ${q.quote_number}` : `Delete draft ${q.quote_number}`}
+        style={{ width: size, height: size, border: 'none', borderRadius: 11, background: confirmDelete === q.id ? color.danger : '#FFEFF1', color: confirmDelete === q.id ? '#fff' : color.danger, cursor: 'pointer', fontSize: size > 38 ? 16 : 15 }}>
+        <i className={confirmDelete === q.id ? 'las la-exclamation' : 'las la-trash'} />
+      </button>
+    ) : null;
 
   return (
     <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px' }} data-screen="pipeline">
@@ -127,6 +152,7 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
                     <div style={{ fontSize: 12.5, color: color.muted }}>{q.quote_number} · {q.customer_name ?? '—'}</div>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); clone(q.id); }} title="Clone" style={{ width: 40, height: 40, border: 'none', borderRadius: 11, background: color.appBg, color: color.muted, cursor: 'pointer', fontSize: 16 }}><i className="las la-copy" /></button>
+                  {deleteBtn(q, 40)}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ display: 'inline-block', padding: '6px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, fontFamily: heading, background: pill.bg, color: pill.color }}>{pill.label}</span>
@@ -153,10 +179,13 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
               <div style={{ fontSize: 13.5, color: color.muted }} data-mask>{new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
               <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 15, textAlign: 'right' }}>{money(q.quoted_price)}</div>
               <div><span style={{ display: 'inline-block', padding: '6px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, fontFamily: heading, background: pill.bg, color: pill.color }}>{pill.label}</span></div>
-              <button onClick={(e) => { e.stopPropagation(); clone(q.id); }} title="Clone"
-                style={{ width: 36, height: 36, border: 'none', borderRadius: 11, background: color.appBg, color: color.muted, cursor: 'pointer', fontSize: 15 }}>
-                <i className="las la-copy" />
-              </button>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={(e) => { e.stopPropagation(); clone(q.id); }} title="Clone"
+                  style={{ width: 36, height: 36, border: 'none', borderRadius: 11, background: color.appBg, color: color.muted, cursor: 'pointer', fontSize: 15 }}>
+                  <i className="las la-copy" />
+                </button>
+                {deleteBtn(q, 36)}
+              </div>
             </div>
           );
         })}

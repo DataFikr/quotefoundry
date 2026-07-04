@@ -9,8 +9,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { quoteService } from '../data-access-layer/services/quoteService';
 import { rateService, customerService } from '../data-access-layer/services/rateService';
-import { computeQuote, resolveRates } from '../data-access-layer/lib/quoteEngine';
-import type { QuoteInputs, ShopRates, Customer } from '../data-access-layer/lib/types';
+import { computeQuote, ratesForInputs } from '../data-access-layer/lib/quoteEngine';
+import type { QuoteInputs, ShopRates, Customer, MaterialLine } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money, money2, heading, cardShadowLg, initials } from '../app/ui';
 import { useIsMobile } from '../app/useIsMobile';
@@ -44,6 +44,90 @@ const sampleChip: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 6,
 };
 
+// ---------------------------------------------------------------------------
+// FilePreviewPane — right-half panel that renders the clicked upload:
+// CSV/XLSX as a table, PDFs via the browser's native viewer, images inline;
+// anything else (DWG/STP…) gets an honest "no preview" message.
+// ---------------------------------------------------------------------------
+type PreviewContent =
+  | { kind: 'table'; rows: (string | number)[][] }
+  | { kind: 'pdf'; url: string }
+  | { kind: 'image'; url: string }
+  | { kind: 'none' }
+  | null;
+
+function FilePreviewPane({ file, mobile, onClose }: { file: File; mobile: boolean; onClose: () => void }) {
+  const [content, setContent] = useState<PreviewContent>(null);
+
+  useEffect(() => {
+    let url: string | null = null;
+    let cancelled = false;
+    (async () => {
+      const name = file.name.toLowerCase();
+      if (/\.(csv|xlsx|xls)$/.test(name)) {
+        const XLSX = await import('xlsx');
+        const wb = XLSX.read(new Uint8Array(await file.arrayBuffer()), { type: 'array', cellDates: true });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, blankrows: false }) as any[][];
+        if (!cancelled) setContent({
+          kind: 'table',
+          rows: rows.slice(0, 100).map((r) => r.map((c) => (c instanceof Date ? c.toISOString().slice(0, 10) : c ?? ''))),
+        });
+      } else if (/\.pdf$/.test(name)) {
+        url = URL.createObjectURL(file);
+        if (!cancelled) setContent({ kind: 'pdf', url });
+      } else if (/\.(png|jpe?g|gif|webp)$/.test(name)) {
+        url = URL.createObjectURL(file);
+        if (!cancelled) setContent({ kind: 'image', url });
+      } else {
+        if (!cancelled) setContent({ kind: 'none' });
+      }
+    })();
+    return () => { cancelled = true; if (url) URL.revokeObjectURL(url); };
+  }, [file]);
+
+  return (
+    <div data-testid="file-preview" role="dialog" aria-label={`Preview of ${file.name}`}
+      style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: mobile ? '100vw' : '50vw', zIndex: 55, background: color.surface, boxShadow: '-24px 0 60px -24px rgba(20,20,50,.45)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderBottom: `1px solid ${color.border}` }}>
+        <i className="las la-file-alt" style={{ fontSize: 19, color: color.accentDeep }} />
+        <div style={{ flex: 1, minWidth: 0, fontFamily: heading, fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</div>
+        <button onClick={onClose} aria-label="Close preview" data-testid="close-preview"
+          style={{ width: 36, height: 36, border: 'none', borderRadius: 10, background: color.appBg, color: color.body, cursor: 'pointer', fontSize: 16 }}>
+          <i className="las la-times" />
+        </button>
+      </div>
+      <div style={{ flex: 1, overflow: 'auto', padding: content?.kind === 'pdf' ? 0 : 16 }}>
+        {!content && <div style={{ padding: 30, textAlign: 'center', color: color.muted, fontSize: 14 }}>Loading preview…</div>}
+        {content?.kind === 'table' && (
+          <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
+            <tbody>
+              {content.rows.map((r, ri) => (
+                <tr key={ri} style={{ background: ri === 0 ? '#EEF1FF' : ri % 2 ? '#FBFBFE' : '#fff' }}>
+                  {r.map((c, ci) => (
+                    <td key={ci} style={{ padding: '7px 10px', border: `1px solid ${color.border}`, fontWeight: ri === 0 ? 700 : 400, fontFamily: ri === 0 ? heading : undefined, whiteSpace: 'nowrap' }}>{String(c)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {content?.kind === 'pdf' && (
+          <iframe src={content.url} title={`Preview of ${file.name}`} style={{ width: '100%', height: '100%', border: 'none' }} />
+        )}
+        {content?.kind === 'image' && (
+          <img src={content.url} alt={file.name} style={{ maxWidth: '100%', borderRadius: 10 }} />
+        )}
+        {content?.kind === 'none' && (
+          <div style={{ padding: 40, textAlign: 'center', color: color.muted }}>
+            <i className="las la-cube" style={{ fontSize: 36, color: '#D6D6E6' }} />
+            <div style={{ marginTop: 12, fontSize: 14, lineHeight: 1.5 }}>No preview for this file type (CAD and binary files are stored with the quote and opened in your CAD software).</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PrefillBadge({ meta }: { meta?: { confidence: string; source: string } }) {
   if (!meta) return null;
   const high = meta.confidence === 'high';
@@ -75,7 +159,9 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
   // --- Document Assist state ---
   const [docBusy, setDocBusy] = useState(false);
   const [docResult, setDocResult] = useState<AnalyzeResult | null>(null);
-  const [docFiles, setDocFiles] = useState<Array<{ name: string; tier: string }>>([]);
+  // keep the File blobs so uploaded documents can be previewed in the pane
+  const [docFiles, setDocFiles] = useState<Array<{ name: string; tier: string; file: File }>>([]);
+  const [previewIdx, setPreviewIdx] = useState<number | null>(null);
   const [prefillMeta, setPrefillMeta] = useState<Prefill>({});
 
   useEffect(() => {
@@ -96,8 +182,25 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
     customerService.list().then((r) => r.data && setCustomers(r.data));
   }, [quoteId]);
 
-  const effectiveRates = useMemo(() => (rates ? resolveRates(rates, inputs.material_spec) : null), [rates, inputs.material_spec]);
+  const effectiveRates = useMemo(() => (rates ? ratesForInputs(rates, inputs) : null), [rates, inputs.material_spec, inputs.material_lines]);
   const totals = useMemo(() => (effectiveRates ? computeQuote(inputs, effectiveRates) : null), [inputs, effectiveRates]);
+
+  // --- Material lines (multi-material) --------------------------------------
+  // The card edits a LIST of {type, weight, qty}. Legacy quotes (single
+  // material_spec/material_weight) are shown as one line. Every edit keeps
+  // material_spec/material_weight in sync (first type / total lb) so PDFs,
+  // Doc Assist snapping, and older paths keep working.
+  const matLines: MaterialLine[] = inputs.material_lines ?? [
+    { type: inputs.material_spec ?? '', weight: inputs.material_weight || 0, qty: 1 },
+  ];
+  function syncLines(next: MaterialLine[]) {
+    const totalW = next.reduce((s, l) => s + (l.weight || 0) * (l.qty > 0 ? l.qty : 1), 0);
+    setInputs((p) => ({ ...p, material_lines: next, material_spec: next[0]?.type || '', material_weight: totalW }));
+  }
+  const setLine = (i: number, patch: Partial<MaterialLine>) =>
+    syncLines(matLines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  const addLine = () => syncLines([...matLines, { type: '', weight: 0, qty: 1 }]);
+  const removeLine = (i: number) => syncLines(matLines.filter((_, j) => j !== i));
 
   function set<K extends keyof QuoteInputs>(key: K, value: QuoteInputs[K]) { setInputs((p) => ({ ...p, [key]: value })); }
   const num = (key: keyof QuoteInputs) => (e: React.ChangeEvent<HTMLInputElement>) => set(key, (Number(e.target.value) || 0) as QuoteInputs[typeof key]);
@@ -129,6 +232,9 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
         if (field === 'material_spec') {
           const hit = mats.find((m) => m.name.toLowerCase() === String(meta.value).toLowerCase());
           if (hit) value = hit.name;
+          // the material now lives on line 0 of material_lines
+          const lines = p.material_lines ?? [{ type: p.material_spec ?? '', weight: p.material_weight || 0, qty: 1 }];
+          next.material_lines = [{ ...lines[0], type: String(value) }, ...lines.slice(1)];
         }
         next[field as keyof QuoteInputs] = value as never;
       }
@@ -142,15 +248,26 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
     if (list.length === 0) return;
     setDocBusy(true);
     let firstParsed: AnalyzeResult | null = null;
-    const attached: Array<{ name: string; tier: string }> = [];
+    const attached: Array<{ name: string; tier: string; file: File }> = [];
     for (const f of list) {
       const res = await analyzeFile(f);
-      attached.push({ name: f.name, tier: res.tier });
+      attached.push({ name: f.name, tier: res.tier, file: f });
       if (!firstParsed && res.parsed) { firstParsed = res; applyPrefill(res.prefill); }
     }
     setDocFiles((prev) => [...prev, ...attached]);
     setDocResult(firstParsed ?? (await analyzeFile(list[0])));
     setDocBusy(false);
+  }
+
+  // Remove an uploaded file from the list (prefilled values already applied
+  // stay — the estimator reviewed them; this just drops the attachment).
+  function removeDocFile(i: number) {
+    setDocFiles((prev) => {
+      const next = prev.filter((_, j) => j !== i);
+      if (next.length === 0) setDocResult(null);
+      return next;
+    });
+    setPreviewIdx((p) => (p === null ? null : p === i ? null : p > i ? p - 1 : p));
   }
   async function loadSample(url: string, name: string, type: string) {
     const blob = await (await fetch(url)).blob();
@@ -296,10 +413,18 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
                 {docFiles.map((f, i) => {
                   const badge = f.tier === 'tier1_spreadsheet' ? { label: 'Spreadsheet', c: color.success } : f.tier === 'tier2_text_pdf' ? { label: 'Text PDF', c: color.accentDeep } : { label: 'Stored', c: color.muted };
                   return (
-                    <div key={i} data-doc-file style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#F7F8FF', borderRadius: 12, padding: '9px 12px' }}>
+                    /* click to preview (hand cursor); trash removes the file */
+                    <div key={i} data-doc-file role="button" tabIndex={0} aria-label={`Preview ${f.name}`}
+                      onClick={() => setPreviewIdx(i)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPreviewIdx(i); } }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 11, background: previewIdx === i ? '#EEF1FF' : '#F7F8FF', border: previewIdx === i ? `1px solid rgba(70,103,219,.4)` : '1px solid transparent', borderRadius: 12, padding: '9px 12px', cursor: 'pointer' }}>
                       <i className="las la-file" style={{ color: badge.c, fontSize: 19 }} />
                       <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.body, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.name}</div>
                       <span style={{ fontSize: 11, fontWeight: 700, fontFamily: heading, padding: '4px 10px', borderRadius: 8, background: '#EEF1FF', color: badge.c }}>{badge.label}</span>
+                      <button onClick={(e) => { e.stopPropagation(); removeDocFile(i); }} title="Remove file" aria-label={`Remove ${f.name}`} data-remove-file={i}
+                        style={{ width: 30, height: 30, flex: 'none', border: 'none', borderRadius: 9, background: '#FFEFF1', color: color.danger, cursor: 'pointer', fontSize: 13 }}>
+                        <i className="las la-trash" />
+                      </button>
                     </div>
                   );
                 })}
@@ -316,36 +441,57 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
             </div>
           </div>
 
-          {/* ROW 2 · col 1 — MATERIAL */}
+          {/* ROW 2 · col 1 — MATERIAL (one or more typed lines) */}
           <div style={card} data-card="material">
             <CardTitle>Material</CardTitle>
-            <label style={{ display: 'block' }}><span style={labelText}>Material</span>
-              <div style={inputBox}>
-                <select value={inputs.material_spec} onChange={(e) => set('material_spec', e.target.value)} data-field="material_spec"
-                  style={{ ...rawInput, appearance: 'none', cursor: 'pointer' }}>
-                  <option value="">Select a material…</option>
-                  {(rates?.materials ?? []).map((m) => <option key={m.name} value={m.name}>{m.name} — ${m.price.toFixed(2)}/lb</option>)}
-                  {inputs.material_spec && !(rates?.materials ?? []).some((m) => m.name.toLowerCase() === inputs.material_spec!.toLowerCase()) && (
-                    <option value={inputs.material_spec}>{inputs.material_spec} (custom)</option>
-                  )}
-                </select>
-                <i className="las la-angle-down" style={{ color: '#B6B6CC' }} />
-              </div>
-              <PrefillBadge meta={prefillMeta.material_spec} />
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
-              <label style={{ display: 'block' }}><span style={labelText}>Weight</span>
-                <div style={inputBox}><input type="number" value={inputs.material_weight || ''} onChange={num('material_weight')} style={rawInput} data-field="material_weight" /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>lb</span></div>
-              </label>
-              <label style={{ display: 'block' }}><span style={labelText}>Quantity</span>
+            {matLines.map((line, i) => {
+              const known = (rates?.materials ?? []).some((m) => m.name.toLowerCase() === line.type.toLowerCase());
+              return (
+                <div key={i} data-material-line={i} style={{ marginTop: i === 0 ? 0 : 14, paddingTop: i === 0 ? 0 : 14, borderTop: i === 0 ? 'none' : '1px solid #F2F2F8' }}>
+                  <label style={{ display: 'block' }}><span style={labelText}>Type</span>
+                    <div style={inputBox}>
+                      <select value={line.type} onChange={(e) => setLine(i, { type: e.target.value })} data-field={i === 0 ? 'material_spec' : `material_spec_${i}`}
+                        style={{ ...rawInput, appearance: 'none', cursor: 'pointer' }}>
+                        <option value="">Select a material type…</option>
+                        {(rates?.materials ?? []).map((m) => <option key={m.name} value={m.name}>{m.name} — ${m.price.toFixed(2)}/lb</option>)}
+                        {line.type && !known && <option value={line.type}>{line.type} (custom)</option>}
+                      </select>
+                      <i className="las la-angle-down" style={{ color: '#B6B6CC' }} />
+                    </div>
+                    {i === 0 && <PrefillBadge meta={prefillMeta.material_spec} />}
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: matLines.length > 1 ? '1fr 1fr 40px' : '1fr 1fr', gap: 14, marginTop: 12, alignItems: 'end' }}>
+                    <label style={{ display: 'block' }}><span style={labelText}>Weight</span>
+                      <div style={inputBox}><input type="number" value={line.weight || ''} onChange={(e) => setLine(i, { weight: Number(e.target.value) || 0 })} style={rawInput} data-field={i === 0 ? 'material_weight' : `material_weight_${i}`} /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>lb</span></div>
+                    </label>
+                    <label style={{ display: 'block' }}><span style={labelText}>Qty</span>
+                      <div style={inputBox}><input type="number" value={line.qty || ''} onChange={(e) => setLine(i, { qty: Number(e.target.value) || 0 })} style={rawInput} data-field={`material_qty_${i}`} /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>pcs</span></div>
+                    </label>
+                    {matLines.length > 1 && (
+                      <button onClick={() => removeLine(i)} title="Remove this material" aria-label={`Remove material line ${i + 1}`} data-remove-line={i}
+                        style={{ width: 40, height: 40, border: 'none', borderRadius: 11, background: '#FFEFF1', color: color.danger, cursor: 'pointer', fontSize: 15, marginBottom: 3 }}>
+                        <i className="las la-trash" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            <button onClick={addLine} data-testid="add-material-line"
+              style={{ marginTop: 14, height: 40, padding: '0 16px', border: `1.5px dashed ${color.border}`, borderRadius: 11, background: '#FBFBFE', color: color.accentDeep, fontFamily: heading, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+              <i className="las la-plus" />Add material type
+            </button>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 16, paddingTop: 14, borderTop: '1px solid #F2F2F8' }}>
+              <label style={{ display: 'block' }}><span style={labelText}>Job quantity</span>
                 <div style={inputBox}><input type="number" value={inputs.quantity || ''} onChange={num('quantity')} style={rawInput} data-field="quantity" /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>pcs</span></div>
                 <PrefillBadge meta={prefillMeta.quantity} />
               </label>
+              <label style={{ display: 'block' }}><span style={labelText}>Finish spec</span>
+                <div style={inputBox}><input value={inputs.finish_spec} onChange={(e) => set('finish_spec', e.target.value)} placeholder="Hot-dip galvanized" style={rawInput} data-field="finish_spec" /></div>
+                <PrefillBadge meta={prefillMeta.finish_spec} />
+              </label>
             </div>
-            <label style={{ display: 'block', marginTop: 14 }}><span style={labelText}>Finish spec</span>
-              <div style={inputBox}><input value={inputs.finish_spec} onChange={(e) => set('finish_spec', e.target.value)} placeholder="Hot-dip galvanized" style={rawInput} data-field="finish_spec" /></div>
-              <PrefillBadge meta={prefillMeta.finish_spec} />
-            </label>
           </div>
 
           {/* ROW 2 · col 2 — LABOR */}
@@ -427,6 +573,11 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
           <div style={{ fontSize: 12.5, color: '#9EA0C8', textAlign: 'center', marginTop: 12 }}>Margin &amp; overhead stay internal — never on the customer PDF.</div>
         </div>
       </div>
+
+      {/* uploaded-file preview pane (right half of the screen) */}
+      {previewIdx !== null && docFiles[previewIdx] && (
+        <FilePreviewPane file={docFiles[previewIdx].file} mobile={mobile} onClose={() => setPreviewIdx(null)} />
+      )}
 
       {/* MOBILE: persistent mini-total (design P0 2.4) — the live quoted price
           must never be off-screen while the estimator types. Stacked layout

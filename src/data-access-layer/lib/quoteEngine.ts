@@ -32,12 +32,29 @@ export function resolveRates(rates: ShopRates, materialSpec?: string): ShopRates
   return { ...rates, price_steel: priceForMaterial(rates, materialSpec) };
 }
 
+// The rates to hand computeQuote for a given set of inputs. Multi-material
+// quotes must NOT pre-collapse price_steel to the first type (each line looks
+// up its own price from the library; an unknown type falls back to the BASE
+// steel price, not line 1's). Legacy single-material quotes keep resolveRates.
+export function ratesForInputs(rates: ShopRates, inputs: Pick<QuoteInputs, 'material_spec' | 'material_lines'>): ShopRates {
+  return inputs.material_lines?.length ? { ...rates } : resolveRates(rates, inputs.material_spec);
+}
+
 export function computeQuote(inputs: QuoteInputs, rates: ShopRates): QuoteTotals {
   const qty = inputs.quantity > 0 ? inputs.quantity : 1;
 
-  // 1. Material: weight x price, plus scrap/drop allowance
-  const material =
-    inputs.material_weight * rates.price_steel * (1 + rates.scrap_pct / 100);
+  // 1. Material: weight x price, plus scrap/drop allowance.
+  //    Multi-material quotes carry material_lines — each line prices its own
+  //    type from the (snapshotted) library: weight/pc × pieces × $/lb × scrap.
+  //    The legacy single-material path is unchanged (canonical test locks it).
+  const scrap = 1 + rates.scrap_pct / 100;
+  const material = inputs.material_lines?.length
+    ? inputs.material_lines.reduce(
+        (sum, l) =>
+          sum + (l.weight || 0) * (l.qty > 0 ? l.qty : 1) * priceForMaterial(rates, l.type) * scrap,
+        0
+      )
+    : inputs.material_weight * rates.price_steel * scrap;
 
   // 2. Labor: each operation's hours x its rate
   const labor =

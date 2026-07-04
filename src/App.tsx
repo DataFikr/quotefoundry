@@ -102,6 +102,28 @@ export function App() {
   const enforceAuth = isLiveEnv() || params.has('auth');
 
   useEffect(() => { devBootstrap().then(() => setReady(true)); }, []);
+
+  // HARD GUARD: a production build without Supabase env vars would otherwise
+  // silently ship the in-memory DEMO backend (fake login, Ironside demo shop)
+  // to real visitors. Fail loudly instead — this is a deploy misconfiguration,
+  // never a mode customers should see. (Local dev/e2e use `npm run dev`, which
+  // is a development build, so the mock still works there.)
+  if (import.meta.env.PROD && !isLiveEnv()) {
+    return (
+      <Centered>
+        <div style={{ maxWidth: 460, textAlign: 'center', padding: 24 }}>
+          <div style={{ fontSize: 40, marginBottom: 10 }}>⚠️</div>
+          <h2 style={{ color: color.ink, margin: '0 0 8px' }}>Deployment configuration error</h2>
+          <p style={{ fontSize: 14.5, lineHeight: 1.6 }}>
+            This build has no database configured (<code>VITE_SUPABASE_URL</code> /{' '}
+            <code>VITE_SUPABASE_ANON_KEY</code> are missing). Set them in the hosting
+            platform's environment variables and redeploy — see <code>docs/DEPLOY.md</code> §1.
+          </p>
+        </div>
+      </Centered>
+    );
+  }
+
   if (!ready) return <Centered>Loading QuoteFoundry…</Centered>;
 
   if (!entered) {

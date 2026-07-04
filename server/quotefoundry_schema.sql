@@ -165,8 +165,9 @@ create table quotes (
   -- job inputs (what the estimator enters)
   job_name        text not null,
   part_number     text,                                   -- RFQ metadata (Doc Assist or typed)
-  material_spec   text,
-  material_weight numeric(10,2),                          -- lb
+  material_spec   text,                                   -- first line's type (display/back-compat)
+  material_weight numeric(10,2),                          -- lb (legacy single-material path)
+  material_lines  jsonb,                                  -- [{type, weight, qty}] — multi-material
   quantity        integer not null default 1,
   burn_minutes    numeric(10,2) default 0,
   hrs_cutting     numeric(10,2) default 0,

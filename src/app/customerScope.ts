@@ -12,8 +12,14 @@ export function customerScope(q: Quote): { lines: ScopeLine[]; subtotal: number;
   const t = q.totals;
   const lines: ScopeLine[] = [];
 
-  if (t.line_material > 0)
-    lines.push({ label: 'Material', detail: q.inputs.material_spec || 'Steel + drop allowance', amount: t.line_material });
+  if (t.line_material > 0) {
+    // multi-material quotes list their distinct types; legacy quotes show the single spec
+    const types = (q.inputs.material_lines ?? []).map((l) => l.type).filter(Boolean);
+    const detail = types.length
+      ? [...new Set(types)].join(', ')
+      : q.inputs.material_spec || 'Steel + drop allowance';
+    lines.push({ label: 'Material', detail, amount: t.line_material });
+  }
 
   const fab = t.line_labor + t.line_burn + t.line_consumables;
   if (fab > 0)
