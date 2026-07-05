@@ -16,6 +16,7 @@ import { money, money2, heading, cardShadowLg, initials } from '../app/ui';
 import { useIsMobile } from '../app/useIsMobile';
 import { analyzeFile, AnalyzeResult } from '../doc-assist/src/docAssistAnalyzer';
 import { Prefill } from '../doc-assist/src/fieldMap';
+import type { ToastData } from '../app/Toast';
 
 export interface PresetCustomer { id?: string; name: string; email?: string }
 
@@ -139,7 +140,7 @@ function PrefillBadge({ meta }: { meta?: { confidence: string; source: string } 
   );
 }
 
-export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { quoteId?: string; presetCustomer?: PresetCustomer; onSaved: (id: string) => void; onCancel: () => void }) {
+export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notify }: { quoteId?: string; presetCustomer?: PresetCustomer; onSaved: (id: string) => void; onCancel: () => void; notify?: (t: ToastData) => void }) {
   const [inputs, setInputs] = useState<QuoteInputs>(EMPTY);
   const [customer, setCustomer] = useState({ name: presetCustomer?.name ?? '', email: presetCustomer?.email ?? '' });
   const [rates, setRates] = useState<ShopRates | null>(null);
@@ -286,7 +287,10 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel }: { q
       : await quoteService.create(inputs, { id: presetCustomer?.id, name: customer.name || undefined, email: customer.email.trim() });
     setSaving(false);
     if (res.error) { setSaveError(res.error); return; }
-    if (res.data) onSaved(res.data.id);
+    if (res.data) {
+      notify?.({ message: editId ? 'Changes saved.' : 'Quote saved.' });
+      onSaved(res.data.id);
+    }
   }
 
   const labor: Array<[keyof QuoteInputs, string]> = [

@@ -8,11 +8,12 @@ import type { Customer } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { heading, cardShadow, initials } from '../app/ui';
 import { useIsMobile } from '../app/useIsMobile';
+import type { ToastData } from '../app/Toast';
 import { customersTemplateCsv, parseCustomersFile, downloadCsv, formatUsPhone, CUSTOMERS_TEMPLATE_FILENAME } from '../app/bulkImport';
 
 const AVATARS = ['linear-gradient(135deg,#4667DB,#7C5CFC)', 'linear-gradient(135deg,#2BB6A8,#178F84)', 'linear-gradient(135deg,#F4806A,#E0533B)'];
 
-export function CustomersScreen({ onNewQuote }: { onNewQuote: (c: { id?: string; name: string; email?: string }) => void }) {
+export function CustomersScreen({ onNewQuote, notify }: { onNewQuote: (c: { id?: string; name: string; email?: string }) => void; notify?: (t: ToastData) => void }) {
   const [list, setList] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
@@ -41,6 +42,7 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: (c: { id?: string;
     setDraft({ company_name: '', contact_name: '', email: '', phone: '', website: '' });
     setAdding(false);
     load();
+    notify?.({ message: 'Customer added.' });
   }
 
   // Two-step delete: first tap arms the button, second tap deletes. Existing
@@ -52,8 +54,9 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: (c: { id?: string;
       return;
     }
     setConfirmDelete(null);
-    await customerService.remove(id);
+    const res = await customerService.remove(id);
     load();
+    notify?.({ message: res.error ? res.error : 'Customer deleted.' });
   }
 
   // Bulk upload: parse the CSV/XLSX, create one row per parsed customer.
@@ -84,24 +87,24 @@ export function CustomersScreen({ onNewQuote }: { onNewQuote: (c: { id?: string;
 
   return (
     <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px' }} data-screen="customers">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: color.surface, border: `1px solid ${color.borderSoft}`, borderRadius: 13, padding: '0 16px', height: 46, width: 320, maxWidth: '40vw' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 10 : 14, marginBottom: 22, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: color.surface, border: `1px solid ${color.borderSoft}`, borderRadius: 13, padding: '0 16px', height: 46, width: mobile ? '100%' : 320, maxWidth: mobile ? 'none' : '40vw' }}>
           <i className="las la-search" style={{ color: '#B6B6CC', fontSize: 17 }} />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customers" data-testid="customer-search"
             style={{ border: 'none', background: 'transparent', flex: 1, fontSize: 14 }} />
         </div>
         <button onClick={() => downloadCsv(CUSTOMERS_TEMPLATE_FILENAME, customersTemplateCsv())} data-testid="customer-template" title="Download a CSV template for bulk upload"
-          style={{ marginLeft: 'auto', height: 46, padding: '0 18px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+          style={{ marginLeft: mobile ? 0 : 'auto', flex: mobile ? '1 1 0' : 'none', justifyContent: 'center', height: 46, padding: '0 16px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
           <i className="las la-download" />Template
         </button>
         <button onClick={() => fileRef.current?.click()} disabled={importing} data-testid="customer-import"
-          style={{ height: 46, padding: '0 18px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: importing ? 0.7 : 1 }}>
-          <i className={importing ? 'las la-spinner' : 'las la-file-upload'} style={importing ? { animation: 'qfSpin 1s linear infinite' } : undefined} />{importing ? 'Importing…' : 'Import list'}
+          style={{ height: 46, padding: '0 16px', flex: mobile ? '1 1 0' : 'none', justifyContent: 'center', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: importing ? 0.7 : 1 }}>
+          <i className={importing ? 'las la-spinner' : 'las la-file-upload'} style={importing ? { animation: 'qfSpin 1s linear infinite' } : undefined} />{importing ? 'Importing…' : mobile ? 'Import' : 'Import list'}
         </button>
         <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" data-testid="customer-import-input" style={{ display: 'none' }}
           onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
         <button onClick={() => setAdding((v) => !v)} data-testid="add-customer"
-          style={{ height: 46, padding: '0 22px', border: 'none', borderRadius: 13, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+          style={{ height: 46, padding: '0 22px', flex: mobile ? '1 1 100%' : 'none', justifyContent: 'center', border: 'none', borderRadius: 13, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
           <i className="las la-user-plus" />Add customer
         </button>
       </div>

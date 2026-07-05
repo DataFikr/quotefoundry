@@ -11,6 +11,8 @@ import { rateService } from '../data-access-layer/services/rateService';
 import type { ShopRates, Material } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { heading, cardShadowLg } from '../app/ui';
+import { useIsMobile } from '../app/useIsMobile';
+import type { ToastData } from '../app/Toast';
 import { materialsTemplateCsv, parseMaterialsFile, mergeMaterials, downloadCsv, MATERIALS_TEMPLATE_FILENAME } from '../app/bulkImport';
 
 type Tab = 'material' | 'labor' | 'margin';
@@ -30,7 +32,8 @@ const MARGIN: Field[] = [
   { key: 'margin_pct', label: 'Target margin', suffix: '%' },
 ];
 
-export function RatesScreen() {
+export function RatesScreen({ notify }: { notify?: (t: ToastData) => void }) {
+  const mobile = useIsMobile();
   const [rates, setRates] = useState<ShopRates | null>(null);
   const [tab, setTab] = useState<Tab>('material');
   const [status, setStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved' | 'error'>('clean');
@@ -95,6 +98,7 @@ export function RatesScreen() {
     }
     setRates(res.data); // reflect exactly what the DB now holds
     setStatus('saved');
+    notify?.({ message: 'Rates saved — applies to new quotes only.' });
   }
 
   if (!rates) return <div style={{ padding: 40, color: color.muted }}>Loading rates…</div>;
@@ -119,7 +123,7 @@ export function RatesScreen() {
   ];
 
   return (
-    <div style={{ padding: '30px 34px 48px', maxWidth: 920 }} data-screen="rates">
+    <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px', maxWidth: 920 }} data-screen="rates">
       <div data-testid="rates-banner" style={{ display: 'flex', alignItems: 'flex-start', gap: 13, background: color.warnBg, border: `1px solid ${color.warnBorder}`, borderRadius: 16, padding: '16px 20px', marginBottom: 20 }}>
         <i className="las la-info-circle" style={{ color: '#D99A2B', fontSize: 20, marginTop: 1 }} />
         <div style={{ fontSize: 14, color: '#8A6A20', lineHeight: 1.5 }}>
@@ -140,13 +144,13 @@ export function RatesScreen() {
         })}
       </div>
 
-      <div style={{ background: color.surface, borderRadius: 22, padding: '28px 30px', boxShadow: cardShadowLg }}>
+      <div style={{ background: color.surface, borderRadius: 22, padding: mobile ? '18px 16px' : '28px 30px', boxShadow: cardShadowLg }}>
         {tab === 'material' && (
           <div data-panel="material">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px' }}>Material library ($/lb)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px', flexBasis: mobile ? '100%' : undefined }}>Material library ($/lb)</div>
               <button onClick={() => downloadCsv(MATERIALS_TEMPLATE_FILENAME, materialsTemplateCsv())} data-testid="material-template" title="Download a CSV template for bulk upload"
-                style={{ marginLeft: 'auto', height: 38, padding: '0 14px', border: `1.5px solid ${color.border}`, borderRadius: 11, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                style={{ marginLeft: mobile ? 0 : 'auto', height: 38, padding: '0 14px', border: `1.5px solid ${color.border}`, borderRadius: 11, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
                 <i className="las la-download" />Template
               </button>
               <button onClick={() => fileRef.current?.click()} data-testid="material-import"
@@ -163,33 +167,33 @@ export function RatesScreen() {
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(rates.materials ?? []).map((m, i) => (
-                <div key={i} data-material={m.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div key={i} data-material={m.name} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: mobile ? 'wrap' : 'nowrap' }}>
                   <input value={m.name} onChange={(e) => editMaterial(i, { name: e.target.value })}
-                    style={{ flex: 1, height: 46, border: `1.5px solid ${color.border}`, borderRadius: 12, padding: '0 14px', fontSize: 14.5 }} />
-                  <div style={{ display: 'flex', alignItems: 'center', width: 160, border: `1.5px solid ${color.border}`, borderRadius: 12, height: 46, padding: '0 14px' }}>
+                    style={{ flex: mobile ? '1 1 100%' : 1, height: 46, border: `1.5px solid ${color.border}`, borderRadius: 12, padding: '0 14px', fontSize: 14.5, minWidth: 0 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', width: mobile ? 'auto' : 160, flex: mobile ? '1 1 auto' : 'none', border: `1.5px solid ${color.border}`, borderRadius: 12, height: 46, padding: '0 14px', minWidth: 0 }}>
                     <span style={{ color: color.faint, fontWeight: 600, marginRight: 4 }}>$</span>
                     <input type="number" step="0.01" value={m.price} onChange={(e) => editMaterial(i, { price: Number(e.target.value) || 0 })} data-material-price={m.name}
-                      style={{ border: 'none', background: 'transparent', flex: 1, fontSize: 14.5, width: '100%' }} />
+                      style={{ border: 'none', background: 'transparent', flex: 1, fontSize: 14.5, width: '100%', minWidth: 0 }} />
                     <span style={{ color: color.faint, fontWeight: 600 }}>/lb</span>
                   </div>
                   <button onClick={() => removeMaterial(i)} title="Remove" data-remove-material={m.name}
-                    style={{ width: 40, height: 40, border: 'none', borderRadius: 11, background: '#FFEFF1', color: color.danger, cursor: 'pointer', fontSize: 16 }}><i className="las la-trash" /></button>
+                    style={{ width: mobile ? 44 : 40, height: mobile ? 44 : 40, flex: 'none', border: 'none', borderRadius: 11, background: '#FFEFF1', color: color.danger, cursor: 'pointer', fontSize: 16 }}><i className="las la-trash" /></button>
                 </div>
               ))}
             </div>
 
             {/* add material */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingTop: 16, borderTop: `1px solid #F2F2F8` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingTop: 16, borderTop: `1px solid #F2F2F8`, flexWrap: mobile ? 'wrap' : 'nowrap' }}>
               <input value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} placeholder="New material (e.g. Galvanized Sheet)" data-testid="new-material-name"
-                style={{ flex: 1, height: 46, border: `1.5px solid ${color.border}`, borderRadius: 12, padding: '0 14px', fontSize: 14.5 }} />
-              <div style={{ display: 'flex', alignItems: 'center', width: 160, border: `1.5px solid ${color.border}`, borderRadius: 12, height: 46, padding: '0 14px' }}>
+                style={{ flex: mobile ? '1 1 100%' : 1, height: 46, border: `1.5px solid ${color.border}`, borderRadius: 12, padding: '0 14px', fontSize: 14.5, minWidth: 0 }} />
+              <div style={{ display: 'flex', alignItems: 'center', width: mobile ? 'auto' : 160, flex: mobile ? '1 1 auto' : 'none', border: `1.5px solid ${color.border}`, borderRadius: 12, height: 46, padding: '0 14px', minWidth: 0 }}>
                 <span style={{ color: color.faint, fontWeight: 600, marginRight: 4 }}>$</span>
                 <input type="number" step="0.01" value={draft.price} onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))} placeholder="0.00" data-testid="new-material-price"
-                  style={{ border: 'none', background: 'transparent', flex: 1, fontSize: 14.5, width: '100%' }} />
+                  style={{ border: 'none', background: 'transparent', flex: 1, fontSize: 14.5, width: '100%', minWidth: 0 }} />
                 <span style={{ color: color.faint, fontWeight: 600 }}>/lb</span>
               </div>
               <button onClick={addMaterial} data-testid="add-material"
-                style={{ height: 46, padding: '0 18px', border: 'none', borderRadius: 12, background: color.accentDeep, color: '#fff', fontFamily: heading, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                style={{ height: 46, padding: '0 18px', flex: 'none', border: 'none', borderRadius: 12, background: color.accentDeep, color: '#fff', fontFamily: heading, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 <i className="las la-plus" /> Add
               </button>
             </div>
@@ -199,11 +203,11 @@ export function RatesScreen() {
         )}
 
         {tab === 'labor' && (
-          <div data-panel="labor" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>{LABOR.map(numField)}</div>
+          <div data-panel="labor" style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: mobile ? 14 : 18 }}>{LABOR.map(numField)}</div>
         )}
 
         {tab === 'margin' && (
-          <div data-panel="margin" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>{MARGIN.map(numField)}</div>
+          <div data-panel="margin" style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: mobile ? 14 : 18 }}>{MARGIN.map(numField)}</div>
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 26, paddingTop: 22, borderTop: `1px solid #F2F2F8` }}>

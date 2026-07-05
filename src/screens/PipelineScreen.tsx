@@ -8,6 +8,7 @@ import type { Quote, QuoteStatus } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money, statusPill, heading, cardShadow, cardShadowLg } from '../app/ui';
 import { useIsMobile } from '../app/useIsMobile';
+import type { ToastData } from '../app/Toast';
 
 const FILTERS: Array<{ key: QuoteStatus | 'all'; label: string }> = [
   { key: 'all', label: 'All' },
@@ -28,7 +29,7 @@ function StatCard({ label, value, foot, footColor }: { label: string; value: str
   );
 }
 
-export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: string) => void; onNew: () => void; onRefresh: () => void }) {
+export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (id: string) => void; onNew: () => void; onRefresh: () => void; notify?: (t: ToastData) => void }) {
   const mobile = useIsMobile();
   const ROW_COLS = '2.4fr 1.7fr 1fr 1.1fr 1fr 86px';
   const [all, setAll] = useState<Quote[]>([]);
@@ -70,9 +71,10 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
   }, [all, filter, search]);
 
   async function clone(id: string) {
-    await quoteService.clone(id);
+    const res = await quoteService.clone(id);
     onRefresh();
     load();
+    notify?.({ message: res.error ? res.error : `Cloned as ${res.data?.quote_number ?? 'a new draft'}.` });
   }
 
   // Drafts only (the service enforces it too). Two-step confirm, same pattern
@@ -84,9 +86,10 @@ export function PipelineScreen({ onOpen, onNew, onRefresh }: { onOpen: (id: stri
       return;
     }
     setConfirmDelete(null);
-    await quoteService.remove(id);
+    const res = await quoteService.remove(id);
     onRefresh();
     load();
+    notify?.({ message: res.error ? res.error : 'Draft deleted.' });
   }
 
   const deleteBtn = (q: Quote, size: number) =>

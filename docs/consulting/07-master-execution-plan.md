@@ -84,11 +84,11 @@ All **[CLAUDE]**.
 
 | # | Task | Files | Acceptance |
 |---|---|---|---|
-| 4.1 | URL routing: `/quotes`, `/quotes/:id`, `/quotes/:id/edit`, `/customers`, `/rates` (react-router or ~50-line hash router replacing `useState<Screen>` in `src/app/AppShell.tsx`) | `src/app/AppShell.tsx` + screens' `go()` calls | Refresh preserves location; quote URLs shareable; browser Back works; e2e nav specs updated |
-| 4.2 | Extend toast layer (from 2.3) to save/send/clone feedback | `src/app/Toast.tsx`, Editor/Detail/Pipeline screens | Non-blocking confirmation on every mutation |
-| 4.3 | Network diet: remove Tabler webfont CDN (migrate its few icons to Line Awesome), trim unused Lato/Source Sans weights after usage audit | `index.html` | Lighthouse perf improves; no missing glyphs (screenshot diffs) |
+| 4.1 | URL routing (hash): `#/quotes`, `#/quotes/:id`, `#/quotes/:id/edit`, `#/quotes/new`, `#/customers`, `#/rates` — a ~60-line hash router (`src/app/useHashRoute.ts`) replaced `useState<Screen>` in AppShell; App.tsx enters the app on an in-app hash so live refresh resumes. Hash (not path) needs no server rewrites | `src/app/useHashRoute.ts`, `src/app/AppShell.tsx`, `src/App.tsx` | ✅ 2026-07-04 — refresh preserves location (list + quote), quote URLs shareable, browser Back works; 5 routing/toast e2e specs added to `e2e/stage4.spec.ts` |
+| 4.2 | Toast layer lifted to AppShell (survives the navigation a mutation triggers) and passed to every screen as `notify`; wired to save (editor), clone + delete + won/lost-undo (detail), clone + delete (pipeline), add + delete (customers), save (rates). Detail's local toast removed (one layer) | `src/app/AppShell.tsx`, `Toast.tsx`, all five screens | ✅ 2026-07-04 — non-blocking confirmation on every mutation |
+| 4.3 | Network diet: removed the unused Tabler icon webfont CDN entirely (app uses Line Awesome only — zero `ti ti-*` usages), trimmed Lato `300` weight (kept 400/700/900) | `index.html` | ✅ 2026-07-04 — one fewer CDN stylesheet + a font weight; no missing glyphs (all screenshot gates green) |
 
-**Gate 4: Lighthouse ≥90 perf/SEO/a11y on landing + pipeline; all suites green.**
+**Gate 4: all suites green (52 vitest · 16 mock · 48 e2e) ✅. Lighthouse ≥90 perf/SEO/a11y on landing + pipeline — [FOUNDER] to measure on the deployed URL; the diet + Phase-2 a11y (focus rings, ARIA) + Phase-3 meta/OG/sitemap set it up to pass.**
 
 ---
 

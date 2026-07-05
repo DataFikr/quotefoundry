@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#E9E9F2;}
+  ::-webkit-scrollbar{width:0;height:0;}
+  @keyframes qfToastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:18px;padding:44px 20px 60px;font-family:'Source Sans 3',sans-serif;color:#1C1D21;">
+  <div style="text-align:center;">
+    <div style="font-family:'Lato';font-weight:900;font-size:22px;letter-spacing:-.3px;">QuoteFoundry Mobile — clickable prototype</div>
+    <div style="font-size:14px;color:#63659B;margin-top:4px;">Landing → sign in → pipeline → detail / editor · tabs, filters, undo, and live pricing all work. <a href="QuoteFoundry Mobile.dc.html" style="color:#1B51E5;font-weight:700;">Static screens</a></div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="418px,890px">
+    <div style="height:100%;display:flex;flex-direction:column;background:#F4F4FB;font-family:'Source Sans 3',sans-serif;color:#1C1D21;position:relative;">
+
+      <!-- ============ LANDING ============ -->
+      <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;overflow-y:auto;padding:64px 0 30px;background:#fff;">
+          <div style="padding:8px 24px 0;display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:#4667DB;display:flex;align-items:center;justify-content:center;"><i class="las la-bolt" style="color:#fff;font-size:20px;"></i></div>
+            <span style="font-family:'Lato';font-weight:900;font-size:19px;letter-spacing:-.3px;">QuoteFoundry</span>
+            <a onClick="{{ goSignin }}" style="margin-left:auto;height:44px;padding:0 18px;border-radius:13px;border:1.5px solid #ECECF4;display:flex;align-items:center;color:#46485F;font-family:'Lato';font-weight:700;font-size:14px;cursor:pointer;">Sign in</a>
+          </div>
+          <div style="padding:36px 24px 0;">
+            <h1 style="margin:0;font-family:'Lato';font-weight:900;font-size:34px;line-height:1.14;letter-spacing:-.6px;text-wrap:pretty;">Quote fab jobs in minutes, not evenings.</h1>
+            <p style="margin:14px 0 0;font-size:17px;color:#46485F;line-height:1.55;">Priced from your shop's real rates, with a customer-ready PDF at the end. Built for job shops, not accountants.</p>
+            <button onClick="{{ goSignin }}" style="margin-top:22px;width:100%;height:64px;border:none;border-radius:18px;background:#4667DB;color:#fff;font-family:'Lato';font-weight:700;font-size:18px;cursor:pointer;box-shadow:0 14px 26px -10px #4667DB;">Start free — 14 days</button>
+            <div style="margin-top:10px;text-align:center;font-size:13.5px;color:#63659B;font-weight:600;">No card required · first quote in 10 minutes</div>
+          </div>
+          <div style="margin:30px 20px 0;border-radius:22px;background:linear-gradient(150deg,#2B2D42,#1C1D2B);padding:26px 24px;">
+            <div style="font-size:13.5px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.4px;text-transform:uppercase;">Simple pricing</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:8px;">
+              <span style="font-family:'Lato';font-weight:900;font-size:44px;color:#7CE7AC;letter-spacing:-.5px;">$49</span>
+              <span style="font-size:16px;color:rgba(255,255,255,.65);font-weight:600;">/ month per shop</span>
+            </div>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:9px;font-size:15px;color:rgba(255,255,255,.85);">
+              <div style="display:flex;gap:9px;align-items:center;"><i class="las la-check" style="color:#7CE7AC;font-size:17px;"></i>Unlimited quotes, customers, and users</div>
+              <div style="display:flex;gap:9px;align-items:center;"><i class="las la-check" style="color:#7CE7AC;font-size:17px;"></i>PDF + email send with open tracking</div>
+              <div style="display:flex;gap:9px;align-items:center;"><i class="las la-check" style="color:#7CE7AC;font-size:17px;"></i>Cancel anytime — data exports free</div>
+            </div>
+            <button onClick="{{ goSignin }}" style="margin-top:20px;width:100%;height:58px;border:none;border-radius:16px;background:#7CE7AC;color:#1C1D2B;font-family:'Lato';font-weight:900;font-size:16.5px;cursor:pointer;">Start free trial</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ SIGN IN ============ -->
+      <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow-y:auto;padding:74px 26px 20px;display:flex;flex-direction:column;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:38px;">
+            <div style="width:66px;height:66px;border-radius:20px;background:#4667DB;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 28px -10px #4667DB;">
+              <i class="las la-bolt" style="color:#fff;font-size:34px;"></i>
+            </div>
+            <div style="font-family:'Lato';font-weight:900;font-size:28px;letter-spacing:-.4px;">QuoteFoundry</div>
+            <div style="font-size:16px;color:#63659B;margin-top:-8px;">Fab quotes, priced in minutes.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label for="qfp-email" style="font-size:14px;font-weight:700;color:#46485F;">Email</label>
+              <input id="qfp-email" type="email" value="dave@riversidefab.com" style="height:60px;border-radius:16px;background:#fff;border:1px solid #ECECF4;padding:0 18px;font-size:17px;font-family:'Source Sans 3',sans-serif;color:#1C1D21;" style-focus="border:2px solid #4667DB;box-shadow:0 0 0 3px rgba(70,103,219,.18);outline:none;"></input>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label for="qfp-pass" style="font-size:14px;font-weight:700;color:#46485F;">Password</label>
+              <input id="qfp-pass" type="password" value="forgehotmetal" style="height:60px;border-radius:16px;background:#fff;border:1px solid #ECECF4;padding:0 18px;font-size:17px;font-family:'Source Sans 3',sans-serif;color:#1C1D21;" style-focus="border:2px solid #4667DB;box-shadow:0 0 0 3px rgba(70,103,219,.18);outline:none;"></input>
+            </div>
+            <button onClick="{{ goPipeline }}" style="height:64px;border:none;border-radius:18px;background:#4667DB;color:#fff;font-family:'Lato';font-weight:700;font-size:18px;cursor:pointer;margin-top:8px;box-shadow:0 14px 26px -10px #4667DB;">Sign in</button>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+              <span style="font-size:15px;font-weight:600;color:#1B51E5;padding:12px 0;cursor:pointer;">Forgot password?</span>
+              <a onClick="{{ goLanding }}" style="font-size:15px;font-weight:600;color:#1B51E5;padding:12px 0;cursor:pointer;">Back to site</a>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding:18px 6px 26px;display:flex;align-items:flex-start;gap:10px;color:#63659B;font-size:13.5px;line-height:1.45;">
+            <i class="las la-shield-alt" style="font-size:18px;margin-top:1px;"></i>
+            <span>Your rates, margins, and quotes are private to your shop.</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ PIPELINE ============ -->
+      <sc-if value="{{ isPipeline }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:66px 20px 0;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div>
+              <div style="font-family:'Lato';font-weight:900;font-size:30px;letter-spacing:-.4px;">Quotes</div>
+              <div style="font-size:14.5px;color:#63659B;font-weight:600;margin-top:2px;">Riverside Fabrication</div>
+            </div>
+            <div onClick="{{ goLanding }}" title="Sign out" style="margin-left:auto;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#5E81F4,#7C5CFC);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Lato';font-weight:700;font-size:15px;cursor:pointer;">DR</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+            <div style="background:#fff;border-radius:18px;padding:15px 17px;box-shadow:0 12px 26px -20px rgba(60,60,120,.5);">
+              <div style="font-size:13px;color:#63659B;font-weight:600;">Open pipeline</div>
+              <div style="font-family:'Lato';font-weight:900;font-size:23px;margin-top:3px;">{{ statOpen }}</div>
+              <div style="font-size:12.5px;color:#0E7A4C;font-weight:700;margin-top:2px;">{{ statOpenCount }} active quotes</div>
+            </div>
+            <div style="background:#fff;border-radius:18px;padding:15px 17px;box-shadow:0 12px 26px -20px rgba(60,60,120,.5);">
+              <div style="font-size:13px;color:#63659B;font-weight:600;">Won this month</div>
+              <div style="font-family:'Lato';font-weight:900;font-size:23px;margin-top:3px;">{{ statWon }}</div>
+              <div style="font-size:12.5px;color:#63659B;font-weight:700;margin-top:2px;">{{ statWinRate }} win rate</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px;overflow-x:auto;padding-bottom:4px;">
+            <sc-for list="{{ chips }}" as="ch" hint-placeholder-count="5">
+              <a onClick="{{ ch.go }}" style="flex:none;height:48px;display:inline-flex;align-items:center;padding:0 20px;border-radius:14px;background:{{ ch.bg }};border:{{ ch.border }};color:{{ ch.fg }};font-family:'Lato';font-weight:700;font-size:15px;cursor:pointer;">{{ ch.label }}</a>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:14px 20px 16px;display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ visibleQuotes }}" as="q" hint-placeholder-count="4">
+            <a onClick="{{ q.go }}" style="display:flex;background:#fff;border-radius:20px;padding:17px 18px;box-shadow:0 12px 26px -20px rgba(60,60,120,.5);align-items:center;gap:14px;min-height:96px;cursor:pointer;text-decoration:none;color:#1C1D21;" style-active="transform:scale(.985);">
+              <div style="min-width:0;flex:1;">
+                <span style="display:block;font-family:'Lato';font-weight:700;font-size:17.5px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ q.job }}</span>
+                <div style="font-size:14px;color:#63659B;margin-top:3px;font-weight:600;">{{ q.customer }} · {{ q.num }}</div>
+                <span style="display:inline-flex;align-items:center;margin-top:8px;padding:5px 12px;border-radius:9px;font-family:'Lato';font-weight:700;font-size:12.5px;background:{{ q.pillBg }};color:{{ q.pillFg }};">{{ q.pillLabel }}</span>
+              </div>
+              <div style="text-align:right;flex:none;">
+                <div style="font-family:'Lato';font-weight:900;font-size:21px;color:#1B51E5;">{{ q.price }}</div>
+                <div style="font-size:12.5px;color:#6A6B83;font-weight:600;margin-top:2px;">{{ q.meta }}</div>
+              </div>
+              <i class="las la-angle-right" style="font-size:20px;color:#B9BAD6;flex:none;"></i>
+            </a>
+          </sc-for>
+        </div>
+        <div style="flex:none;padding:10px 20px 0;background:linear-gradient(to top,#F4F4FB 70%,rgba(244,244,251,0));">
+          <button onClick="{{ goEditor }}" style="width:100%;height:60px;border:none;border-radius:18px;background:#4667DB;color:#fff;font-family:'Lato';font-weight:700;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 14px 26px -10px #4667DB;"><i class="las la-plus" style="font-size:20px;"></i>New quote</button>
+        </div>
+      </sc-if>
+
+      <!-- ============ CUSTOMERS ============ -->
+      <sc-if value="{{ isCustomers }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:66px 20px 0;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-family:'Lato';font-weight:900;font-size:30px;letter-spacing:-.4px;">Customers</div>
+            <div style="margin-left:auto;height:48px;padding:0 18px;border-radius:15px;background:#4667DB;display:flex;align-items:center;gap:8px;color:#fff;font-family:'Lato';font-weight:700;font-size:15px;box-shadow:0 12px 22px -10px #4667DB;cursor:pointer;"><i class="las la-plus" style="font-size:18px;"></i>Add</div>
+          </div>
+          <div style="margin-top:14px;height:52px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;padding:0 18px;gap:12px;color:#63659B;">
+            <i class="las la-search" style="font-size:20px;"></i>
+            <span style="font-size:16px;">Search customers</span>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:14px 20px 16px;display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ customersList }}" as="c" hint-placeholder-count="4">
+            <div style="background:#fff;border-radius:20px;padding:17px 18px;box-shadow:0 12px 26px -20px rgba(60,60,120,.5);">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:50px;height:50px;border-radius:16px;background:{{ c.grad }};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Lato';font-weight:700;font-size:16px;flex:none;">{{ c.init }}</div>
+                <div style="min-width:0;flex:1;">
+                  <div style="font-family:'Lato';font-weight:700;font-size:17px;letter-spacing:-.2px;">{{ c.name }}</div>
+                  <div style="font-size:14px;color:#63659B;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.contact }} · {{ c.email }}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:14px;">
+                <a onClick="{{ goEditor }}" style="flex:1;height:48px;border-radius:14px;background:#EEF1FE;display:flex;align-items:center;justify-content:center;gap:8px;color:#1B51E5;font-family:'Lato';font-weight:700;font-size:14.5px;cursor:pointer;"><i class="las la-file-invoice-dollar" style="font-size:18px;"></i>New quote</a>
+                <div style="width:48px;height:48px;border-radius:14px;background:#F4F4FB;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:center;color:#46485F;font-size:20px;"><i class="las la-phone"></i></div>
+                <div style="width:48px;height:48px;border-radius:14px;background:#F4F4FB;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:center;color:#46485F;font-size:20px;"><i class="las la-envelope"></i></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ============ RATES ============ -->
+      <sc-if value="{{ isRates }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:66px 20px 0;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-family:'Lato';font-weight:900;font-size:30px;letter-spacing:-.4px;">Shop rates</div>
+            <a onClick="{{ saveRates }}" style="margin-left:auto;height:48px;padding:0 22px;border-radius:15px;background:#4667DB;display:flex;align-items:center;color:#fff;font-family:'Lato';font-weight:700;font-size:15px;box-shadow:0 12px 22px -10px #4667DB;cursor:pointer;">Save</a>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:flex-start;gap:10px;background:#FFF8E9;border:1px solid #F6E3B8;border-radius:14px;padding:13px 16px;font-size:13.5px;color:#7A5B12;line-height:1.45;font-weight:600;">
+            <i class="las la-info-circle" style="font-size:18px;margin-top:1px;"></i>
+            <span>Rate changes apply to new quotes only. Sent quotes keep their frozen pricing.</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px;background:#EAEAF3;border-radius:16px;padding:5px;">
+            <sc-for list="{{ rateTabs }}" as="rt" hint-placeholder-count="3">
+              <a onClick="{{ rt.go }}" style="flex:1;height:46px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:{{ rt.bg }};box-shadow:{{ rt.shadow }};color:{{ rt.fg }};font-family:'Lato';font-weight:700;font-size:14.5px;cursor:pointer;">{{ rt.label }}</a>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ rateRows }}" as="r" hint-placeholder-count="5">
+            <div style="background:#fff;border-radius:18px;padding:15px 18px;box-shadow:0 12px 26px -20px rgba(60,60,120,.5);display:flex;align-items:center;gap:14px;">
+              <div style="min-width:0;flex:1;">
+                <div style="font-family:'Lato';font-weight:700;font-size:16px;">{{ r.label }}</div>
+                <div style="font-size:13px;color:#63659B;font-weight:600;margin-top:2px;">{{ r.sub }}</div>
+              </div>
+              <div style="height:52px;min-width:132px;border-radius:14px;background:#F4F4FB;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;gap:4px;">
+                <span style="font-size:15px;color:#63659B;font-weight:600;">{{ r.prefix }}</span>
+                <span style="font-family:'Lato';font-weight:900;font-size:20px;">{{ r.value }}</span>
+                <span style="font-size:14px;color:#63659B;font-weight:600;">{{ r.unit }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ============ DETAIL ============ -->
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:64px 20px 10px;display:flex;align-items:center;gap:12px;">
+          <a onClick="{{ goPipeline }}" style="width:48px;height:48px;border-radius:15px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:center;color:#46485F;font-size:22px;cursor:pointer;"><i class="las la-arrow-left"></i></a>
+          <div style="font-size:15px;color:#63659B;font-weight:700;">Q-2026-051</div>
+          <a onClick="{{ cloneQuote }}" style="margin-left:auto;height:48px;padding:0 18px;border-radius:15px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;gap:8px;color:#46485F;font-family:'Lato';font-weight:700;font-size:14.5px;cursor:pointer;"><i class="las la-copy" style="font-size:18px;"></i>Clone</a>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:6px 20px 150px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="font-family:'Lato';font-weight:900;font-size:24px;letter-spacing:-.3px;">Mezzanine stair stringers</div>
+            <span style="display:inline-flex;align-items:center;padding:5px 13px;border-radius:9px;font-family:'Lato';font-weight:700;font-size:13px;background:{{ detailPillBg }};color:{{ detailPillFg }};">{{ detailPillLabel }}</span>
+          </div>
+          <div style="font-size:14.5px;color:#63659B;font-weight:600;margin-top:4px;">Hartley Mechanical · sent Jun 30</div>
+          <div style="margin-top:16px;border-radius:22px;background:linear-gradient(150deg,#2B2D42,#1C1D2B);padding:22px 24px;box-shadow:0 18px 34px -18px rgba(28,29,43,.7);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:13.5px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.4px;text-transform:uppercase;">Quoted price</span>
+              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:9px;background:rgba(124,231,172,.14);color:#7CE7AC;font-family:'Lato';font-weight:700;font-size:12.5px;"><span style="width:7px;height:7px;border-radius:50%;background:#7CE7AC;"></span>Opened 2h ago</span>
+            </div>
+            <div style="font-family:'Lato';font-weight:900;font-size:44px;color:#7CE7AC;letter-spacing:-.5px;margin-top:6px;">$8,640.00</div>
+            <div style="font-size:14px;color:rgba(255,255,255,.55);margin-top:2px;">valid through Jul 30 · 28.5 shop hours</div>
+          </div>
+          <div style="margin-top:16px;background:#fff;border-radius:20px;padding:8px 20px;box-shadow:0 12px 26px -20px rgba(60,60,120,.5);">
+            <sc-for list="{{ lines }}" as="ln" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid #F2F2F8;font-size:15.5px;color:{{ ln.fg }};font-weight:{{ ln.weight }};">
+                <span style="display:flex;align-items:center;gap:8px;">{{ ln.label }}<sc-if value="{{ ln.internal }}" hint-placeholder-val="{{ false }}"><span style="padding:2px 8px;border-radius:6px;background:#F1F2FA;color:#63659B;font-size:11px;font-weight:700;letter-spacing:.3px;">INTERNAL</span></sc-if></span>
+                <span style="font-family:'Lato';font-weight:{{ ln.numWeight }};">{{ ln.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:12px;">
+            <a onClick="{{ toastPdf }}" style="flex:1;height:56px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:center;gap:9px;color:#46485F;font-family:'Lato';font-weight:700;font-size:15px;cursor:pointer;"><i class="las la-file-pdf" style="font-size:20px;"></i>PDF</a>
+            <a onClick="{{ toastResend }}" style="flex:1;height:56px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:center;gap:9px;color:#46485F;font-family:'Lato';font-weight:700;font-size:15px;cursor:pointer;"><i class="las la-paper-plane" style="font-size:20px;"></i>Resend</a>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 34px;background:linear-gradient(to top,#F4F4FB 75%,rgba(244,244,251,0));display:flex;gap:12px;">
+          <button onClick="{{ markWon }}" style="flex:1;height:64px;border:none;border-radius:18px;background:#0E7A4C;color:#fff;font-family:'Lato';font-weight:700;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 14px 26px -12px #0E7A4C;" style-active="transform:scale(.97);"><i class="las la-trophy" style="font-size:20px;"></i>Mark won</button>
+          <button onClick="{{ markLost }}" style="flex:1;height:64px;border-radius:18px;background:#fff;border:2px solid #F3D2D8;color:#C92A42;font-family:'Lato';font-weight:700;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;" style-active="transform:scale(.97);">Mark lost</button>
+        </div>
+      </sc-if>
+
+      <!-- ============ EDITOR ============ -->
+      <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:64px 20px 10px;display:flex;align-items:center;gap:12px;">
+          <a onClick="{{ goPipeline }}" style="width:48px;height:48px;border-radius:15px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;justify-content:center;color:#46485F;font-size:22px;cursor:pointer;"><i class="las la-arrow-left"></i></a>
+          <div>
+            <div style="font-family:'Lato';font-weight:900;font-size:21px;letter-spacing:-.3px;">Edit quote</div>
+            <div style="font-size:13.5px;color:#63659B;font-weight:600;">Q-2026-054 · draft</div>
+          </div>
+          <a onClick="{{ saveDraft }}" style="margin-left:auto;height:48px;padding:0 20px;border-radius:15px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;color:#1B51E5;font-family:'Lato';font-weight:700;font-size:15px;cursor:pointer;">Save</a>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:8px 20px 230px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label for="qfp-job" style="font-size:14px;font-weight:700;color:#46485F;">Job name</label>
+            <input id="qfp-job" value="Pipe rack frames (x4)" style="height:58px;border-radius:16px;background:#fff;border:1px solid #ECECF4;padding:0 18px;font-size:17px;font-family:'Source Sans 3',sans-serif;color:#1C1D21;" style-focus="border:2px solid #4667DB;box-shadow:0 0 0 3px rgba(70,103,219,.18);outline:none;"></input>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label for="qfp-cust" style="font-size:14px;font-weight:700;color:#46485F;">Customer</label>
+            <div id="qfp-cust" style="height:58px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;padding:0 18px;font-size:17px;gap:12px;">
+              <span>Bayline Industrial</span>
+              <i class="las la-angle-down" style="margin-left:auto;font-size:20px;color:#63659B;"></i>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label for="qfp-mat" style="font-size:14px;font-weight:700;color:#46485F;">Material</label>
+            <div id="qfp-mat" style="height:58px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;padding:0 18px;font-size:17px;gap:12px;">
+              <span>A36 · HSS 4×4×1/4</span>
+              <i class="las la-angle-down" style="margin-left:auto;font-size:20px;color:#63659B;"></i>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label style="font-size:14px;font-weight:700;color:#46485F;">Material (ft)</label>
+              <div style="height:58px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;padding:0 6px;">
+                <a onClick="{{ matMinus }}" style="width:48px;height:48px;border-radius:13px;background:#F1F2FA;display:flex;align-items:center;justify-content:center;font-size:22px;color:#46485F;cursor:pointer;" style-active="background:#E2E4F2;"><i class="las la-minus"></i></a>
+                <span style="flex:1;text-align:center;font-family:'Lato';font-weight:700;font-size:19px;">{{ matFt }}</span>
+                <a onClick="{{ matPlus }}" style="width:48px;height:48px;border-radius:13px;background:#F1F2FA;display:flex;align-items:center;justify-content:center;font-size:22px;color:#46485F;cursor:pointer;" style-active="background:#E2E4F2;"><i class="las la-plus"></i></a>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label style="font-size:14px;font-weight:700;color:#46485F;">Labor (hrs)</label>
+              <div style="height:58px;border-radius:16px;background:#fff;border:1px solid #ECECF4;display:flex;align-items:center;padding:0 6px;">
+                <a onClick="{{ hrsMinus }}" style="width:48px;height:48px;border-radius:13px;background:#F1F2FA;display:flex;align-items:center;justify-content:center;font-size:22px;color:#46485F;cursor:pointer;" style-active="background:#E2E4F2;"><i class="las la-minus"></i></a>
+                <span style="flex:1;text-align:center;font-family:'Lato';font-weight:700;font-size:19px;">{{ laborHrs }}</span>
+                <a onClick="{{ hrsPlus }}" style="width:48px;height:48px;border-radius:13px;background:#F1F2FA;display:flex;align-items:center;justify-content:center;font-size:22px;color:#46485F;cursor:pointer;" style-active="background:#E2E4F2;"><i class="las la-plus"></i></a>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label for="qfp-notes" style="font-size:14px;font-weight:700;color:#46485F;">Notes</label>
+            <div id="qfp-notes" style="min-height:84px;border-radius:16px;background:#fff;border:1px solid #ECECF4;padding:16px 18px;font-size:16px;color:#46485F;line-height:1.5;">Weld-out per D1.1, shop prime only. Delivery not included.</div>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:0 14px 30px;">
+          <div onClick="{{ toggleMini }}" style="border-radius:22px;background:linear-gradient(150deg,#2B2D42,#1C1D2B);box-shadow:0 20px 40px -16px rgba(28,29,43,.85);overflow:hidden;cursor:pointer;">
+            <sc-if value="{{ miniOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:18px 22px 4px;display:flex;flex-direction:column;">
+                <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14.5px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.08);"><span>Shop cost</span><span style="font-family:'Lato';font-weight:700;color:#fff;">{{ costShop }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14.5px;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.08);"><span>Overhead (20%)</span><span style="font-family:'Lato';font-weight:700;color:#fff;">{{ costOverhead }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14.5px;color:rgba(255,255,255,.7);"><span>Margin (25%)</span><span style="font-family:'Lato';font-weight:700;color:#fff;">{{ costMargin }}</span></div>
+              </div>
+            </sc-if>
+            <div style="display:flex;align-items:center;padding:16px 22px 18px;gap:12px;">
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.4px;text-transform:uppercase;">Quoted price</div>
+                <div style="font-family:'Lato';font-weight:900;font-size:28px;color:#7CE7AC;letter-spacing:-.4px;margin-top:1px;">{{ quotedPrice }}</div>
+              </div>
+              <div style="margin-left:auto;width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;"><i class="{{ miniChevron }}"></i></div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ TOAST ============ -->
+      <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:20px;right:20px;bottom:{{ toastBottom }};z-index:9;display:flex;align-items:center;gap:12px;background:#1C1D2B;border-radius:16px;padding:16px 20px;box-shadow:0 18px 34px -14px rgba(28,29,43,.8);animation:qfToastIn .18s ease-out;">
+          <i class="las la-check-circle" style="color:#7CE7AC;font-size:22px;"></i>
+          <span style="color:#fff;font-size:15.5px;font-weight:600;">{{ toastMsg }}</span>
+          <sc-if value="{{ toastHasUndo }}" hint-placeholder-val="{{ false }}">
+            <a onClick="{{ undoOutcome }}" style="margin-left:auto;color:#7CE7AC;font-family:'Lato';font-weight:700;font-size:15.5px;padding:10px 6px;cursor:pointer;">Undo</a>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ============ TAB BAR ============ -->
+      <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:0 20px;background:#F4F4FB;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);padding:6px 0 24px;border-top:1px solid #ECECF4;">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+              <a onClick="{{ t.go }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;color:{{ t.color }};cursor:pointer;min-height:56px;justify-content:center;">
+                <i class="{{ t.icon }}" style="font-size:24px;"></i>
+                <span style="font-size:12px;font-weight:700;">{{ t.label }}</span>
+              </a>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 480, &quot;height&quot;: 1000 }
+}">
+class Component extends DCLogic {
+  state = {
+    screen: 'landing',
+    filter: 'all',
+    detailStatus: 'opened',
+    toast: null,          // { msg, undo: bool }
+    miniOpen: false,
+    matFt: 184,
+    laborHrs: 22,
+    ratesTab: 'labor',
+    quotes: [
+      { id: 'q51', job: 'Mezzanine stair stringers', customer: 'Hartley Mechanical', num: 'Q-2026-051', status: 'opened', priceN: 8640, meta: 'opened 2h ago' },
+      { id: 'q54', job: 'Pipe rack frames (x4)', customer: 'Bayline Industrial', num: 'Q-2026-054', status: 'draft', priceN: 5869, meta: 'edited today' },
+      { id: 'q50', job: 'Conveyor guard panels', customer: 'TruNorth Foods', num: 'Q-2026-050', status: 'sent', priceN: 3120, meta: 'sent Jun 28' },
+      { id: 'q48', job: 'Dust collector stand', customer: 'Hartley Mechanical', num: 'Q-2026-048', status: 'won', priceN: 12400, meta: 'won Jun 24' },
+      { id: 'q46', job: 'Catwalk handrail run', customer: 'Meridian Grain', num: 'Q-2026-046', status: 'lost', priceN: 9210, meta: 'lost Jun 20' },
+    ],
+  };
+
+  showToast(msg, undo = false, ms = 5000) {
+    clearTimeout(this._toastT);
+    this.setState({ toast: { msg, undo } });
+    this._toastT = setTimeout(() => this.setState({ toast: null }), ms);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const go = (screen) => () => this.setState({ screen, toast: null });
+    const money = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money0 = (n) => '$' + Math.round(n).toLocaleString('en-US');
+
+    const PILLS = {
+      sent:   { bg: '#EEF1FE', fg: '#1B51E5', label: 'Sent' },
+      opened: { bg: '#FFF8E9', fg: '#7A5B12', label: 'Opened' },
+      draft:  { bg: '#EEEEF4', fg: '#63659B', label: 'Draft' },
+      won:    { bg: '#EAFBF2', fg: '#0E7A4C', label: 'Won' },
+      lost:   { bg: '#FFEFF1', fg: '#C92A42', label: 'Lost' },
+    };
+
+    // pipeline quotes — q51's status is live (detailStatus)
+    const quotes = s.quotes.map((q) => {
+      const status = q.id === 'q51' ? s.detailStatus : q.status;
+      const pill = PILLS[status];
+      return {
+        job: q.job, customer: q.customer, num: q.num, meta: q.meta,
+        price: money0(q.priceN), status,
+        pillBg: pill.bg, pillFg: pill.fg, pillLabel: pill.label,
+        go: q.status === 'draft' ? go('editor') : go('detail'),
+      };
+    });
+    const visibleQuotes = quotes.filter((q) => s.filter === 'all' || q.status === s.filter);
+
+    // stats derived from live statuses
+    const open = quotes.filter((q) => ['draft', 'sent', 'opened'].includes(q.status));
+    const wonQ = quotes.filter((q) => q.status === 'won');
+    const lostQ = quotes.filter((q) => q.status === 'lost');
+    const openSum = s.quotes.reduce((a, q) => (['draft','sent','opened'].includes(q.id === 'q51' ? s.detailStatus : q.status) ? a + q.priceN : a), 0);
+    const wonSum = s.quotes.reduce((a, q) => ((q.id === 'q51' ? s.detailStatus : q.status) === 'won' ? a + q.priceN : a), 0);
+    const decided = wonQ.length + lostQ.length;
+
+    const chips = ['all', 'sent', 'opened', 'draft', 'won', 'lost'].map((key) => {
+      const on = s.filter === key;
+      return {
+        label: key === 'all' ? 'All' : PILLS[key].label,
+        bg: on ? '#1C1D21' : '#fff',
+        fg: on ? '#fff' : '#63659B',
+        border: on ? 'none' : '1px solid #ECECF4',
+        go: () => this.setState({ filter: key }),
+      };
+    });
+
+    // detail
+    const dPill = PILLS[s.detailStatus];
+    const line = (label, value, internal) => ({
+      label, value, internal: !!internal,
+      fg: internal ? '#46485F' : '#1C1D21',
+      weight: internal ? 700 : 400,
+      numWeight: internal ? 700 : 400,
+    });
+    const lines = [
+      line('Material', '$2,904.00'),
+      line('Fabrication labor', '$1,710.00'),
+      line('Machine / burn time', '$486.00'),
+      line('Consumables', '$142.50'),
+      line('Outside services', '$380.00'),
+      line('Shop cost', '$5,622.50', true),
+      line('Overhead', '$1,124.50', true),
+      line('Margin', '$1,893.00', true),
+    ];
+    const outcome = (o) => () => {
+      const prev = s.detailStatus;
+      this.setState({ detailStatus: o });
+      this._prevStatus = prev;
+      this.showToast('Marked ' + o + '.', true);
+    };
+
+    // editor live pricing
+    const shop = s.matFt * 14.5 + s.laborHrs * 95 + 486 + 142.5;
+    const overhead = shop * 0.2;
+    const margin = (shop + overhead) * 0.25;
+    const quoted = shop + overhead + margin;
+
+    // rates
+    const RATE_DATA = {
+      material: [
+        { label: 'A36 plate', sub: 'mild steel plate', prefix: '$', value: '0.68', unit: '/lb' },
+        { label: 'A36 · HSS tube', sub: 'square + rect tube', prefix: '$', value: '0.92', unit: '/lb' },
+        { label: '304 stainless', sub: 'sheet + plate', prefix: '$', value: '2.45', unit: '/lb' },
+        { label: 'Aluminum 6061', sub: 'plate + extrusion', prefix: '$', value: '2.10', unit: '/lb' },
+        { label: 'Scrap allowance', sub: 'applied to all material', prefix: '', value: '8', unit: '%' },
+      ],
+      labor: [
+        { label: 'Cutting labor', sub: 'saw, shear, prep', prefix: '$', value: '85', unit: '/hr' },
+        { label: 'Fitting labor', sub: 'layout + fit-up', prefix: '$', value: '95', unit: '/hr' },
+        { label: 'Welding labor', sub: 'MIG / flux-core', prefix: '$', value: '105', unit: '/hr' },
+        { label: 'Finishing labor', sub: 'grind, prime, paint', prefix: '$', value: '80', unit: '/hr' },
+        { label: 'Burn rate', sub: 'plasma / laser table', prefix: '$', value: '140', unit: '/hr' },
+        { label: 'Consumables', sub: 'wire, gas, abrasives', prefix: '$', value: '12', unit: '/wh' },
+      ],
+      margin: [
+        { label: 'Overhead uplift', sub: 'rent, power, insurance', prefix: '', value: '20', unit: '%' },
+        { label: 'Target margin', sub: 'profit on top of cost', prefix: '', value: '25', unit: '%' },
+      ],
+    };
+    const rateTabs = ['material', 'labor', 'margin'].map((key) => {
+      const on = s.ratesTab === key;
+      return {
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        bg: on ? '#fff' : 'transparent',
+        fg: on ? '#1C1D21' : '#63659B',
+        shadow: on ? '0 6px 14px -8px rgba(60,60,120,.5)' : 'none',
+        go: () => this.setState({ ratesTab: key }),
+      };
+    });
+
+    const customersList = [
+      { init: 'HM', grad: 'linear-gradient(135deg,#4667DB,#7C5CFC)', name: 'Hartley Mechanical', contact: 'Gary Hartley', email: 'gary@hartleymech.com' },
+      { init: 'BI', grad: 'linear-gradient(135deg,#2BB6A8,#178F84)', name: 'Bayline Industrial', contact: 'Rosa Delgado', email: 'rosa@bayline.com' },
+      { init: 'TF', grad: 'linear-gradient(135deg,#F4806A,#E0533B)', name: 'TruNorth Foods', contact: 'Mike Okafor', email: 'mokafor@trunorth.ca' },
+      { init: 'MG', grad: 'linear-gradient(135deg,#4667DB,#7C5CFC)', name: 'Meridian Grain', contact: 'Sam Whitfield', email: 'sam@meridiangrain.com' },
+    ];
+
+    const TAB_DEFS = [
+      { key: 'pipeline', icon: 'las la-file-invoice-dollar', label: 'Quotes' },
+      { key: 'customers', icon: 'las la-users', label: 'Customers' },
+      { key: 'rates', icon: 'las la-sliders-h', label: 'Rates' },
+    ];
+    const tabs = TAB_DEFS.map((t) => ({
+      icon: t.icon, label: t.label,
+      color: s.screen === t.key ? '#1B51E5' : '#63659B',
+      go: go(t.key),
+    }));
+
+    return {
+      isLanding: s.screen === 'landing',
+      isSignin: s.screen === 'signin',
+      isPipeline: s.screen === 'pipeline',
+      isCustomers: s.screen === 'customers',
+      isRates: s.screen === 'rates',
+      isDetail: s.screen === 'detail',
+      isEditor: s.screen === 'editor',
+      showTabs: ['pipeline', 'customers', 'rates'].includes(s.screen),
+
+      goLanding: go('landing'),
+      goSignin: go('signin'),
+      goPipeline: go('pipeline'),
+      goEditor: go('editor'),
+
+      statOpen: money0(openSum),
+      statOpenCount: open.length,
+      statWon: money0(wonSum),
+      statWinRate: (decided ? Math.round((wonQ.length / decided) * 100) : 0) + '%',
+      chips, visibleQuotes, tabs, customersList, rateTabs,
+      rateRows: RATE_DATA[s.ratesTab],
+
+      detailPillBg: dPill.bg, detailPillFg: dPill.fg, detailPillLabel: dPill.label,
+      lines,
+      markWon: outcome('won'),
+      markLost: outcome('lost'),
+      undoOutcome: () => {
+        this.setState({ detailStatus: this._prevStatus ?? 'opened', toast: null });
+        clearTimeout(this._toastT);
+      },
+      cloneQuote: () => { this.setState({ screen: 'editor' }); this.showToast('Cloned as Q-2026-055 — repriced at today\u2019s rates.', false, 3500); },
+      toastPdf: () => this.showToast('PDF downloaded.', false, 2500),
+      toastResend: () => this.showToast('Quote re-sent to gary@hartleymech.com.', false, 3000),
+      saveDraft: () => this.showToast('Draft saved.', false, 2500),
+      saveRates: () => this.showToast('Rates saved — applies to new quotes only.', false, 3000),
+
+      matFt: s.matFt,
+      laborHrs: s.laborHrs,
+      matMinus: () => this.setState((p) => ({ matFt: Math.max(0, p.matFt - 4) })),
+      matPlus: () => this.setState((p) => ({ matFt: p.matFt + 4 })),
+      hrsMinus: () => this.setState((p) => ({ laborHrs: Math.max(0, p.laborHrs - 1) })),
+      hrsPlus: () => this.setState((p) => ({ laborHrs: p.laborHrs + 1 })),
+      costShop: money(shop),
+      costOverhead: money(overhead),
+      costMargin: money(margin),
+      quotedPrice: money(quoted),
+      miniOpen: s.miniOpen,
+      miniChevron: s.miniOpen ? 'las la-angle-down' : 'las la-angle-up',
+      toggleMini: () => this.setState((p) => ({ miniOpen: !p.miniOpen })),
+
+      toastVisible: !!s.toast,
+      toastMsg: s.toast ? s.toast.msg : '',
+      toastHasUndo: !!(s.toast && s.toast.undo),
+      toastBottom: s.screen === 'detail' ? '132px' : s.screen === 'editor' ? '140px' : '120px',
+    };
+  }
+}
+</script>
+</body>
+</html>

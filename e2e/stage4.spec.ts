@@ -156,3 +156,52 @@ test.describe('Draft deletion', () => {
     await expect(page.getByTestId('quoted-price')).not.toHaveText('$1,914');
   });
 });
+
+test.describe('URL routing (hash) — Phase 4.1', () => {
+  test('deep links open the right screen', async ({ page }) => {
+    await page.goto('/?app#/customers');
+    await expect(page.locator('[data-screen="customers"]')).toBeVisible();
+    await page.goto('/?app#/rates');
+    await expect(page.locator('[data-screen="rates"]')).toBeVisible();
+  });
+
+  test('navigation updates the URL to a shareable quote link', async ({ page }) => {
+    await page.goto('/?app');
+    await page.locator('[data-row="Q-2026-001"]').click();
+    await expect(page.locator('[data-screen="detail"]')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => location.hash)).toMatch(/^#\/quotes\/.+/);
+  });
+
+  test('refresh preserves location (both a list screen and a quote)', async ({ page }) => {
+    // list screen
+    await page.goto('/?app');
+    await page.locator('[data-nav="customers"]').click();
+    await expect(page.locator('[data-screen="customers"]')).toBeVisible();
+    await page.reload();
+    await expect(page.locator('[data-screen="customers"]')).toBeVisible();
+    // a specific quote (deterministic mock ids survive the re-seed)
+    await page.goto('/?app');
+    await page.locator('[data-row="Q-2026-001"]').click();
+    await expect(page.locator('[data-screen="detail"]')).toBeVisible();
+    await page.reload();
+    await expect(page.locator('[data-screen="detail"]')).toBeVisible();
+  });
+
+  test('browser Back returns to the pipeline', async ({ page }) => {
+    await page.goto('/?app');
+    await page.locator('[data-row="Q-2026-001"]').click();
+    await expect(page.locator('[data-screen="detail"]')).toBeVisible();
+    await page.goBack();
+    await expect(page.locator('[data-screen="pipeline"]')).toBeVisible();
+  });
+
+  test('a mutation shows a non-blocking toast (clone from detail)', async ({ page }) => {
+    await page.goto('/?app');
+    await page.locator('[data-row="Q-2026-001"]').click();
+    await expect(page.locator('[data-screen="detail"]')).toBeVisible();
+    await page.getByRole('button', { name: 'Clone' }).click();
+    // toast survives the navigation the clone triggers (app-level, Phase 4.2)
+    await expect(page.getByTestId('toast')).toBeVisible();
+    await expect(page.getByTestId('toast')).toContainText('Cloned');
+  });
+});

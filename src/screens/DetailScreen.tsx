@@ -11,14 +11,13 @@ import { color } from '../design/tokens';
 import { money2, statusPill, heading, cardShadowLg, initials } from '../app/ui';
 import { CustomerPreviewModal } from './CustomerPreviewModal';
 import { useIsMobile } from '../app/useIsMobile';
-import { Toast, useToast } from '../app/Toast';
+import type { ToastData } from '../app/Toast';
 
-export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: string; onBack: () => void; onEdit: (id: string) => void; onChanged: () => void }) {
+export function DetailScreen({ quoteId, onBack, onEdit, onChanged, notify }: { quoteId: string; onBack: () => void; onEdit: (id: string) => void; onChanged: () => void; notify?: (t: ToastData) => void }) {
   const [q, setQ] = useState<Quote | null>(null);
   const [shop, setShop] = useState<ShopInfo | null>(null);
   const [preview, setPreview] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const { toast, show, dismiss } = useToast();
   const mobile = useIsMobile();
 
   const load = useCallback(async () => {
@@ -46,7 +45,7 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
     await quoteService.markOutcome(quoteId, o);
     onChanged();
     load();
-    show({
+    notify?.({
       message: `Marked ${o}.`,
       actionLabel: 'Undo',
       onAction: async () => {
@@ -59,6 +58,8 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
   async function clone() {
     const res = await quoteService.clone(quoteId);
     onChanged();
+    if (res.error) { notify?.({ message: res.error }); return; }
+    notify?.({ message: `Cloned as ${res.data?.quote_number ?? 'a new draft'} — repriced at today's rates.` });
     if (res.data) onEdit(res.data.id);
   }
 
@@ -72,8 +73,9 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
       return;
     }
     const res = await quoteService.remove(quoteId);
-    if (res.error) { show({ message: res.error }); setConfirmDelete(false); return; }
+    if (res.error) { notify?.({ message: res.error }); setConfirmDelete(false); return; }
     onChanged();
+    notify?.({ message: 'Draft deleted.' });
     onBack();
   }
 
@@ -123,24 +125,26 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
             <i className="las la-lock" style={{ marginRight: 5 }} />Cost, overhead &amp; margin are internal. The customer PDF shows scope and total only.
           </p>
 
-          <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
-            <button onClick={() => setPreview(true)} data-testid="preview-send" style={{ height: 46, padding: '0 22px', border: 'none', borderRadius: 13, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-file-invoice-dollar" />Preview &amp; send</button>
+          {/* On mobile the actions become big touch targets: a full-width
+              primary CTA, then secondary actions paired two-up (prototype). */}
+          <div style={{ display: 'flex', gap: mobile ? 10 : 12, marginTop: 24, flexWrap: 'wrap' }}>
+            <button onClick={() => setPreview(true)} data-testid="preview-send" style={{ height: mobile ? 54 : 46, padding: '0 22px', border: 'none', borderRadius: mobile ? 16 : 13, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: mobile ? 16 : 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, ...(mobile ? { flexBasis: '100%' } : {}) }}><i className="las la-file-invoice-dollar" />Preview &amp; send</button>
             <button onClick={() => editable && onEdit(q.id)} disabled={!editable} data-testid="edit-quote"
               title={editable ? undefined : 'Sent quotes are frozen — clone to revise at today’s rates'}
-              style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: editable ? color.body : color.faint, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: editable ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, opacity: editable ? 1 : 0.6 }}><i className="las la-pen" />Edit quote</button>
+              style={{ height: mobile ? 52 : 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: editable ? color.body : color.faint, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: editable ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: editable ? 1 : 0.6, ...(mobile ? { flex: '1 1 44%' } : {}) }}><i className="las la-pen" />Edit quote</button>
             {q.status !== 'draft' && (
               <button onClick={downloadPdf} disabled={downloading} data-testid="download-pdf"
-                style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: downloading ? 0.7 : 1 }}>
+                style={{ height: mobile ? 52 : 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: downloading ? 0.7 : 1, ...(mobile ? { flex: '1 1 44%' } : {}) }}>
                 <i className={downloading ? 'las la-spinner' : 'las la-download'} style={downloading ? { animation: 'qfSpin 1s linear infinite' } : undefined} />{downloading ? 'Preparing…' : 'Download PDF'}
               </button>
             )}
-            <button onClick={() => outcome('won')} data-testid="mark-won" style={{ height: 46, padding: '0 20px', border: '1.5px solid #C9EFD9', borderRadius: 13, background: color.successBg, color: color.success, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark won</button>
-            <button onClick={() => outcome('lost')} data-testid="mark-lost" style={{ height: 46, padding: '0 20px', border: '1.5px solid #FAD7DD', borderRadius: 13, background: '#FFEFF1', color: color.danger, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Mark lost</button>
-            <button onClick={clone} style={{ height: 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><i className="las la-copy" />Clone</button>
+            <button onClick={() => outcome('won')} data-testid="mark-won" style={{ height: mobile ? 52 : 46, padding: '0 20px', border: '1.5px solid #C9EFD9', borderRadius: 13, background: color.successBg, color: color.success, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...(mobile ? { flex: '1 1 44%' } : {}) }}>Mark won</button>
+            <button onClick={() => outcome('lost')} data-testid="mark-lost" style={{ height: mobile ? 52 : 46, padding: '0 20px', border: '1.5px solid #FAD7DD', borderRadius: 13, background: '#FFEFF1', color: color.danger, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...(mobile ? { flex: '1 1 44%' } : {}) }}>Mark lost</button>
+            <button onClick={clone} style={{ height: mobile ? 52 : 46, padding: '0 20px', border: `1.5px solid ${color.border}`, borderRadius: 13, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, ...(mobile ? { flex: '1 1 44%' } : {}) }}><i className="las la-copy" />Clone</button>
             <button onClick={() => editable && removeQuote()} disabled={!editable} data-testid="detail-delete"
               title={!editable ? 'Only drafts can be deleted — sent quotes are history' : confirmDelete ? 'Click again to delete this draft' : 'Delete draft'}
               aria-label={confirmDelete ? 'Confirm delete draft' : 'Delete draft'}
-              style={{ width: 46, height: 46, border: editable ? '1.5px solid #FAD7DD' : `1.5px solid ${color.border}`, borderRadius: 13, background: !editable ? '#fff' : confirmDelete ? color.danger : '#FFEFF1', color: !editable ? color.faint : confirmDelete ? '#fff' : color.danger, fontSize: 17, cursor: editable ? 'pointer' : 'not-allowed', opacity: editable ? 1 : 0.6 }}>
+              style={{ width: mobile ? undefined : 46, height: mobile ? 52 : 46, border: editable ? '1.5px solid #FAD7DD' : `1.5px solid ${color.border}`, borderRadius: 13, background: !editable ? '#fff' : confirmDelete ? color.danger : '#FFEFF1', color: !editable ? color.faint : confirmDelete ? '#fff' : color.danger, fontSize: 17, cursor: editable ? 'pointer' : 'not-allowed', opacity: editable ? 1 : 0.6, ...(mobile ? { flex: '1 1 44%' } : {}) }}>
               <i className={confirmDelete && editable ? 'las la-exclamation' : 'las la-trash'} />
             </button>
           </div>
@@ -171,7 +175,6 @@ export function DetailScreen({ quoteId, onBack, onEdit, onChanged }: { quoteId: 
       {preview && (
         <CustomerPreviewModal quote={q} shopName={shop?.name ?? 'Your shop'} shopLogoUrl={shop?.logo_url} onClose={() => setPreview(false)} onSent={() => { onChanged(); load(); }} />
       )}
-      <Toast toast={toast} onDismiss={dismiss} />
     </div>
   );
 }

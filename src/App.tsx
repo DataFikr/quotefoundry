@@ -95,8 +95,12 @@ function Gate() {
 
 export function App() {
   const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  // An in-app hash (#/quotes…) means "resume where I was" — enter the app so a
+  // refresh/deep-link restores the screen (Phase 4.1). In live mode the Gate
+  // still enforces a session; the hash rides along through login.
+  const hasAppHash = typeof window !== 'undefined' && /^#\/(quotes|customers|rates)/.test(window.location.hash);
   const [ready, setReady] = useState(false);
-  const [entered, setEntered] = useState(params.has('app'));
+  const [entered, setEntered] = useState(params.has('app') || hasAppHash);
   const [view, setView] = useState<'landing' | 'auth'>(params.has('auth') ? 'auth' : 'landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const enforceAuth = isLiveEnv() || params.has('auth');
