@@ -8,6 +8,7 @@
 import { heading } from '../app/ui';
 import { color } from '../design/tokens';
 import { useIsMobile } from '../app/useIsMobile';
+import { LandingDemo } from './LandingDemo';
 
 // Landing accents derived from the app token palette (one brand, one hue).
 const DK = color.panelFrom;        // deep ink-navy headings (matches cost panel)
@@ -33,7 +34,7 @@ export function LandingScreen({ onStart, onLogin }: { onStart: () => void; onLog
       </div>
 
       {/* hero */}
-      <div style={{ background: `linear-gradient(180deg,${TINT},#F8FAFF)`, padding: mobile ? `44px ${px}px 40px` : '72px 40px 64px', textAlign: mobile ? 'left' : 'center' }}>
+      <div style={{ background: `linear-gradient(180deg,${TINT},#F8FAFF)`, padding: mobile ? `44px ${px}px 140px` : '72px 40px 300px', textAlign: mobile ? 'left' : 'center' }}>
         <div style={{ fontFamily: heading, fontWeight: 700, fontSize: mobile ? 12 : 13, color: ACCENT, letterSpacing: '.12em', marginBottom: mobile ? 12 : 16 }}>BUILT FOR METAL FAB &amp; WELDING SHOPS</div>
         <h1 style={{ fontFamily: heading, fontWeight: 900, fontSize: mobile ? 33 : 46, lineHeight: 1.1, color: DK, margin: mobile ? '0 0 14px' : '0 auto 18px', maxWidth: 760, letterSpacing: mobile ? '-.6px' : '-1px' }}>Quote structural steel jobs in 10 minutes, not all afternoon</h1>
         <p style={{ fontSize: mobile ? 16.5 : 18, color: SUB, lineHeight: 1.55, maxWidth: 560, margin: mobile ? '0 0 24px' : '0 auto 30px' }}>Stop losing jobs to slow quotes and margin to forgotten costs. Enter the job, get a branded quote, win more work.</p>
@@ -47,6 +48,26 @@ export function LandingScreen({ onStart, onLogin }: { onStart: () => void; onLog
           <span><i className="las la-check" style={{ color: color.success }} /> No credit card</span>
           <span><i className="las la-check" style={{ color: color.success }} /> Live in 15 minutes</span>
           <span><i className="las la-check" style={{ color: color.success }} /> Cancel anytime</span>
+        </div>
+      </div>
+
+      {/* demo card (overlaps the hero seam) + benefits row */}
+      <div style={{ background: '#fff', padding: mobile ? `0 ${px}px 44px` : '0 40px 56px' }}>
+        <LandingDemo mobile={mobile} />
+        <div style={{ textAlign: 'center', fontSize: mobile ? 13.5 : 14.5, color: color.muted, marginTop: mobile ? 12 : 16 }}>
+          A real job — RFQ to sent quote — start to finish.
+        </div>
+
+        <div style={{ maxWidth: 1080, margin: mobile ? '28px auto 0' : '40px auto 0', display: mobile ? 'flex' : 'grid', flexDirection: mobile ? 'column' : undefined, gridTemplateColumns: mobile ? undefined : 'repeat(3,1fr)', gap: mobile ? 12 : 18 }}>
+          {[['la-calculator', 'Accurate costing', "Priced from your shop's own rates — labor, material, burn, margin. Not guesswork."],
+            ['la-file-invoice', 'RFQ processing', "Drop in the customer's RFQ spreadsheet or PDF — part, material, qty pre-filled."],
+            ['la-tasks', 'Job status tracker', 'Every quote tracked draft → sent → opened → won. Know what to chase.']].map(([icon, t, d]) => (
+            <div key={t} style={{ padding: mobile ? 22 : 26, borderRadius: 18, background: TINT }}>
+              <i className={`las ${icon}`} aria-hidden="true" style={{ fontSize: mobile ? 28 : 30, color: ACCENT }} />
+              <h4 style={{ fontFamily: heading, fontWeight: 700, fontSize: mobile ? 17 : 18, color: DK, margin: mobile ? '10px 0 5px' : '12px 0 6px' }}>{t}</h4>
+              <p style={{ fontSize: 14.5, color: SUB, lineHeight: 1.5, margin: 0 }}>{d}</p>
+            </div>
+          ))}
         </div>
       </div>
 
