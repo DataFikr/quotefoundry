@@ -19,7 +19,7 @@ import { heading } from '../app/ui';
 import { color } from '../design/tokens';
 import { demoVideo } from '../app/demoVideo';
 
-const DUR = '5s';
+const DUR = '10s';
 const anim = (name: string): React.CSSProperties => ({ animation: `${name} ${DUR} linear infinite` });
 
 const CTA = color.accent;
