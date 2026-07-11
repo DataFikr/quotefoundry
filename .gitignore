@@ -9,3 +9,6 @@ playwright-report/
 e2e/__screenshots__/**/*-actual.png
 e2e/__screenshots__/**/*-diff.png
 .DS_Store
+
+# Demo video master (compressed copy lives in public/media/demo.mp4)
+video/

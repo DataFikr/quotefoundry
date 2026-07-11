@@ -1,22 +1,22 @@
 // ============================================================================
-// demoVideo.ts — points the landing demo at the produced ~59-second video
-// (doc 09 Phases B–C; composed from the Claude Design handoff). While `enabled`
-// is true, LandingDemo mounts a real <video> at these paths; if the files are
-// absent (they 404 until encoded), the <video> errors and LandingDemo falls
-// back to the CSS animation loop automatically — the page never dead-ends.
+// demoVideo.ts — points the landing demo at the produced demo video (the
+// composed 60s "2× speed" cinematic exported from the Claude Design handoff:
+// RFQ+costing → branded PDF+send → pipeline → customer inbox → end card).
+// While `enabled` is true, LandingDemo mounts a real <video>; if the file is
+// absent (404), the <video> errors and LandingDemo falls back to the CSS
+// animation loop automatically — the page never dead-ends.
 //
-// `aspect` is the source frame ratio (W / H). LandingDemo drives the player's
-// box from this with object-fit:contain, so the WHOLE frame always shows —
-// never cropped/truncated — on both desktop and mobile. The handoff composes at
-// 1920×1080, so 16 / 9. Change here if you re-export at another ratio.
+// `aspect` is the source frame ratio (W / H); the export is 1920×1080 → 16 / 9.
+// The player derives its box from this with object-fit:contain, so the WHOLE
+// frame always shows — never cropped/truncated — on desktop and mobile.
 //
-// To go live: encode per docs/consulting/09-landing-demo-video-plan.md §2 and
-// drop demo.webm / demo.mp4 / demo-poster.webp into public/media/. No code edit.
-// To force the animation instead, set enabled: false.
+// The shipped demo.mp4 is compressed to ~4.0 MB (1280×720 H.264, two-pass ~550
+// kbps) — within the doc-09 < 4.5 MB budget. Re-export from the 1920×1080 master
+// in video/ if you need to regenerate. To force the animation instead, set
+// enabled: false.
 // ============================================================================
 export const demoVideo = {
   enabled: true,
-  webm: '/media/demo.webm',
   mp4: '/media/demo.mp4',
   poster: '/media/demo-poster.webp',
   aspect: '16 / 9',

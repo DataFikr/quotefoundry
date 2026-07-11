@@ -181,7 +181,6 @@ function VideoPlayer({ mobile, autoplay, onError }: { mobile: boolean; autoplay:
       aria-label="QuoteFoundry product demo — a real job quoted from RFQ to sent, at 2× speed"
       style={{ display: 'block', width: '100%', aspectRatio: demoVideo.aspect, height: 'auto', objectFit: 'contain', background: color.panelFrom, border: 'none' }}
     >
-      <source src={demoVideo.webm} type="video/webm" />
       <source src={demoVideo.mp4} type="video/mp4" />
     </video>
   );
