@@ -14,27 +14,33 @@ import { generateQuotePdf } from '../src/pdf-generation/src/generateQuotePdf.mjs
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'POST only' });
 
-  const { caller, error } = await getCaller(req);
-  if (!caller) return res.status(401).json({ ok: false, error });
+  try {
+    const { caller, error } = await getCaller(req);
+    if (!caller) return res.status(401).json({ ok: false, error });
 
-  const { quoteId, recipient, subject, message } = req.body ?? {};
-  if (!quoteId || !recipient || !subject || !message) {
-    return res.status(400).json({ ok: false, error: 'quoteId, recipient, subject and message are required.' });
+    const { quoteId, recipient, subject, message } = req.body ?? {};
+    if (!quoteId || !recipient || !subject || !message) {
+      return res.status(400).json({ ok: false, error: 'quoteId, recipient, subject and message are required.' });
+    }
+
+    const loaded = await loadQuoteForPdf(caller, String(quoteId));
+    if (!loaded.quote) return res.status(404).json({ ok: false, error: loaded.error });
+
+    const pdfBuffer: Buffer = await generateQuotePdf(loaded.quote, loaded.shop);
+
+    const result = await sendQuoteEmail({
+      quoteId: String(quoteId),
+      callerShopId: caller.shopId,
+      recipient: String(recipient),
+      subject: String(subject),
+      message: String(message),
+      pdfBase64: pdfBuffer.toString('base64'),
+    });
+
+    return res.status(result.ok ? 200 : 400).json(result);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[send-quote-email] unhandled error:', msg);
+    return res.status(500).json({ ok: false, error: msg });
   }
-
-  const loaded = await loadQuoteForPdf(caller, String(quoteId));
-  if (!loaded.quote) return res.status(404).json({ ok: false, error: loaded.error });
-
-  const pdfBuffer: Buffer = await generateQuotePdf(loaded.quote, loaded.shop);
-
-  const result = await sendQuoteEmail({
-    quoteId: String(quoteId),
-    callerShopId: caller.shopId,
-    recipient: String(recipient),
-    subject: String(subject),
-    message: String(message),
-    pdfBase64: pdfBuffer.toString('base64'),
-  });
-
-  return res.status(result.ok ? 200 : 400).json(result);
 }
