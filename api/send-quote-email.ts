@@ -6,8 +6,8 @@
 // sendQuoteEmail() which re-verifies ownership and sends via Resend.
 // ============================================================================
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getCaller, loadQuoteForPdf } from './_lib';
-import { sendQuoteEmail } from '../src/email-integration/server/sendQuoteEmail';
+import { getCaller, loadQuoteForPdf } from './_lib.js';
+import { sendQuoteEmail } from '../src/email-integration/server/sendQuoteEmail.js';
 // @ts-expect-error — plain .mjs module, no type declarations
 import { generateQuotePdf } from '../src/pdf-generation/src/generateQuotePdf.mjs';
 

@@ -5,7 +5,7 @@
 // id is indistinguishable from a missing one.
 // ============================================================================
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getCaller, loadQuoteForPdf } from './_lib';
+import { getCaller, loadQuoteForPdf } from './_lib.js';
 // @ts-expect-error — plain .mjs module, no type declarations
 import { generateQuotePdf } from '../src/pdf-generation/src/generateQuotePdf.mjs';
 

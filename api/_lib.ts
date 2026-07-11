@@ -11,7 +11,7 @@
 
 import type { VercelRequest } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { computeQuote, ratesForInputs } from '../src/data-access-layer/lib/quoteEngine';
+import { computeQuote, ratesForInputs } from '../src/data-access-layer/lib/quoteEngine.js';
 
 function env(name: string, fallback?: string): string {
   const v = process.env[name] ?? (fallback !== undefined ? process.env[fallback] : undefined);

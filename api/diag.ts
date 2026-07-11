@@ -8,11 +8,11 @@ const suspects: Record<string, () => Promise<unknown>> = {
   'supabase-js': () => import('@supabase/supabase-js'),
   'pdfkit': () => import('pdfkit'),
   'node:crypto': () => import('node:crypto'),
-  'quoteEngine': () => import('../src/data-access-layer/lib/quoteEngine'),
-  'sendQuoteEmail': () => import('../src/email-integration/server/sendQuoteEmail'),
+  'quoteEngine': () => import('../src/data-access-layer/lib/quoteEngine.js'),
+  'sendQuoteEmail': () => import('../src/email-integration/server/sendQuoteEmail.js'),
   // @ts-expect-error — plain .mjs module, no type declarations
   'generateQuotePdf': () => import('../src/pdf-generation/src/generateQuotePdf.mjs'),
-  '_lib': () => import('./_lib'),
+  '_lib': () => import('./_lib.js'),
 };
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {

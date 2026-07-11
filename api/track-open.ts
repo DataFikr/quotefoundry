@@ -7,7 +7,7 @@
 // trackOpen() itself only ever advances sent → opened (CLAUDE.md §4.5).
 // ============================================================================
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { trackOpen, signTracking } from '../src/email-integration/server/sendQuoteEmail';
+import { trackOpen, signTracking } from '../src/email-integration/server/sendQuoteEmail.js';
 
 // 1x1 transparent GIF (also returned on invalid input)
 const PIXEL = Buffer.from([
