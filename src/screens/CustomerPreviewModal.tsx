@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { emailService, EMAIL_ENDPOINT_MISSING } from '../email-integration/services/emailService';
 import { quoteService } from '../data-access-layer/services/quoteService';
 import { customerScope } from '../app/customerScope';
+import { formatLeadTime } from '../app/leadTime';
 import type { Quote, PdfStyle } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money2, heading } from '../app/ui';
@@ -151,6 +152,9 @@ export function CustomerPreviewModal({ quote, shopName, shopLogoUrl, onClose, on
               <div style={{ textAlign: 'right', fontSize: 11, color: '#5F6B7A' }}>
                 <div>Date: <span data-mask>{new Date(quote.created_at).toLocaleDateString()}</span></div>
                 <div>Valid: 30 days</div>
+                {formatLeadTime(quote.inputs.lead_time) && (
+                  <div>Lead time: {formatLeadTime(quote.inputs.lead_time)}</div>
+                )}
                 <div>Qty: {quote.inputs.quantity} ea</div>
               </div>
             </div>

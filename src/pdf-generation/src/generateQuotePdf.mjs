@@ -47,6 +47,33 @@ function logoBuffer(logoUrl) {
 const money = (n) =>
   '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// Inline mirror of src/app/leadTime.ts (this .mjs is a standalone module in the
+// Vercel API bundle — kept dependency-free on purpose). Keep the two in sync.
+// lead_time is overloaded (a due date OR a duration) and spreadsheet imports
+// have leaked raw Excel date serials (46232.79…); normalize before display.
+const LT_EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
+const LT_DAY_MS = 86_400_000;
+function formatLeadTime(raw) {
+  if (raw == null) return '';
+  const s = String(raw).trim();
+  if (!s) return '';
+  const fmt = (d) => d.toLocaleDateString('en-US',
+    { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const n = Number(s);
+    if (n >= 20_000 && n <= 90_000) {
+      const d = new Date(LT_EXCEL_EPOCH_MS + Math.round(n) * LT_DAY_MS);
+      if (!isNaN(d.getTime())) return fmt(d);
+    }
+    return '';
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+    const d = new Date(s.slice(0, 10) + 'T00:00:00Z');
+    if (!isNaN(d.getTime())) return fmt(d);
+  }
+  return s;
+}
+
 // ----------------------------------------------------------------------------
 // Build the customer-facing line items from the quote. We GROUP engine lines
 // into customer-sensible scope items and never expose overhead/margin.
@@ -133,7 +160,7 @@ export function generateQuotePdf(quote, shop) {
     block(left + colW * 2, 'DETAILS', [
       `Date: ${new Date(quote.created_at || Date.now()).toLocaleDateString()}`,
       'Valid: 30 days',
-      quote.inputs.lead_time ? `Lead time: ${quote.inputs.lead_time}` : 'Lead time: on request',
+      `Lead time: ${formatLeadTime(quote.inputs.lead_time) || 'on request'}`,
       `Terms: ${quote.terms || 'Net 30'}`,
     ]);
     y += 92;

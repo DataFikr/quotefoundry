@@ -8,6 +8,7 @@
 // ============================================================================
 
 import { supabase, run, ok, fail, Result } from '../../data-access-layer/lib/supabase';
+import { normalizeLeadTime } from '../../app/leadTime';
 
 export interface SendQuoteRequest {
   quoteId: string;
@@ -71,13 +72,21 @@ export const emailService = {
     const price = '$' + quote.quoted_price.toLocaleString(undefined, {
       minimumFractionDigits: 2, maximumFractionDigits: 2,
     });
+    // lead_time is overloaded (a due date OR a duration) — phrase each correctly
+    // and drop the clause entirely when the value isn't usable (e.g. a stray
+    // spreadsheet date serial), so nothing raw ever reaches the customer.
+    const lt = normalizeLeadTime(quote.lead_time);
+    const leadClause =
+      lt.kind === 'date' ? `, for delivery by ${lt.text}`
+      : lt.kind === 'duration' ? `, with a ${lt.text} lead time from approval`
+      : '';
     return {
       recipient: quote.customer_email ?? '',
       subject: `Quote ${quote.quote_number} — ${quote.job_name}`,
       message:
         `Hi,\n\n` +
         `Thank you for the opportunity to quote your ${quote.job_name.toLowerCase()}. ` +
-        `Our price is ${price}${quote.lead_time ? `, with a ${quote.lead_time} lead time from approval` : ''}.\n\n` +
+        `Our price is ${price}${leadClause}.\n\n` +
         `The full quote is attached as a PDF. It's valid for 30 days. ` +
         `To proceed, just sign and return it, or reply to this email.\n\n` +
         `Happy to answer any questions.`,

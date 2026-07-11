@@ -16,6 +16,7 @@
 
 import { jsPDF } from 'jspdf';
 import { customerScope } from '../../app/customerScope';
+import { formatLeadTime } from '../../app/leadTime';
 import type { Quote, PdfStyle, ShopInfo } from '../../data-access-layer/lib/types';
 
 interface Theme {
@@ -110,7 +111,7 @@ export function buildQuotePdf(quote: Quote, shop: Pick<ShopInfo, 'name' | 'logo_
   block(left + colW * 2, 'DETAILS', [
     `Date: ${new Date(quote.created_at || Date.now()).toLocaleDateString()}`,
     'Valid: 30 days',
-    quote.inputs.lead_time ? `Lead time: ${quote.inputs.lead_time}` : 'Lead time: on request',
+    `Lead time: ${formatLeadTime(quote.inputs.lead_time) || 'on request'}`,
     'Terms: Net 30',
   ]);
   y += 84;
