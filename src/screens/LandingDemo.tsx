@@ -131,14 +131,32 @@ function Stage({ mobile }: { mobile: boolean }) {
   );
 }
 
-// The produced 55s video. `autoplay` (desktop) plays only while on-screen via an
+// The produced demo video. `autoplay` (desktop) plays only while on-screen via an
 // IntersectionObserver — the "network diet" from doc 09; mobile mounts this only
 // after a tap. If the source 404s (not yet encoded), onError bubbles up so the
 // caller can fall back to the CSS animation. Always muted+loop → poster-until-play.
+//
+// SIZING: the box is driven by the source aspect ratio (demoVideo.aspect) with
+// object-fit:contain, so the ENTIRE frame is visible — never cropped — at any
+// width, on desktop AND mobile. (Previously a fixed height + object-fit:cover
+// truncated the frame on mobile to roughly its upper half.) Any mismatch between
+// the card width and the source ratio letterboxes on brand-dark, not by clipping.
 function VideoPlayer({ mobile, autoplay, onError }: { mobile: boolean; autoplay: boolean; onError: () => void }) {
   const ref = useRef<HTMLVideoElement>(null);
+  // Respect prefers-reduced-motion (WCAG 2.3.3 / 2.2.2): don't auto-loop motion;
+  // show native controls so the user starts it deliberately.
+  const [reduce, setReduce] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   useEffect(() => {
-    if (!autoplay) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduce(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const auto = autoplay && !reduce;
+  useEffect(() => {
+    if (!auto) return;
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
@@ -147,21 +165,21 @@ function VideoPlayer({ mobile, autoplay, onError }: { mobile: boolean; autoplay:
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [autoplay]);
+  }, [auto]);
   return (
     <video
       ref={ref}
       muted
       loop
       playsInline
-      autoPlay
+      autoPlay={auto}
       preload="none"
-      controls={!autoplay}
+      controls={!auto}
       poster={demoVideo.poster}
       onError={onError}
       data-testid="demo-video"
       aria-label="QuoteFoundry product demo — a real job quoted from RFQ to sent, at 2× speed"
-      style={{ display: 'block', width: '100%', height: mobile ? 216 : 574, objectFit: 'cover', background: color.appBg, border: 'none' }}
+      style={{ display: 'block', width: '100%', aspectRatio: demoVideo.aspect, height: 'auto', objectFit: 'contain', background: color.panelFrom, border: 'none' }}
     >
       <source src={demoVideo.webm} type="video/webm" />
       <source src={demoVideo.mp4} type="video/mp4" />
@@ -215,7 +233,7 @@ export function LandingDemo({ mobile, demoVideoUrl }: { mobile: boolean; demoVid
           onClick={() => setPlaying(true)}
           data-testid="demo-play"
           aria-label="Play the QuoteFoundry demo"
-          style={{ display: 'block', width: '100%', position: 'relative', height: 216, border: 'none', cursor: 'pointer', padding: 0, background: 'linear-gradient(150deg,#14152A 0%,#1C1D2B 55%,#231820 100%)', overflow: 'hidden' }}
+          style={{ display: 'block', width: '100%', position: 'relative', aspectRatio: demoVideo.aspect, border: 'none', cursor: 'pointer', padding: 0, background: 'linear-gradient(150deg,#14152A 0%,#1C1D2B 55%,#231820 100%)', overflow: 'hidden' }}
         >
           {/* mini app window — the final "Opened" frame */}
           <div aria-hidden="true" style={{ position: 'absolute', left: 22, right: 22, top: 38, bottom: -26, borderRadius: '12px 12px 0 0', background: color.appBg, boxShadow: '0 24px 60px -18px rgba(8,9,20,.85)', overflow: 'hidden' }}>
