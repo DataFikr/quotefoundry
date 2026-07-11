@@ -13,7 +13,7 @@ Research basis (July 2026): shortening a demo from 4 min to 90s raised conversio
 
 **Terminology guard:** "RFQ processing" in customer-facing copy means the **Document Assist** upload flow (drop the customer's RFQ spreadsheet/PDF → fields pre-fill). It is NOT a new RFQ entity (out of MVP scope per CLAUDE.md §9). "Job status tracker" means the existing quote pipeline (draft → sent → opened → won/lost).
 
-**Format decision — "GIF" implemented as muted video:** a 55-second GIF at readable resolution would be 30–80 MB and murder page load. The executor builds the *GIF experience* with `<video autoplay muted loop playsinline>` serving **WebM + MP4 (~2–4 MB)** with a poster image. This is what every reference site actually does; keep the user-facing behavior identical to a GIF (autoplays silently, loops, no controls chrome by default).
+**Format decision — "GIF" implemented as muted video:** a ~60-second GIF at readable resolution would be 30–80 MB and murder page load. The executor builds the *GIF experience* with `<video autoplay muted loop playsinline>` serving **WebM + MP4 (~2–4 MB)** with a poster image. This is what every reference site actually does; keep the user-facing behavior identical to a GIF (autoplays silently, loops, no controls chrome by default).
 
 ---
 
@@ -33,7 +33,7 @@ Research basis (July 2026): shortening a demo from 4 min to 90s raised conversio
 │      ┌──────────────────────────────┐      │ ← video card overlaps
 ├──────┤  ●●●  app.quotefoundry.app   ├──────┤   the hero/white seam
 │      │                              │      │
-│      │   ▶ 55s silent demo loop     │      │
+│      │   ▶ ~60s silent demo loop    │      │
 │      │   (poster until loaded)      │      │
 │      │                              │      │
 │      └──────────────────────────────┘      │
@@ -62,20 +62,21 @@ Why here and not inside the hero block: the H1 + CTA stay above the fold untouch
 
 ## 2. The video — content flow, script, thumbnail
 
-**Spec:** raw recording ≈ 1:50 at normal speed → exported at **2× ≈ 55 seconds**, 1280×800 (16:10 app window), silent, on-screen captions burned in (it's muted — captions ARE the voiceover), loops seamlessly (end card ≈ 2s then cut back to scene 1).
+**Spec:** raw recording ≈ 2:00 at normal speed → exported at **2× ≈ 59 seconds**, 1280×800 (16:10 app window), silent, on-screen captions burned in (it's muted — captions ARE the voiceover), loops seamlessly (end card ≈ 3s then cut back to scene 1). The customer-inbox scene (6) can be captured from a real Gmail/Outlook window showing a demo send — mock data only.
 
 ### Shot list / flow (times are final, at 2×)
 
 | # | Time | On screen (recorded in the app, mock data) | Burned-in caption (the hook script) |
 |---|------|--------------------------------------------|-------------------------------------|
 | 1 | 0:00–0:06 | An RFQ spreadsheet dragged onto the editor; fields flash-fill (part, material, qty) | **"A customer RFQ just landed."** → **"Fields filled. No retyping."** |
-| 2 | 0:06–0:22 | Estimator enters weights/hours; cost panel recalculates live on every keystroke | **"Your rates. Your labor. Your margin."** → **"Watch the price build itself."** |
-| 3 | 0:22–0:34 | Quoted price locks in; click Preview → branded customer PDF (scope + total only) | **"A branded quote your customer takes seriously."** |
-| 4 | 0:34–0:44 | Click Send; quote status flips **draft → sent**; then the **opened** badge appears | **"Sent. And you'll know when they open it."** |
-| 5 | 0:44–0:52 | Pipeline board: quotes in draft / sent / opened / won columns, values visible | **"Every job tracked. Nothing slips."** |
-| 6 | 0:52–0:55 | End card, brand navy (`color.panelFrom`): bolt logo + text | **"Your rates. Your quote. Under 10 minutes."** + "Start free — no card" |
+| 2 | 0:06–0:20 | Estimator enters weights/hours; cost panel recalculates live on every keystroke | **"Your rates. Your labor. Your margin."** → **"Watch the price build itself."** |
+| 3 | 0:20–0:32 | Quoted price locks in; click Preview → branded customer PDF (scope + total only) | **"A branded quote your customer takes seriously."** |
+| 4 | 0:32–0:42 | Click Send; quote status flips **draft → sent**; then the **opened** badge appears | **"Sent. And you'll know when they open it."** |
+| 5 | 0:42–0:50 | Pipeline board: quotes in draft / sent / opened / won columns, values visible | **"Every job tracked. Nothing slips."** |
+| 6 | 0:50–0:56 | Cut to the customer's inbox: the quote email arrives from the shop's branded sender; open it to reveal the attached PDF quote (attachment thumbnail visible) | **"Delivered to their inbox — your branded quote attached."** |
+| 7 | 0:56–0:59 | End card, brand navy (`color.panelFrom`): bolt logo + text | **"Your rates. Your quote. Under 10 minutes."** + "Start free — no card" |
 
-The captions map one-to-one to the three benefit cards below the video (scene 1 → RFQ processing, scene 2 → accurate costing, scenes 4–5 → job status tracker) — the page reads as proof of the row beneath it.
+The captions map one-to-one to the three benefit cards below the video (scene 1 → RFQ processing, scene 2 → accurate costing, scenes 4–6 → job status tracker: send → track → land in the inbox) — the page reads as proof of the row beneath it.
 
 **Hook rule:** scene 1 must show *motion + payoff inside 5 seconds* (file drop → fields fill). Never open on an empty form or a login screen.
 
@@ -85,6 +86,7 @@ A designed still (not a random frame): **split composition** — left 60%: the q
 ### Recording notes (founder or agent)
 - Run the app on the mock backend (`mock-supabase/` runs the whole app — no live data, no real customer names). Seed a believable job: e.g. "Structural brackets — 240 lb steel, qty 1" (the canonical engine example, so the numbers look right on camera).
 - Shop name in the demo: a fictional "Ironline Fabrication" — never a real prospect's name.
+- Scene 6 (inbox): send a real demo quote to your own address and record the received email — display sender = the shop name, from the branded subdomain (`quotes@send.quotefoundry.app`, per CLAUDE.md §4.5), with `Quote_Q-….pdf` attached. Fictional customer/recipient only; blur or mock any real personal address.
 - Window at 1280×800, 100% zoom, cursor visible, deliberate movements (2× makes hesitation look like chaos — rehearse once).
 - Windows tools: **OBS Studio** (free) or **ScreenToGif** for capture; captions + end card + speed in any editor, or ffmpeg-only (below).
 
@@ -104,7 +106,7 @@ Captions: burn in with ffmpeg `subtitles=captions.srt:force_style=...` or in the
 
 ## 3. Execution phases
 
-- **Phase A — Script & seed (agent, 0.5 day):** finalize the 6-scene shot list into a rehearsal doc; prepare mock-backend seed data (one customer, one RFQ spreadsheet matching Doc-Assist Tier-1 headers, rates preloaded) so the recording needs zero improvisation.
+- **Phase A — Script & seed (agent, 0.5 day):** finalize the 7-scene shot list into a rehearsal doc; prepare mock-backend seed data (one customer, one RFQ spreadsheet matching Doc-Assist Tier-1 headers, rates preloaded) so the recording needs zero improvisation.
 - **Phase B — Record (founder, 0.5 day):** one rehearsal + 2–3 takes on the mock backend per the recording notes. Deliver `raw.mp4`.
 - **Phase C — Edit & encode (agent, 0.5 day):** 2× speed, captions, end card, poster design; export `demo.webm`, `demo.mp4`, `demo-poster.webp` into `public/media/`; verify total payload < 4.5 MB.
 - **Phase D — Landing integration (agent, 1 day):** new `DemoSection` in [LandingScreen.tsx](../../src/screens/LandingScreen.tsx) between hero and three-steps per the layout above: browser-frame card, `<video autoplay muted loop playsinline preload="none" poster>` + IntersectionObserver to `play()` only when visible and `pause()` off-screen (honors the existing "network diet" work); mobile = poster + tap-to-play; benefits row of 3 cards reusing the three-steps card style and design tokens (`TINT`, `ACCENT`, `DK` — no new colors); caption line under the card: "Watch a real job quoted in under 10 minutes — at 2× speed."
