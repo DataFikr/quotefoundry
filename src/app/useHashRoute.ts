@@ -16,6 +16,7 @@
 // ============================================================================
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Screen } from './AppShell';
+import { trackPageView } from './analytics';
 
 export function parseHash(hash: string): Screen {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);
@@ -61,6 +62,15 @@ export function useHashRoute(): { screen: Screen; navigate: (s: Screen, replace?
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
+
+  // Fire a GA4 page_view on every screen change (and the initial load). Keyed on
+  // the canonical route string so it captures push, replaceState AND back/forward
+  // navigations, and dedupes same-route renders. gtag config uses
+  // send_page_view:false, so this owns the first pageview too.
+  const path = toHash(screen);
+  useEffect(() => {
+    trackPageView(path);
+  }, [path]);
 
   const navigate = useCallback((s: Screen, replace = false) => {
     extra.current = s;

@@ -27,6 +27,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" />
   <!-- Privacy-friendly analytics (register quotefoundry.app at plausible.io to activate; inert otherwise) -->
   <script defer data-domain="quotefoundry.app" src="https://plausible.io/js/script.js"></script>
+  <!-- Google tag (gtag.js) — GA4 property G-96YYLJ20KW -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-96YYLJ20KW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    // send_page_view:false — this SPA sends page_views itself (src/app/analytics.ts)
+    // on each hash-route change, so GA4 records each screen as a distinct page.
+    gtag('config', 'G-96YYLJ20KW', { send_page_view: false });
+  </script>
 </head>
 <body>
   <div id="root"></div>
