@@ -192,6 +192,11 @@ create table quotes (
   -- download reproduces exactly what was sent)
   pdf_style       text not null default 'classic',        -- classic|modern|minimal
 
+  -- public quote link: unguessable bearer token for the customer-facing view
+  -- (#/q/<token>). Looked up server-side only; the public endpoints return a
+  -- customer-safe allowlist (scope + total, §4.4) — RLS stays untouched.
+  public_token    uuid not null default gen_random_uuid(),
+
   -- lifecycle
   status          text not null default 'draft',          -- draft|sent|opened|won|lost
   sent_at         timestamptz,
@@ -209,6 +214,7 @@ create index idx_quotes_shop on quotes(shop_id);
 create index idx_quotes_status on quotes(shop_id, status);
 create index idx_quotes_customer on quotes(customer_id);
 create index idx_quotes_created on quotes(shop_id, created_at desc);
+create unique index idx_quotes_public_token on quotes(public_token);
 
 -- ============================================================================
 -- 6. QUOTE ACTIVITY  (the timeline: created, sent, opened, won/lost)

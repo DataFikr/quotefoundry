@@ -39,6 +39,7 @@ interface SendArgs {
   pdfBase64: string;
   pdfFilename: string;
   trackingPixelUrl: string;
+  ctaUrl?: string;      // public quote link — rendered as a real anchor in the HTML part
 }
 
 // The authenticated sending subdomain (verified in Resend + DNS). Configurable
@@ -67,7 +68,9 @@ async function providerSend(args: SendArgs): Promise<{ id: string }> {
       text: args.text,
       html: `<div style="font-family:sans-serif;font-size:14px;color:#1a1a1a;white-space:pre-line">${escapeHtml(
         args.text
-      )}</div><img src="${args.trackingPixelUrl}" width="1" height="1" alt="" style="display:none">`,
+      )}</div>${args.ctaUrl
+        ? `<p style="margin:18px 0"><a href="${escapeHtml(args.ctaUrl)}" style="display:inline-block;background:#0E7A4C;color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:bold;text-decoration:none;padding:12px 22px;border-radius:8px">View &amp; accept quote</a></p>`
+        : ''}<img src="${args.trackingPixelUrl}" width="1" height="1" alt="" style="display:none">`,
       attachments: [
         { filename: args.pdfFilename, content: args.pdfBase64 },
       ],
@@ -110,7 +113,7 @@ export async function sendQuoteEmail(req: {
   //    it would let a caller email another shop's quote.
   const { data: quote, error: qErr } = await admin
     .from('quotes')
-    .select('id, shop_id, quote_number, job_name, customer_name, shops(name)')
+    .select('id, shop_id, quote_number, job_name, customer_name, public_token, shops(name)')
     .eq('id', req.quoteId)
     .single();
   if (qErr || !quote) return { ok: false, error: 'Quote not found.' };
@@ -138,6 +141,17 @@ export async function sendQuoteEmail(req: {
   const trackingPixelUrl =
     `${process.env.PUBLIC_URL}/api/track-open?q=${quote.id}&s=${signTracking(quote.id)}`;
 
+  // 3b. Public quote link — appended SERVER-SIDE (never trusted from the
+  //     client) so every sent email carries the customer's accept/decline page.
+  //     The token is the quote's own public_token; the estimator previews the
+  //     message knowing this block is added automatically.
+  const quoteLink = quote.public_token
+    ? `${process.env.PUBLIC_URL}/#/q/${quote.public_token}`
+    : '';
+  const text = quoteLink
+    ? `${req.message}\n\nView, accept, or decline this quote online:\n${quoteLink}`
+    : req.message;
+
   // 4. Send.
   let emailId: string;
   try {
@@ -146,10 +160,11 @@ export async function sendQuoteEmail(req: {
       replyTo,
       fromName: (quote as any).shops?.name ?? 'Quote',
       subject: req.subject,
-      text: req.message,
+      text,
       pdfBase64: req.pdfBase64,
       pdfFilename: `Quote_${quote.quote_number}.pdf`,
       trackingPixelUrl,
+      ctaUrl: quoteLink || undefined,
     });
     emailId = sent.id;
   } catch (e) {

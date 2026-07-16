@@ -12,6 +12,7 @@
 import type { VercelRequest } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { computeQuote, ratesForInputs } from '../src/data-access-layer/lib/quoteEngine.js';
+import { rowToInputs } from '../src/public-quote/server/publicQuote.js';
 
 function env(name: string, fallback?: string): string {
   const v = process.env[name] ?? (fallback !== undefined ? process.env[fallback] : undefined);
@@ -62,23 +63,9 @@ export async function loadQuoteForPdf(caller: Caller, quoteId: string): Promise<
 
   const { data: shopRow } = await caller.client.from('shops').select('name, logo_url').eq('id', caller.shopId).maybeSingle();
 
-  const inputs = {
-    job_name: row.job_name,
-    part_number: row.part_number ?? undefined,
-    material_spec: row.material_spec ?? undefined,
-    material_weight: Number(row.material_weight ?? 0),
-    material_lines: Array.isArray(row.material_lines) && row.material_lines.length ? row.material_lines : undefined,
-    quantity: row.quantity,
-    burn_minutes: Number(row.burn_minutes ?? 0),
-    hrs_cutting: Number(row.hrs_cutting ?? 0),
-    hrs_fitting: Number(row.hrs_fitting ?? 0),
-    hrs_welding: Number(row.hrs_welding ?? 0),
-    hrs_finishing: Number(row.hrs_finishing ?? 0),
-    outside_services: Number(row.outside_services ?? 0),
-    finish_spec: row.finish_spec ?? undefined,
-    lead_time: row.lead_time ?? undefined,
-    notes: row.notes ?? undefined,
-  };
+  // one shared row→inputs hydration (publicQuote.ts) — a second inline copy is
+  // how a field like material_lines would silently drop out of the math
+  const inputs = rowToInputs(row);
   const quote = {
     id: row.id,
     quote_number: row.quote_number,

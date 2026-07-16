@@ -88,7 +88,7 @@ export const emailService = {
         `Thank you for the opportunity to quote your ${quote.job_name.toLowerCase()}. ` +
         `Our price is ${price}${leadClause}.\n\n` +
         `The full quote is attached as a PDF. It's valid for 30 days. ` +
-        `To proceed, just sign and return it, or reply to this email.\n\n` +
+        `To proceed, accept it online with the link below, or just reply to this email.\n\n` +
         `Happy to answer any questions.`,
     };
   },

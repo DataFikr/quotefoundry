@@ -116,6 +116,11 @@ if (!qRow) {
 }
 check('snapshot stored by value', Number(qRow?.rate_snapshot?.price_steel) === 0.85);
 check('quoted_price stored', Number(qRow?.quoted_price) === 1913.82);
+// public quote link (2026-07-16 migration): every quote row mints a uuid token
+check(
+  'public_token minted on insert (run 2026-07-16_public_token.sql if FAIL)',
+  /^[0-9a-f-]{36}$/i.test(String(qRow?.public_token ?? ''))
+);
 
 // 3. adversarial isolation
 console.log('\n3. ADVERSARIAL ISOLATION (CLAUDE.md §4.1):');

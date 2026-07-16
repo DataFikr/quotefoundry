@@ -108,6 +108,9 @@ export interface Quote {
   inputs: QuoteInputs;
   totals: QuoteTotals;
   pdf_style?: PdfStyle;
+  // public quote link token (#/q/<token>) — the shop's own quote carries its
+  // customer-facing link; absent on the mock backend (no DB default there)
+  public_token?: string;
   sent_at?: string;
   opened_at?: string;
   created_at: string;

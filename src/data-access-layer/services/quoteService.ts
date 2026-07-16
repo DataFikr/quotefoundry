@@ -54,6 +54,7 @@ function hydrate(row: any): Quote {
     // resolve material price(s) from the frozen snapshot's own library
     totals: computeQuote(inputs, ratesForInputs(row.rate_snapshot as ShopRates, inputs)),
     pdf_style: row.pdf_style ?? 'classic',
+    public_token: row.public_token ?? undefined, // customer link (absent on the mock)
     sent_at: row.sent_at ?? undefined,
     opened_at: row.opened_at ?? undefined,
     created_at: row.created_at,

@@ -13,6 +13,7 @@ import { AuthScreen, readLogoFile } from './screens/AuthScreen';
 import { LandingScreen } from './screens/LandingScreen';
 import { authService } from './auth-wiring/services/authService';
 import { LogoutSuccessModal } from './screens/AccountModal';
+import { PublicQuoteScreen, publicQuoteToken } from './screens/PublicQuoteScreen';
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
@@ -99,6 +100,17 @@ export function App() {
   // refresh/deep-link restores the screen (Phase 4.1). In live mode the Gate
   // still enforces a session; the hash rides along through login.
   const hasAppHash = typeof window !== 'undefined' && /^#\/(quotes|customers|rates)/.test(window.location.hash);
+  // PUBLIC QUOTE LINK (#/q/<token>) — the shop's CUSTOMER, not a user. Renders
+  // before (and without) auth, the data layer, or devBootstrap: the screen only
+  // talks to /api/quote-view / /api/quote-respond with the token as credential.
+  const [publicToken, setPublicToken] = useState<string | null>(
+    () => (typeof window !== 'undefined' ? publicQuoteToken(window.location.hash) : null)
+  );
+  useEffect(() => {
+    const onHash = () => setPublicToken(publicQuoteToken(window.location.hash));
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(params.has('app') || hasAppHash);
   const [view, setView] = useState<'landing' | 'auth'>(params.has('auth') ? 'auth' : 'landing');
@@ -106,6 +118,9 @@ export function App() {
   const enforceAuth = isLiveEnv() || params.has('auth');
 
   useEffect(() => { devBootstrap().then(() => setReady(true)); }, []);
+
+  // Customer-facing quote page — fully standalone, before any app gating.
+  if (publicToken) return <PublicQuoteScreen token={publicToken} />;
 
   // HARD GUARD: a production build without Supabase env vars would otherwise
   // silently ship the in-memory DEMO backend (fake login, Ironside demo shop)

@@ -19,8 +19,9 @@ import { color } from '../design/tokens';
 import { money2, heading } from '../app/ui';
 
 // Per-template document palette — keep in sync with clientQuotePdf.ts THEMES
-// and the server generateQuotePdf.mjs styles.
-const DOC_THEMES: Record<PdfStyle, {
+// and the server generateQuotePdf.mjs styles. Exported so the public quote
+// page (PublicQuoteScreen) renders the same document the estimator previewed.
+export const DOC_THEMES: Record<PdfStyle, {
   label: string; swatch: string;
   bandBg: string; bandText: string; bandSub: string; rule: string;
   tableHead: string; tableHeadText: string; stripBg: string; stripText: string;
@@ -61,7 +62,23 @@ export function CustomerPreviewModal({ quote, shopName, shopLogoUrl, onClose, on
   const [confirming, setConfirming] = useState(false);
   const [recipient, setRecipient] = useState(quote.customer_email ?? '');
   const [style, setStyle] = useState<PdfStyle>(quote.pdf_style ?? 'classic');
+  const [copied, setCopied] = useState(false);
   const t = DOC_THEMES[style];
+
+  // The customer's accept/decline page for this quote. Present on live data
+  // (DB-minted token); absent on the mock backend — the button hides itself.
+  const publicLink = quote.public_token
+    ? `${window.location.origin}/#/q/${quote.public_token}`
+    : null;
+
+  async function copyLink() {
+    if (!publicLink) return;
+    try {
+      await navigator.clipboard.writeText(publicLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard unavailable (http/permissions) — button just doesn't confirm */ }
+  }
 
   // Persist the template choice immediately so a later "Download PDF" (or a
   // send from another session) reproduces exactly what was previewed.
@@ -221,9 +238,18 @@ export function CustomerPreviewModal({ quote, shopName, shopLogoUrl, onClose, on
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ fontSize: 12.5, color: color.muted }}>Sends from your shop subdomain — you'll confirm the address first.</div>
-              <button onClick={onClose} style={{ marginLeft: 'auto', height: 42, padding: '0 18px', border: `1.5px solid ${color.border}`, borderRadius: 12, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, cursor: 'pointer' }}>Close</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 12.5, color: color.muted }}>
+                Sends from your shop subdomain — you'll confirm the address first.
+                {publicLink && ' A secure accept link is added to the email automatically.'}
+              </div>
+              {publicLink && (
+                <button onClick={copyLink} data-testid="copy-quote-link" title="Copy the customer's view-and-accept link (e.g. to text it)"
+                  style={{ marginLeft: 'auto', height: 42, padding: '0 16px', border: `1.5px solid ${copied ? color.success : color.border}`, borderRadius: 12, background: '#fff', color: copied ? color.success : color.body, fontFamily: heading, fontWeight: 700, fontSize: 13.5, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <i className={`las ${copied ? 'la-check' : 'la-link'}`} style={{ fontSize: 16 }} />{copied ? 'Copied' : 'Copy link'}
+                </button>
+              )}
+              <button onClick={onClose} style={{ marginLeft: publicLink ? undefined : 'auto', height: 42, padding: '0 18px', border: `1.5px solid ${color.border}`, borderRadius: 12, background: '#fff', color: color.body, fontFamily: heading, fontWeight: 700, cursor: 'pointer' }}>Close</button>
               <button onClick={() => { setConfirming(true); setError(null); }} data-testid="send-quote"
                 style={{ height: 42, padding: '0 22px', border: 'none', borderRadius: 12, background: color.accent, color: '#fff', fontFamily: heading, fontWeight: 700, cursor: 'pointer' }}>
                 Send quote

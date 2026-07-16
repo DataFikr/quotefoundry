@@ -11,6 +11,7 @@
 - Live quote editor: enter weight, hours, and outside services; the price updates on every keystroke using the same pure pricing engine that saves the quote.
 - Rate snapshotting: every quote freezes the rates it was priced with — editing shop rates never changes an existing quote.
 - Branded customer PDF (three templates) that shows scope and total only; internal cost, overhead, and margin never appear on the customer document.
+- Public quote link: every emailed quote includes a secure link where the customer views the quote on their phone and taps Accept or Decline — the shop's pipeline updates to won/lost automatically and the shop is notified.
 - Tracked email send from an authenticated domain, with open detection.
 - Document Assist: drop an RFQ spreadsheet and the editor pre-fills deterministically (zero AI tokens); PDFs and CAD files are stored with the quote.
 - Bulk import for customer lists and material price lists (CSV/XLSX).
@@ -23,8 +24,37 @@ margin to underbidding. It is not CAD, CAM, ERP, or MRP.
 
 ## Pricing
 
-Currently in a founding-partner beta: free during beta, with a founding price
-locked in when it becomes paid. Pricing is flat per shop — no per-user fees.
+Currently in a founding-partner beta: free during the beta, with a founding
+price locked in when it becomes paid. Pricing is flat per shop — no per-user
+(per-seat) fees, ever, and no long-term contract.
+
+## FAQ
+
+### How much does QuoteFoundry cost?
+It is free during the founding-partner beta. When it becomes paid, pricing is
+flat per shop — billed once for the shop, never per user or per seat — and
+founding shops keep a locked founding price. No long-term contract.
+
+### Does QuoteFoundry use AI to generate quotes?
+No. Prices come from the shop's own stored rates run through a deterministic
+pricing engine — the same math an estimator does by hand, just faster. AI is
+used only to read an uploaded RFQ spreadsheet to pre-fill fields; it never sets
+prices.
+
+### Can a customer accept a quote online?
+Yes. Every emailed quote carries a secure link. The customer opens it on a
+phone, sees the scope and total (never the shop's cost or margin), and taps
+Accept or Decline. The shop's pipeline updates automatically.
+
+### How is QuoteFoundry different from Paperless Parts or Xometry?
+It is built for small shops: transparent flat per-shop pricing (no per-seat
+fees, no sales call), live in minutes, and it keeps the shop's own customer
+relationship and margin — it is not a marketplace and does not commoditize the
+work.
+
+### What kind of shops is it for?
+US metal fabrication, sheet-metal, structural-steel, and welding job shops with
+roughly 5–50 employees that quote custom work by hand today.
 
 ## Key pages
 
