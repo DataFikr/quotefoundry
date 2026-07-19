@@ -40,6 +40,11 @@ input, textarea, button { font-family: 'Source Sans 3', sans-serif; }
 ::-webkit-scrollbar-thumb { background: #D8D8E6; border-radius: 9px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
+/* Carousels (ScrollCarousel.tsx) hide the native scrollbar and use edge arrows
+   instead. Swipe still works; the arrows are the click/keyboard affordance. */
+.qf-noscrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.qf-noscrollbar::-webkit-scrollbar { display: none; }
+
 @keyframes qfFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes qfSpin { to { transform: rotate(360deg); } }
 

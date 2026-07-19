@@ -10,6 +10,7 @@ import { money, statusPill, heading, cardShadow, cardShadowLg } from '../app/ui'
 import { useIsMobile } from '../app/useIsMobile';
 import { analyzePipeline, needsFollowUp } from '../app/pipelineAnalytics';
 import { Donut, StackedBars, Funnel } from '../app/charts';
+import { ScrollCarousel } from '../app/ScrollCarousel';
 import type { ToastData } from '../app/Toast';
 
 // 'followup' is a pseudo-filter: sent/opened quotes aging past the follow-up
@@ -39,17 +40,19 @@ function daysSince(iso?: string) {
   return days <= 0 ? 'today' : `${days}d`;
 }
 
-function StatCard({ label, value, foot, footColor, onClick, testId }: {
-  label: string; value: string; foot: string; footColor?: string; onClick?: () => void; testId?: string;
+function StatCard({ label, value, foot, footColor, onClick, testId, mobile }: {
+  label: string; value: string; foot: string; footColor?: string; onClick?: () => void; testId?: string; mobile?: boolean;
 }) {
+  // Mobile: compact so all three cards fit on one row (smaller padding + type,
+  // tighter foot line-height for the wrapped helper text).
   return (
     <div onClick={onClick} data-testid={testId}
       role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
-      style={{ background: color.surface, borderRadius: 20, padding: '22px 24px', boxShadow: cardShadow, cursor: onClick ? 'pointer' : 'default' }}>
-      <div style={{ fontSize: 13, color: color.muted, fontWeight: 600 }}>{label}</div>
-      <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 28, marginTop: 6 }}>{value}</div>
-      <div style={{ fontSize: 12.5, color: footColor ?? color.muted, marginTop: 5, fontWeight: 600 }}>{foot}</div>
+      style={{ background: color.surface, borderRadius: mobile ? 15 : 20, padding: mobile ? '12px 11px' : '22px 24px', boxShadow: cardShadow, cursor: onClick ? 'pointer' : 'default', ...(mobile ? { minWidth: 0 } : {}) }}>
+      <div style={{ fontSize: mobile ? 10.5 : 13, color: color.muted, fontWeight: 600, ...(mobile ? { lineHeight: 1.25 } : {}) }}>{label}</div>
+      <div style={{ fontFamily: heading, fontWeight: 700, fontSize: mobile ? 18 : 28, marginTop: mobile ? 3 : 6, ...(mobile ? { whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' } : {}) }}>{value}</div>
+      <div style={{ fontSize: mobile ? 10 : 12.5, color: footColor ?? color.muted, marginTop: mobile ? 3 : 5, fontWeight: 600, ...(mobile ? { lineHeight: 1.3 } : {}) }}>{foot}</div>
     </div>
   );
 }
@@ -129,42 +132,50 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
 
   return (
     <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px' }} data-screen="pipeline">
-      {/* THE 3 NUMBERS — how much is waiting, am I winning, what needs chasing */}
-      <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: mobile ? 12 : 20, marginBottom: mobile ? 14 : 20 }}>
-        <StatCard testId="stat-open" label="Open pipeline" value={money(stats.openValue)}
+      {/* THE 3 NUMBERS — how much is waiting, am I winning, what needs chasing.
+          All three share one row (3-up) on both phone and desktop. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: mobile ? 10 : 20, marginBottom: mobile ? 14 : 20 }}>
+        <StatCard mobile={mobile} testId="stat-open" label="Open pipeline" value={money(stats.openValue)}
           foot={`${stats.openCount} waiting on customers${stats.draftCount ? ` · ${stats.draftCount} draft${stats.draftCount === 1 ? '' : 's'} to finish` : ''}`}
           footColor={color.success} />
-        <StatCard testId="stat-won" label="Won this month" value={money(stats.wonThisMonth)}
+        <StatCard mobile={mobile} testId="stat-won" label="Won this month" value={money(stats.wonThisMonth)}
           foot={stats.wonDelta != null
             ? `${stats.wonDelta >= 0 ? '▲' : '▼'} ${Math.abs(stats.wonDelta)}% vs last month`
             : `${stats.wonThisMonthCount} job${stats.wonThisMonthCount === 1 ? '' : 's'} landed`}
           footColor={stats.wonDelta != null && stats.wonDelta < 0 ? color.danger : color.success} />
-        <div style={mobile ? { gridColumn: '1 / -1' } : undefined}>
-          <StatCard testId="stat-followup" label="Needs follow-up" value={String(stats.needsFollowUp)}
-            foot={stats.needsFollowUp
-              ? `oldest waiting ${stats.oldestFollowUpDays} day${stats.oldestFollowUpDays === 1 ? '' : 's'} — tap to see them`
-              : 'nothing going stale — nice'}
-            footColor={stats.needsFollowUp ? color.danger : color.success}
-            onClick={() => setFilter(filter === 'followup' ? 'all' : 'followup')} />
-        </div>
+        <StatCard mobile={mobile} testId="stat-followup" label="Needs follow-up" value={String(stats.needsFollowUp)}
+          foot={stats.needsFollowUp
+            ? `oldest waiting ${stats.oldestFollowUpDays} day${stats.oldestFollowUpDays === 1 ? '' : 's'} — tap to see them`
+            : 'nothing going stale — nice'}
+          footColor={stats.needsFollowUp ? color.danger : color.success}
+          onClick={() => setFilter(filter === 'followup' ? 'all' : 'followup')} />
       </div>
 
       {/* THE 3 CHARTS — win-rate donut · monthly value · sent→opened→won funnel.
-          Desktop: 3-up grid. Mobile: swipeable scroll-snap row (fintech pattern)
-          so the quote list stays one thumb-scroll away. */}
-      <div style={mobile
-        ? { display: 'flex', gap: 12, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', margin: '0 -16px 18px', padding: '0 16px 6px' }
-        : { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 26 }}>
-        <ChartCard title="Win rate" mobile={mobile} testId="chart-donut">
-          <Donut {...stats.winRate} />
-        </ChartCard>
-        <ChartCard title="Quoted per month" mobile={mobile} testId="chart-monthly">
-          <StackedBars months={stats.monthly} />
-        </ChartCard>
-        <ChartCard title="Where quotes go" mobile={mobile} testId="chart-funnel">
-          <Funnel {...stats.funnel} />
-        </ChartCard>
-      </div>
+          Desktop: 3-up grid. Mobile: swipeable row with side arrows (no visible
+          scrollbar) so the quote list stays one thumb-scroll away. */}
+      {(() => {
+        const cards = (
+          <>
+            <ChartCard title="Win rate" mobile={mobile} testId="chart-donut">
+              <Donut {...stats.winRate} />
+            </ChartCard>
+            <ChartCard title="Quoted per month" mobile={mobile} testId="chart-monthly">
+              <StackedBars months={stats.monthly} />
+            </ChartCard>
+            <ChartCard title="Where quotes go" mobile={mobile} testId="chart-funnel">
+              <Funnel {...stats.funnel} />
+            </ChartCard>
+          </>
+        );
+        return mobile ? (
+          <div style={{ marginBottom: 18 }}>
+            <ScrollCarousel gap={12} bleed={16} testId="chart-scroller">{cards}</ScrollCarousel>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 26 }}>{cards}</div>
+        );
+      })()}
 
       <div style={{ background: color.surface, borderRadius: 22, padding: '10px 12px 16px', boxShadow: cardShadowLg }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px 14px', flexWrap: 'wrap' }}>
@@ -179,10 +190,15 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
               );
             })}
           </div>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, background: color.appBg, borderRadius: 12, padding: '0 14px', height: 42, width: 300, maxWidth: '38vw' }}>
-            <i className="las la-search" style={{ color: '#B6B6CC', fontSize: 17 }} />
+          {/* Mobile: search takes its own full-width line (the row wraps) so the
+              placeholder never truncates. Desktop: fixed 300px, right-aligned. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: color.appBg, borderRadius: 12, padding: '0 14px', height: 42,
+            ...(mobile
+              ? { flex: '1 1 100%', width: '100%', order: -1 }
+              : { marginLeft: 'auto', width: 300, maxWidth: '38vw' }) }}>
+            <i className="las la-search" style={{ color: '#B6B6CC', fontSize: 17, flex: 'none' }} />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search job, customer, or quote #"
-              style={{ border: 'none', background: 'transparent', flex: 1, fontSize: 14, color: color.ink }} />
+              style={{ border: 'none', background: 'transparent', flex: 1, minWidth: 0, fontSize: 14, color: color.ink }} />
           </div>
         </div>
 

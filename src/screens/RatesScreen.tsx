@@ -12,6 +12,7 @@ import type { ShopRates, Material } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { heading, cardShadowLg } from '../app/ui';
 import { useIsMobile } from '../app/useIsMobile';
+import { ScrollCarousel } from '../app/ScrollCarousel';
 import type { ToastData } from '../app/Toast';
 import { materialsTemplateCsv, parseMaterialsFile, mergeMaterials, downloadCsv, MATERIALS_TEMPLATE_FILENAME } from '../app/bulkImport';
 import { STARTER_CATALOG, MATERIAL_CATEGORIES, TOP_MATERIALS, groupByCategory } from '../data-access-layer/lib/materialCatalog';
@@ -195,10 +196,8 @@ export function RatesScreen({ notify }: { notify?: (t: ToastData) => void }) {
             <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 12 }}>
               Market reference — common materials
             </div>
-            <div style={mobile
-              ? { display: 'flex', gap: 12, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', margin: '0 -16px 10px', padding: '0 16px 6px' }
-              : { display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14, marginBottom: 10 }}>
-              {TOP_MATERIALS.map((name) => {
+            {(() => {
+              const cards = TOP_MATERIALS.map((name) => {
                 const entry = STARTER_CATALOG.find((m) => m.name === name)!;
                 const inLibrary = (rates.materials ?? []).some((m) => m.name.toLowerCase() === name.toLowerCase());
                 return (
@@ -222,8 +221,13 @@ export function RatesScreen({ notify }: { notify?: (t: ToastData) => void }) {
                     </div>
                   </div>
                 );
-              })}
-            </div>
+              });
+              // Desktop: 5-up grid. Mobile: swipeable row with side arrows (no
+              // visible scrollbar), matching the pipeline charts pattern.
+              return mobile
+                ? <div style={{ marginBottom: 10 }}><ScrollCarousel gap={12} bleed={16} testId="material-scroller">{cards}</ScrollCarousel></div>
+                : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14, marginBottom: 10 }}>{cards}</div>;
+            })()}
             <div style={{ fontSize: 12, color: color.muted, lineHeight: 1.6, marginBottom: 18 }}>
               Reference prices, not live market data — verify against your supplier's quote sheet and current market:{' '}
               <a href="https://agmetalminer.com/metal-prices/carbon-steel/" target="_blank" rel="noopener" style={{ color: color.accentDeep, fontWeight: 700 }}>MetalMiner steel prices</a>{' · '}
