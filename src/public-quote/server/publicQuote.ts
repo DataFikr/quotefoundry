@@ -45,6 +45,8 @@ export function rowToInputs(row: any): QuoteInputs {
     hrs_fitting: Number(row.hrs_fitting ?? 0),
     hrs_welding: Number(row.hrs_welding ?? 0),
     hrs_finishing: Number(row.hrs_finishing ?? 0),
+    hrs_setup: Number(row.hrs_setup ?? 0),
+    tooling_cost: Number(row.tooling_cost ?? 0),
     outside_services: Number(row.outside_services ?? 0),
     finish_spec: row.finish_spec ?? undefined,
     lead_time: row.lead_time ?? undefined,

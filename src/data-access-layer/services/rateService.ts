@@ -21,6 +21,9 @@ export const rateService = {
       rate_fitting: Number(r.rate_fitting),
       rate_welding: Number(r.rate_welding),
       rate_finishing: Number(r.rate_finishing),
+      // pre-migration rows (and the mock) lack rate_setup — leave it undefined
+      // so the engine's rate_cutting fallback applies rather than forcing 0
+      rate_setup: r.rate_setup != null ? Number(r.rate_setup) : undefined,
       rate_burn: Number(r.rate_burn),
       price_steel: Number(r.price_steel),
       scrap_pct: Number(r.scrap_pct),

@@ -9,7 +9,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { quoteService } from '../data-access-layer/services/quoteService';
 import { rateService, customerService } from '../data-access-layer/services/rateService';
-import { computeQuote, ratesForInputs } from '../data-access-layer/lib/quoteEngine';
+import { computeQuote, ratesForInputs, priceBreaks } from '../data-access-layer/lib/quoteEngine';
+import { groupByCategory } from '../data-access-layer/lib/materialCatalog';
 import type { QuoteInputs, ShopRates, Customer, MaterialLine } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money, money2, heading, cardShadowLg, initials } from '../app/ui';
@@ -23,6 +24,7 @@ export interface PresetCustomer { id?: string; name: string; email?: string }
 const EMPTY: QuoteInputs = {
   job_name: '', part_number: '', material_spec: '', material_weight: 0, quantity: 1, burn_minutes: 0,
   hrs_cutting: 0, hrs_fitting: 0, hrs_welding: 0, hrs_finishing: 0,
+  hrs_setup: 0, tooling_cost: 0,
   outside_services: 0, finish_spec: '', lead_time: '', notes: '',
 };
 
@@ -299,8 +301,17 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
   const lines = totals ? [
     ['Material', money2(totals.line_material)], ['Labor', money2(totals.line_labor)],
     ['Burn / machine', money2(totals.line_burn)], ['Consumables', money2(totals.line_consumables)],
+    // one-time job costs appear only when used — fab jobs without them keep a tight panel
+    ...(totals.line_setup > 0 ? [['Setup & programming', money2(totals.line_setup)]] : []),
+    ...(totals.line_tooling > 0 ? [['Tooling', money2(totals.line_tooling)]] : []),
     ['Outside services', money2(totals.line_outside)],
   ] : [];
+
+  // Quantity price breaks (estimator-only): shown when the job carries one-time
+  // costs to amortize. Same pure engine as everything else on this panel.
+  const breaks = totals && effectiveRates && (totals.line_setup > 0 || totals.line_tooling > 0)
+    ? priceBreaks(inputs, effectiveRates)
+    : null;
   const filtered = customers.filter((c) => c.company_name.toLowerCase().includes(custQuery.toLowerCase()));
 
   // Extra RFQ metadata surfaced from the parsed document (display-only —
@@ -457,7 +468,16 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
                       <select value={line.type} onChange={(e) => setLine(i, { type: e.target.value })} data-field={i === 0 ? 'material_spec' : `material_spec_${i}`}
                         style={{ ...rawInput, appearance: 'none', cursor: 'pointer' }}>
                         <option value="">Select a material type…</option>
-                        {(rates?.materials ?? []).map((m) => <option key={m.name} value={m.name}>{m.name} — ${m.price.toFixed(2)}/lb</option>)}
+                        {/* grouped by category (uncategorized libraries render one flat group) */}
+                        {groupByCategory(rates?.materials ?? []).map((g) =>
+                          g.category === 'Uncategorized' && (rates?.materials ?? []).every((m) => !m.category) ? (
+                            g.items.map((m) => <option key={m.name} value={m.name}>{m.name} — ${m.price.toFixed(2)}/lb</option>)
+                          ) : (
+                            <optgroup key={g.category} label={g.category}>
+                              {g.items.map((m) => <option key={m.name} value={m.name}>{m.name} — ${m.price.toFixed(2)}/lb</option>)}
+                            </optgroup>
+                          )
+                        )}
                         {line.type && !known && <option value={line.type}>{line.type} (custom)</option>}
                       </select>
                       <i className="las la-angle-down" style={{ color: '#B6B6CC' }} />
@@ -510,15 +530,23 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
             </div>
           </div>
 
-          {/* BOTTOM — MACHINE & OUTSIDE (full width) */}
+          {/* BOTTOM — MACHINE, SETUP & OUTSIDE (full width). Setup & tooling are
+              ONE-TIME job costs — the cost panel amortizes them across quantity
+              in the price-break table. */}
           <div style={{ ...card, gridColumn: mobile ? 'auto' : '1 / -1' }} data-card="machine">
-            <CardTitle>Machine &amp; outside</CardTitle>
+            <CardTitle>Machine, setup &amp; outside</CardTitle>
             <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16 }}>
               <label style={{ display: 'block' }}><span style={labelText}>Burn time</span>
                 <div style={inputBox}><input type="number" value={inputs.burn_minutes || ''} onChange={num('burn_minutes')} style={rawInput} data-field="burn_minutes" /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>min</span></div>
               </label>
               <label style={{ display: 'block' }}><span style={labelText}>Outside services</span>
                 <div style={inputBox}><span style={{ fontSize: 13, color: color.faint, fontWeight: 600, marginRight: 4 }}>$</span><input type="number" value={inputs.outside_services || ''} onChange={num('outside_services')} style={rawInput} data-field="outside_services" /></div>
+              </label>
+              <label style={{ display: 'block' }}><span style={labelText}>Setup &amp; programming <span style={{ color: color.faint }}>(one-time)</span></span>
+                <div style={inputBox}><input type="number" value={inputs.hrs_setup || ''} onChange={num('hrs_setup')} style={rawInput} data-field="hrs_setup" /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>hr</span></div>
+              </label>
+              <label style={{ display: 'block' }}><span style={labelText}>Tooling <span style={{ color: color.faint }}>(one-time — endmills, inserts…)</span></span>
+                <div style={inputBox}><span style={{ fontSize: 13, color: color.faint, fontWeight: 600, marginRight: 4 }}>$</span><input type="number" value={inputs.tooling_cost || ''} onChange={num('tooling_cost')} style={rawInput} data-field="tooling_cost" /></div>
               </label>
             </div>
           </div>
@@ -565,6 +593,28 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
             <div style={{ fontFamily: heading, fontWeight: 900, fontSize: 36, letterSpacing: '-.5px', marginTop: 2 }} data-testid="quoted-price">{totals ? money(totals.quoted_price) : '—'}</div>
             <div style={{ fontSize: 13, color: '#9EA0C8', marginTop: 2 }}>{totals ? money2(totals.per_unit) : '—'} per unit · qty {inputs.quantity || 1}</div>
           </div>
+
+          {/* quantity price breaks — setup/tooling amortized (internal only) */}
+          {breaks && (
+            <div data-testid="price-breaks" style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#9EA0C8', textTransform: 'uppercase', letterSpacing: '.6px', marginBottom: 10 }}>
+                Price breaks <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 600 }}>· setup amortized</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${breaks.length}, 1fr)`, gap: 6 }}>
+                {breaks.map((b) => {
+                  const current = b.qty === (inputs.quantity || 1);
+                  return (
+                    <div key={b.qty} data-break-qty={b.qty}
+                      style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10, background: current ? 'rgba(70,103,219,.22)' : 'rgba(255,255,255,.05)', border: current ? '1px solid rgba(70,103,219,.5)' : '1px solid transparent' }}>
+                      <div style={{ fontSize: 11.5, color: '#9EA0C8', fontWeight: 700 }}>×{b.qty}</div>
+                      <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 12.5, color: current ? color.panelAccentText : '#E8E9F6', marginTop: 3 }}>{money2(b.per_unit)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ fontSize: 11.5, color: '#9EA0C8', marginTop: 8 }}>per-unit price if the customer orders more — internal, never on the quote</div>
+            </div>
+          )}
           {saveError && (
             <div data-testid="save-error" style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(201,42,66,.18)', border: '1px solid rgba(201,42,66,.45)', borderRadius: 12, padding: '10px 13px', fontSize: 13, fontWeight: 600, color: '#FFB4BE' }}>
               <i className="las la-exclamation-circle" style={{ fontSize: 16 }} />{saveError}

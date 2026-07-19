@@ -19,10 +19,13 @@ export interface ShopInfo {
 }
 
 // A shop-defined material and its $/lb price. The quote's chosen material sets
-// the effective price used by the engine (see resolveRates).
+// the effective price used by the engine (see resolveRates). `category` groups
+// the library for display/picking (see materialCatalog.ts); it never affects
+// pricing, so older {name, price} entries stay valid as-is.
 export interface Material {
   name: string;
-  price: number; // $/lb
+  price: number;     // $/lb
+  category?: string; // e.g. 'Carbon steel' | 'Stainless' | 'Aluminum' | …
 }
 
 // The rate library — what the shop edits, and what gets snapshotted per quote.
@@ -31,6 +34,8 @@ export interface ShopRates {
   rate_fitting: number;
   rate_welding: number;
   rate_finishing: number;
+  rate_setup?: number;      // $/hr setup & programming (optional: pre-2026-07-17
+                            // snapshots lack it — engine falls back to rate_cutting)
   rate_burn: number;        // $/hr machine
   price_steel: number;      // $/lb — the effective/default material price
   scrap_pct: number;        // %
@@ -62,6 +67,10 @@ export interface QuoteInputs {
   hrs_fitting: number;
   hrs_welding: number;
   hrs_finishing: number;
+  // ONE-TIME per job (not per part) — amortized across quantity by priceBreaks.
+  // Optional so every pre-existing quote/draft stays valid (absent = 0).
+  hrs_setup?: number;       // setup + programming hours
+  tooling_cost?: number;    // $ perishable tooling for the job (endmills, inserts…)
   outside_services: number; // vendor pass-through $
   finish_spec?: string;
   lead_time?: string;
@@ -74,6 +83,8 @@ export interface QuoteTotals {
   line_labor: number;
   line_burn: number;
   line_consumables: number;
+  line_setup: number;    // one-time setup & programming
+  line_tooling: number;  // one-time perishable tooling
   line_outside: number;
   total_cost: number;      // shop cost
   total_overhead: number;
@@ -113,5 +124,6 @@ export interface Quote {
   public_token?: string;
   sent_at?: string;
   opened_at?: string;
+  decided_at?: string;   // won/lost timestamp — buckets monthly won analytics
   created_at: string;
 }

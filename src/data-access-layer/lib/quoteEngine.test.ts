@@ -4,7 +4,7 @@
 // disagree with the saved number.
 // ============================================================================
 import { describe, it, expect } from 'vitest';
-import { computeQuote, resolveRates, priceForMaterial } from './quoteEngine';
+import { computeQuote, resolveRates, priceForMaterial, priceBreaks } from './quoteEngine';
 import type { QuoteInputs, ShopRates } from './types';
 
 const rates: ShopRates = {
@@ -148,5 +148,74 @@ describe('computeQuote — multi-material lines', () => {
       material_lines: [{ type: 'A36 Steel', weight: 240, qty: 1 }],
     }, libRates);
     expect(withLines.line_material).toBe(234.6);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Setup & tooling (machining-accuracy upgrade, 2026-07-17): ONE-TIME job costs.
+// Absent fields = 0, so the canonical quote above computes byte-identical — the
+// upgrade cannot re-price any existing quote or snapshot.
+// ---------------------------------------------------------------------------
+describe('computeQuote — setup & tooling one-time costs', () => {
+  it('absent fields are zero lines and leave the canonical price untouched', () => {
+    const t = computeQuote(inputs, rates);
+    expect(t.line_setup).toBe(0);
+    expect(t.line_tooling).toBe(0);
+    expect(t.quoted_price).toBe(1913.82);
+  });
+
+  it('setup hours price at rate_setup and join total cost', () => {
+    const withSetup = computeQuote({ ...inputs, hrs_setup: 2 }, { ...rates, rate_setup: 95 });
+    expect(withSetup.line_setup).toBe(190);            // 2 × 95
+    expect(withSetup.total_cost).toBe(1247.6 + 190);
+    // and the markup chain applies to it (sequential order unchanged)
+    expect(withSetup.quoted_price).toBeCloseTo((1247.6 + 190) * 1.18 * 1.3, 2);
+  });
+
+  it('a pre-upgrade snapshot (no rate_setup) falls back to rate_cutting — deterministic forever', () => {
+    const t = computeQuote({ ...inputs, hrs_setup: 2 }, rates); // rates has no rate_setup
+    expect(t.line_setup).toBe(150);                    // 2 × 75 (rate_cutting)
+  });
+
+  it('tooling is a flat pass-through into cost', () => {
+    const t = computeQuote({ ...inputs, tooling_cost: 120 }, rates);
+    expect(t.line_tooling).toBe(120);
+    expect(t.total_cost).toBe(1247.6 + 120);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// priceBreaks — setup ÷ qty amortization (the Excel pattern from the forums).
+// ---------------------------------------------------------------------------
+describe('priceBreaks — quantity amortization', () => {
+  const jobRates: ShopRates = { ...rates, rate_setup: 90 };
+  const job: QuoteInputs = { ...inputs, hrs_setup: 3, tooling_cost: 80, quantity: 10 };
+
+  it('the entered-quantity row matches computeQuote exactly', () => {
+    const t = computeQuote(job, jobRates);
+    const row = priceBreaks(job, jobRates, [10])[0];
+    expect(row.total).toBeCloseTo(t.quoted_price, 2);
+    expect(row.per_unit).toBeCloseTo(t.per_unit, 2);
+  });
+
+  it('per-unit price falls monotonically as quantity rises (setup amortizes away)', () => {
+    const breaks = priceBreaks(job, jobRates); // default 1/10/25/50/100
+    for (let i = 1; i < breaks.length; i++) {
+      expect(breaks[i].per_unit).toBeLessThan(breaks[i - 1].per_unit);
+    }
+    // and approaches the pure run cost: the qty-100 premium over run cost is
+    // exactly the amortized fixed slice (350/100), marked up
+    const t = computeQuote(job, jobRates);
+    const fixed = t.line_setup + t.line_tooling;       // 3×90 + 80 = 350
+    expect(fixed).toBe(350);
+    const runPerUnitPrice = ((t.total_cost - fixed) / 10) * 1.18 * 1.3;
+    const q100 = breaks[breaks.length - 1];
+    expect(q100.per_unit).toBeCloseTo(runPerUnitPrice + (fixed / 100) * 1.18 * 1.3, 2);
+  });
+
+  it('with no one-time costs, per-unit is flat across all quantities', () => {
+    const breaks = priceBreaks(inputs, rates); // canonical job: no setup/tooling
+    const first = breaks[0].per_unit;
+    for (const b of breaks) expect(b.per_unit).toBeCloseTo(first, 2);
   });
 });

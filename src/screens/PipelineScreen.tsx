@@ -8,23 +8,46 @@ import type { Quote, QuoteStatus } from '../data-access-layer/lib/types';
 import { color } from '../design/tokens';
 import { money, statusPill, heading, cardShadow, cardShadowLg } from '../app/ui';
 import { useIsMobile } from '../app/useIsMobile';
+import { analyzePipeline, needsFollowUp } from '../app/pipelineAnalytics';
+import { Donut, StackedBars, Funnel } from '../app/charts';
 import type { ToastData } from '../app/Toast';
 
-const FILTERS: Array<{ key: QuoteStatus | 'all'; label: string }> = [
+// 'followup' is a pseudo-filter: sent/opened quotes aging past the follow-up
+// threshold (same predicate as the stat card, so the two can never disagree).
+type Filter = QuoteStatus | 'all' | 'followup';
+
+const FILTERS: Array<{ key: Filter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'draft', label: 'Draft' },
   { key: 'sent', label: 'Sent' },
   { key: 'opened', label: 'Opened' },
   { key: 'won', label: 'Won' },
   { key: 'lost', label: 'Lost' },
+  { key: 'followup', label: 'Needs follow-up' },
 ];
 
-function StatCard({ label, value, foot, footColor }: { label: string; value: string; foot: string; footColor?: string }) {
+function StatCard({ label, value, foot, footColor, onClick, testId }: {
+  label: string; value: string; foot: string; footColor?: string; onClick?: () => void; testId?: string;
+}) {
   return (
-    <div style={{ background: color.surface, borderRadius: 20, padding: '22px 24px', boxShadow: cardShadow }}>
+    <div onClick={onClick} data-testid={testId}
+      role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      style={{ background: color.surface, borderRadius: 20, padding: '22px 24px', boxShadow: cardShadow, cursor: onClick ? 'pointer' : 'default' }}>
       <div style={{ fontSize: 13, color: color.muted, fontWeight: 600 }}>{label}</div>
       <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 28, marginTop: 6 }}>{value}</div>
       <div style={{ fontSize: 12.5, color: footColor ?? color.muted, marginTop: 5, fontWeight: 600 }}>{foot}</div>
+    </div>
+  );
+}
+
+// White card wrapper for one chart (title in the small-caps style the rates
+// screen uses for section labels).
+function ChartCard({ title, children, mobile, testId }: { title: string; children: React.ReactNode; mobile: boolean; testId: string }) {
+  return (
+    <div data-testid={testId} style={{ background: color.surface, borderRadius: 20, padding: '18px 22px 16px', boxShadow: cardShadow, ...(mobile ? { minWidth: 292, scrollSnapAlign: 'start', flex: 'none' } : {}) }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 12 }}>{title}</div>
+      {children}
     </div>
   );
 }
@@ -34,7 +57,7 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
   const ROW_COLS = '2.4fr 1.7fr 1fr 1.1fr 1fr 86px';
   const [all, setAll] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<QuoteStatus | 'all'>('all');
+  const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null); // quote id armed for delete
 
@@ -46,24 +69,13 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const stats = useMemo(() => {
-    const openQ = all.filter((q) => ['draft', 'sent', 'opened'].includes(q.status));
-    const won = all.filter((q) => q.status === 'won');
-    const lost = all.filter((q) => q.status === 'lost');
-    const openSum = openQ.reduce((a, q) => a + q.quoted_price, 0);
-    const wonSum = won.reduce((a, q) => a + q.quoted_price, 0);
-    const decided = won.length + lost.length;
-    const avg = all.length ? all.reduce((a, q) => a + q.quoted_price, 0) / all.length : 0;
-    return {
-      openSum, openCount: openQ.length, wonSum, wonCount: won.length,
-      winRate: decided ? Math.round((won.length / decided) * 100) : 0, avg,
-    };
-  }, [all]);
+  const stats = useMemo(() => analyzePipeline(all), [all]);
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
     return all.filter((q) => {
-      if (filter !== 'all' && q.status !== filter) return false;
+      if (filter === 'followup') { if (!needsFollowUp(q)) return false; }
+      else if (filter !== 'all' && q.status !== filter) return false;
       if (!term) return true;
       return [q.inputs.job_name, q.customer_name, q.quote_number]
         .some((v) => String(v ?? '').toLowerCase().includes(term));
@@ -104,11 +116,41 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
 
   return (
     <div style={{ padding: mobile ? '18px 16px 40px' : '30px 34px 48px' }} data-screen="pipeline">
-      <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: mobile ? 12 : 20, marginBottom: 26 }}>
-        <StatCard label="Open pipeline" value={money(stats.openSum)} foot={`${stats.openCount} active quotes`} footColor={color.success} />
-        <StatCard label="Won this month" value={money(stats.wonSum)} foot={`${stats.wonCount} jobs landed`} footColor={color.success} />
-        <StatCard label="Win rate" value={`${stats.winRate}%`} foot="won vs. lost" />
-        <StatCard label="Avg. quote" value={money(stats.avg)} foot="across all quotes" />
+      {/* THE 3 NUMBERS — how much is waiting, am I winning, what needs chasing */}
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: mobile ? 12 : 20, marginBottom: mobile ? 14 : 20 }}>
+        <StatCard testId="stat-open" label="Open pipeline" value={money(stats.openValue)}
+          foot={`${stats.openCount} waiting on customers${stats.draftCount ? ` · ${stats.draftCount} draft${stats.draftCount === 1 ? '' : 's'} to finish` : ''}`}
+          footColor={color.success} />
+        <StatCard testId="stat-won" label="Won this month" value={money(stats.wonThisMonth)}
+          foot={stats.wonDelta != null
+            ? `${stats.wonDelta >= 0 ? '▲' : '▼'} ${Math.abs(stats.wonDelta)}% vs last month`
+            : `${stats.wonThisMonthCount} job${stats.wonThisMonthCount === 1 ? '' : 's'} landed`}
+          footColor={stats.wonDelta != null && stats.wonDelta < 0 ? color.danger : color.success} />
+        <div style={mobile ? { gridColumn: '1 / -1' } : undefined}>
+          <StatCard testId="stat-followup" label="Needs follow-up" value={String(stats.needsFollowUp)}
+            foot={stats.needsFollowUp
+              ? `oldest waiting ${stats.oldestFollowUpDays} day${stats.oldestFollowUpDays === 1 ? '' : 's'} — tap to see them`
+              : 'nothing going stale — nice'}
+            footColor={stats.needsFollowUp ? color.danger : color.success}
+            onClick={() => setFilter(filter === 'followup' ? 'all' : 'followup')} />
+        </div>
+      </div>
+
+      {/* THE 3 CHARTS — win-rate donut · monthly value · sent→opened→won funnel.
+          Desktop: 3-up grid. Mobile: swipeable scroll-snap row (fintech pattern)
+          so the quote list stays one thumb-scroll away. */}
+      <div style={mobile
+        ? { display: 'flex', gap: 12, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', margin: '0 -16px 18px', padding: '0 16px 6px' }
+        : { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 26 }}>
+        <ChartCard title="Win rate" mobile={mobile} testId="chart-donut">
+          <Donut {...stats.winRate} />
+        </ChartCard>
+        <ChartCard title="Quoted per month" mobile={mobile} testId="chart-monthly">
+          <StackedBars months={stats.monthly} />
+        </ChartCard>
+        <ChartCard title="Where quotes go" mobile={mobile} testId="chart-funnel">
+          <Funnel {...stats.funnel} />
+        </ChartCard>
       </div>
 
       <div style={{ background: color.surface, borderRadius: 22, padding: '10px 12px 16px', boxShadow: cardShadowLg }}>

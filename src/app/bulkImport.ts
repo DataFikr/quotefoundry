@@ -154,12 +154,17 @@ export function parseMaterialsFile(fileBuffer: ArrayBuffer | Uint8Array): Materi
 
 // Merge imported materials into the existing library: same name (case-
 // insensitive) updates the price; new names append. Order is preserved.
+// A category on the imported entry backfills a missing one (the starter catalog
+// categorizes old default entries) but never overwrites a shop-chosen category.
 export function mergeMaterials(existing: Material[], imported: Material[]): { materials: Material[]; added: number; updated: number } {
   const materials = existing.map((m) => ({ ...m }));
   let added = 0, updated = 0;
   for (const im of imported) {
     const hit = materials.find((m) => m.name.toLowerCase() === im.name.toLowerCase());
-    if (hit) { if (hit.price !== im.price) { hit.price = im.price; updated++; } }
+    if (hit) {
+      if (hit.price !== im.price) { hit.price = im.price; updated++; }
+      if (im.category && !hit.category) hit.category = im.category;
+    }
     else { materials.push({ ...im }); added++; }
   }
   return { materials, added, updated };

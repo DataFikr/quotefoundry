@@ -8,4 +8,5 @@ companies.csv
 # Scraped lead data = third-party business PII. Keep OUT of the (public) repo.
 # The scripts (parse/score/send) are code and ARE committed; the data is not.
 shopList*.json
-thomasnet_list_*.txt
+thomasnet*.txt
+*_leads.txt

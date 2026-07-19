@@ -92,9 +92,10 @@ function buildScopeLines(quote) {
     lines.push(['Material', detail, t.line_material]);
   }
 
-  // group labor + machine into one "fabrication labor & machine time" line
-  const fab = t.line_labor + t.line_burn + t.line_consumables;
-  if (fab > 0) lines.push(['Fabrication labor & machine time', 'cut, fit, weld, finish · incl. consumables', fab]);
+  // group labor + machine + one-time setup/tooling into one "fabrication labor
+  // & machine time" line (mirrors customerScope.ts — keep the two in sync)
+  const fab = t.line_labor + t.line_burn + t.line_consumables + (t.line_setup ?? 0) + (t.line_tooling ?? 0);
+  if (fab > 0) lines.push(['Fabrication labor & machine time', 'setup, cut, fit, weld, finish · incl. consumables & tooling', fab]);
 
   if (t.line_outside > 0)
     lines.push(['Outside services', quote.inputs.finish_spec || 'coating / finishing', t.line_outside]);

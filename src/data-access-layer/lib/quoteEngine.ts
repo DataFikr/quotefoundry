@@ -69,10 +69,18 @@ export function computeQuote(inputs: QuoteInputs, rates: ShopRates): QuoteTotals
   // 4. Consumables: tied to weld hours
   const consumables = inputs.hrs_welding * rates.rate_consumables;
 
+  // 4b. ONE-TIME job costs (machining-accuracy upgrade, 2026-07-17):
+  //     setup & programming hours, and perishable tooling for the job. Both
+  //     optional (absent = 0, so every pre-existing quote computes unchanged).
+  //     rate_setup is absent from pre-upgrade snapshots — fall back to
+  //     rate_cutting so a frozen snapshot stays deterministic forever.
+  const setup = (inputs.hrs_setup ?? 0) * (rates.rate_setup ?? rates.rate_cutting);
+  const tooling = inputs.tooling_cost ?? 0;
+
   // 5. Outside services: vendor pass-through, no markup at cost stage
   const outside = inputs.outside_services;
 
-  const total_cost = material + labor + burn + consumables + outside;
+  const total_cost = material + labor + burn + consumables + setup + tooling + outside;
 
   // Overhead then margin — SEQUENTIAL, not additive. Margin applies to
   // cost+overhead, not bare cost. Getting this order wrong silently
@@ -87,6 +95,8 @@ export function computeQuote(inputs: QuoteInputs, rates: ShopRates): QuoteTotals
     line_labor: round2(labor),
     line_burn: round2(burn),
     line_consumables: round2(consumables),
+    line_setup: round2(setup),
+    line_tooling: round2(tooling),
     line_outside: round2(outside),
     total_cost: round2(total_cost),
     total_overhead: round2(total_overhead),
@@ -94,4 +104,36 @@ export function computeQuote(inputs: QuoteInputs, rates: ShopRates): QuoteTotals
     quoted_price: round2(quoted_price),
     per_unit: round2(quoted_price / qty),
   };
+}
+
+// ----------------------------------------------------------------------------
+// priceBreaks — the Excel amortization pattern the machining forums converge
+// on: Part Cost = (Setup ÷ Qty) + run cost/part + overhead + margin.
+//   fixed = setup + tooling (one-time for the job, amortized across the lot)
+//   run   = every other cost, treated as linear per unit from the ENTERED qty
+// Pure, like computeQuote — the editor's cost panel renders this live and it
+// is ESTIMATOR-ONLY: price breaks never appear on any customer surface.
+// ----------------------------------------------------------------------------
+export interface PriceBreak { qty: number; total: number; per_unit: number }
+
+export const PRICE_BREAK_QUANTITIES = [1, 10, 25, 50, 100];
+
+export function priceBreaks(
+  inputs: QuoteInputs,
+  rates: ShopRates,
+  quantities: number[] = PRICE_BREAK_QUANTITIES
+): PriceBreak[] {
+  const t = computeQuote(inputs, rates);
+  const enteredQty = inputs.quantity > 0 ? inputs.quantity : 1;
+  const fixed = t.line_setup + t.line_tooling;
+  const runPerUnit = (t.total_cost - fixed) / enteredQty;
+
+  return quantities.map((qty) => {
+    const q = qty > 0 ? qty : 1;
+    const cost = fixed + runPerUnit * q;
+    // identical sequential order to computeQuote: cost → ×(1+oh) → ×(1+margin)
+    const withOverhead = cost * (1 + rates.overhead_pct / 100);
+    const total = withOverhead * (1 + rates.margin_pct / 100);
+    return { qty: q, total: round2(total), per_unit: round2(total / q) };
+  });
 }

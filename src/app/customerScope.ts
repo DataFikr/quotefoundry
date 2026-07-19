@@ -21,9 +21,11 @@ export function customerScope(q: Quote): { lines: ScopeLine[]; subtotal: number;
     lines.push({ label: 'Material', detail, amount: t.line_material });
   }
 
-  const fab = t.line_labor + t.line_burn + t.line_consumables;
+  // setup & tooling fold into the fab line — one-time job costs are part of
+  // doing the work, never their own labeled line on a customer document
+  const fab = t.line_labor + t.line_burn + t.line_consumables + t.line_setup + t.line_tooling;
   if (fab > 0)
-    lines.push({ label: 'Fabrication labor & machine time', detail: 'cut, fit, weld, finish · incl. consumables', amount: fab });
+    lines.push({ label: 'Fabrication labor & machine time', detail: 'setup, cut, fit, weld, finish · incl. consumables & tooling', amount: fab });
 
   if (t.line_outside > 0)
     lines.push({ label: 'Outside services', detail: q.inputs.finish_spec || 'coating / finishing', amount: t.line_outside });

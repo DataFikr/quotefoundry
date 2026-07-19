@@ -85,6 +85,7 @@ create table shop_rates (
   rate_fitting    numeric(10,2) not null default 80,
   rate_welding    numeric(10,2) not null default 90,
   rate_finishing  numeric(10,2) not null default 65,
+  rate_setup      numeric(10,2) not null default 75,     -- setup & programming (one-time job hours)
 
   -- machine & material
   rate_burn       numeric(10,2) not null default 120,    -- $/hr plasma/laser
@@ -174,6 +175,8 @@ create table quotes (
   hrs_fitting     numeric(10,2) default 0,
   hrs_welding     numeric(10,2) default 0,
   hrs_finishing   numeric(10,2) default 0,
+  hrs_setup       numeric(10,2) default 0,                -- ONE-TIME setup + programming hours
+  tooling_cost    numeric(10,2) default 0,                -- ONE-TIME perishable tooling $
   outside_services numeric(10,2) default 0,               -- vendor pass-through $
   finish_spec     text,
   lead_time       text,
