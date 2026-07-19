@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>How to Price a Fabrication or Welding Job (Step-by-Step, 2026) — QuoteFoundry</title>
-  <meta name="description" content="A working formula for pricing custom metal fabrication: material + labor + machine time + consumables + outside services, then overhead, then margin — in that order. With a fully worked example." />
+  <meta name="description" content="A working formula for pricing custom metal fabrication and machining: material + labor + machine time + consumables + outside services, plus setup amortized across the lot and tooling — then overhead, then margin. With worked examples, a quantity price-break table, and research-backed material and labor rate references." />
   <link rel="canonical" href="https://quotefoundry.app/guides/how-to-price-a-fabrication-job.html" />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="How to price a fabrication or welding job — the formula shops actually use" />
-  <meta property="og:description" content="Material + labor + burn + consumables + outside services → overhead → margin. Worked example included." />
+  <meta property="og:description" content="Material + labor + burn + consumables + outside services, plus setup (amortized) + tooling → overhead → margin. Worked example, quantity price breaks, and where to source material and labor rates." />
   <meta property="og:url" content="https://quotefoundry.app/guides/how-to-price-a-fabrication-job.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,6 +32,8 @@
     .cta a.btn { display:inline-block; margin-top:14px; background:var(--accent); color:#fff; font-family:Lato,sans-serif; font-weight:700; padding:12px 24px; border-radius:12px; text-decoration:none; }
     .cta p { color:#C7C8E0; margin:6px 0 0; }
     code { background:var(--tint); border-radius:6px; padding:1px 7px; font-size:14.5px; }
+    .dl { display:inline-block; background:var(--accent); color:#fff; font-family:Lato,sans-serif; font-weight:700; font-size:16px; padding:14px 26px; border-radius:12px; text-decoration:none; margin:16px 0 4px; }
+    .note { font-size:13.5px; color:var(--muted); }
     footer { border-top:1px solid var(--border); padding:22px 24px; font-size:13.5px; color:var(--muted); }
     footer a { color:var(--muted); }
   </style>
@@ -54,6 +56,21 @@
         "@type": "Question",
         "name": "Why do fabrication shops lose money on jobs they quoted?",
         "acceptedAnswer": { "@type": "Answer", "text": "The usual causes are forgetting consumables (gas, wire, abrasives), pricing material without a drop allowance, applying margin to bare cost instead of cost plus overhead, and re-quoting repeat jobs from stale material prices. Manual spreadsheet costing typically underbids by 8–15%." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you price machined parts with setup and quantity price breaks?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Add two costs a per-lot fab quote often forgets: setup and programming as a one-time cost divided across the lot (setup ÷ quantity), and perishable tooling. Part cost = (setup ÷ qty) + (cycle time × machine rate) + material + tooling + secondary ops, then overhead, then margin. Because setup amortizes, the per-part price drops as quantity rises — quote the same job at 1, 10, 25, 50, and 100 to see the price break." }
+      },
+      {
+        "@type": "Question",
+        "name": "Where do fabrication material and labor rates come from?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Start from published references and adjust to your own supplier quotes and payroll. For material $/lb, use market references like MetalMiner or a material price book (e.g. A36 steel around $0.85/lb, 304 stainless around $2.10/lb). For labor $/hr, start from regional wage data such as the BLS Occupational Employment statistics for welders and machinists, then multiply by your overhead burden and utilization. These are starting points, not live market data." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a free metal fabrication cost calculator spreadsheet?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. QuoteFoundry publishes a free metal fabrication and machining job calculator spreadsheet (Excel / Google Sheets, no email required). It uses the same formula shown here — material, labor, machine time, consumables, setup amortized across the lot, and tooling, then overhead, then margin — with a live quantity price-break table and a Rates and sources tab of suggested material and labor rates with research links to verify against." }
       }
     ]
   }
@@ -66,13 +83,15 @@
     <p class="answer"><strong>Short answer:</strong> add up direct costs — material with a scrap allowance, labor hours at your rates, machine burn time, consumables, and outside services — then apply overhead to that cost, <em>then</em> apply margin to the cost-plus-overhead number. Sequential, not additive. Getting the order wrong under-prices every job you win.</p>
 
     <h2>What goes into the price of a fab job?</h2>
-    <p>Five direct cost lines, then two percentages:</p>
+    <p>Direct cost lines — some per-part, some one-time — then two percentages:</p>
     <table>
       <tr><th>Line</th><th>How to figure it</th></tr>
       <tr><td>Material</td><td>weight (lb) × your $/lb for that alloy × (1 + drop/scrap %)</td></tr>
       <tr><td>Labor</td><td>hours per discipline (cutting, fitting, welding, finishing) × that discipline's shop rate</td></tr>
-      <tr><td>Machine / burn time</td><td>plasma/laser minutes × your burn rate per hour</td></tr>
+      <tr><td>Machine / burn time</td><td>plasma/laser/spindle minutes × your machine rate per hour</td></tr>
       <tr><td>Consumables</td><td>gas, wire, abrasives — a per-weld-hour rate beats guessing per job</td></tr>
+      <tr><td>Setup &amp; programming</td><td>one-time setup + CAM/programming hours × your setup rate, <em>divided across the lot</em> (÷ qty)</td></tr>
+      <tr><td>Tooling</td><td>perishable tooling (endmills, inserts, abrasives) consumed by the job — one-time</td></tr>
       <tr><td>Outside services</td><td>galvanizing, powder coat, heat treat — vendor price passed through</td></tr>
       <tr><td>Overhead</td><td>× (1 + overhead %) on the cost subtotal — rent, power, insurance, office time</td></tr>
       <tr><td>Margin</td><td>× (1 + margin %) on cost <em>plus</em> overhead — this is your profit</td></tr>
@@ -96,20 +115,49 @@
       <tr class="total"><td>Quoted price</td><td></td><td class="num">$1,913.82</td></tr>
     </table>
 
+    <h2>Pricing machined parts: setup, tooling, and quantity price breaks</h2>
+    <p>Machine shops add two costs a per-lot fab quote often forgets — <strong>setup &amp; programming</strong> (a one-time cost you spread across the run) and perishable <strong>tooling</strong> (endmills, inserts, abrasives). The formula the shop-built Excel sheets converge on:</p>
+    <p class="answer"><strong>Part cost = (setup ÷ qty) + (cycle time × machine rate) + material + tooling + secondary ops</strong>, then overhead, then margin.</p>
+    <p>The key move is <strong>amortizing setup across the lot</strong>: two hours of setup is brutal on one piece and trivial on a hundred. Quote the same job at several quantities and the per-part price falls as the one-time cost spreads out. Example — $150 setup (2 h × $75) + $50 tooling = <code>$200 one-time</code>, plus <code>$40</code> variable cost per part, at 18% overhead and 30% margin:</p>
+    <table>
+      <tr><th>Quantity</th><th>One-time cost / part</th><th style="text-align:right">Price per part</th></tr>
+      <tr><td>1</td><td>$200.00</td><td class="num">$368.16</td></tr>
+      <tr><td>10</td><td>$20.00</td><td class="num">$92.04</td></tr>
+      <tr><td>25</td><td>$8.00</td><td class="num">$73.63</td></tr>
+      <tr><td>50</td><td>$4.00</td><td class="num">$67.50</td></tr>
+      <tr><td>100</td><td>$2.00</td><td class="num">$64.43</td></tr>
+    </table>
+    <p>Same math as the formula above — only the setup share per part changes. A quoting tool that shows this price-break strip as you type lets you answer <em>"what's your price at 100?"</em> on the spot, without rebuilding the quote.</p>
+
     <h2>What are the most common underbidding mistakes?</h2>
     <p class="answer">Forgetting consumables (one shop's $75 job cost $85 in shielding gas alone), pricing material without drop allowance, applying margin before overhead, and cloning old quotes at last year's steel price. Each one is invisible on the quote and very visible on the year-end P&amp;L.</p>
+
+    <h2>Where do the material and labor rates come from?</h2>
+    <p>The formula is only as good as the rates you feed it — but you don't have to guess them. Start from published references, then adjust to your own supplier quotes and payroll:</p>
+    <table>
+      <tr><th>Rate</th><th>Suggested starting point</th><th>Verify against</th></tr>
+      <tr><td>Material $/lb</td><td>Market reference by alloy — e.g. A36 steel ≈ $0.85, 304 stainless ≈ $2.10, 6061 aluminum ≈ $1.85</td><td><a href="https://agmetalminer.com/metal-prices/carbon-steel/" target="_blank" rel="noopener">MetalMiner</a> · <a href="https://www.materialpricebook.com/prices" target="_blank" rel="noopener">Material Price Book</a></td></tr>
+      <tr><td>Labor $/hr</td><td>Regional wage × your overhead burden × utilization (regional presets scale a national baseline up or down)</td><td><a href="https://www.bls.gov/oes/current/oes514121.htm" target="_blank" rel="noopener">BLS wages — Welders</a> · <a href="https://www.bls.gov/oes/current/oes514041.htm" target="_blank" rel="noopener">BLS wages — Machinists</a></td></tr>
+    </table>
+    <p>Treat these as <em>starting points, not live market data</em> — steel moves weekly and wages vary by metro. And your billed labor rate isn't the wage itself; it's wage × overhead burden × utilization. Research-backed references get you a defensible first number to adjust, not a rate to trust blindly.</p>
 
     <h2>Spreadsheet or software?</h2>
     <p>A spreadsheet with the formula above is genuinely fine — until you're re-typing rates into every copy, a broken cell reference under-prices a month of quotes, or the customer wants a clean PDF and you're screenshotting Excel. Purpose-built quoting keeps one rate library, applies the same math every time, and produces a branded document in minutes. <a href="/guides/free-fabrication-quote-template.html">Start with our free template</a> either way.</p>
 
+    <h2 id="calculator">Free download: the metal fabrication job calculator (spreadsheet)</h2>
+    <p class="answer"><strong>Try the formula before you sign up for anything.</strong> A free, formula-driven <strong>metal fabrication &amp; machining job calculator spreadsheet</strong> — the same math on this page, live. Edit your rates, quantity, setup and tooling; it prices the job and shows the quantity price breaks automatically.</p>
+    <a class="dl" href="/guides/metal-fabrication-job-calculator.xlsx" download>⬇ Download the calculator (Excel / Google Sheets)</a>
+    <div class="note">metal-fabrication-job-calculator.xlsx · opens in Excel, Google Sheets &amp; LibreOffice · no email required</div>
+    <p>Three tabs: a live <strong>Calculator</strong> with a quantity price-break table, the worked <strong>$1,913.82 fabrication example</strong>, and <strong>Rates &amp; sources</strong> — suggested material $/lb and labor $/hr with the research links (MetalMiner, Material Price Book, BLS wages) to verify against. It's the same engine as QuoteFoundry; when the spreadsheet starts costing you re-typed rates and screenshotted PDFs, the app picks up where it leaves off.</p>
+
     <div class="cta">
       <strong style="font-family:Lato,sans-serif;font-size:19px">This formula, as software — priced from your own rates</strong>
-      <p>QuoteFoundry runs exactly this math from your shop's stored rates — no AI guesswork — and turns it into a branded PDF quote in about 10 minutes. Free during the founding-partner beta; flat per-shop pricing, no per-user fees.</p>
+      <p>QuoteFoundry runs exactly this math from your shop's stored rates — no AI guesswork — including setup amortized across the lot, a live quantity price-break strip, and research-backed material and labor rate references to start from. It turns the result into a branded PDF quote in about 10 minutes. Free during the founding-partner beta; flat per-shop pricing, no per-user fees.</p>
       <a class="btn" href="/">Quote your first job free →</a>
     </div>
   </main>
   <footer>
-    <a href="/">QuoteFoundry</a> · <a href="/guides/free-fabrication-quote-template.html">Free fabrication quote template</a> · Built for US metal fab &amp; welding job shops
+    <a href="/">QuoteFoundry</a> · <a href="/guides/metal-fabrication-job-calculator.xlsx" download>Free job calculator spreadsheet</a> · <a href="/guides/free-fabrication-quote-template.html">Free fabrication quote template</a> · Built for US metal fab &amp; welding job shops
   </footer>
 </body>
 </html>
