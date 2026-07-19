@@ -18,8 +18,12 @@
 //      or an earlier response), and never fires on a draft (a draft link is
 //      treated as not found — the customer should never hold one).
 // ============================================================================
-import { computeQuote, ratesForInputs } from '../../data-access-layer/lib/quoteEngine';
-import { customerScope } from '../../app/customerScope';
+// NOTE: explicit .js extensions — this module is compiled and run under Node's
+// native ESM loader in the Vercel API bundle (package.json "type":"module"),
+// which requires extensions on relative VALUE imports. Type-only imports are
+// erased at compile, so they don't need one.
+import { computeQuote, ratesForInputs } from '../../data-access-layer/lib/quoteEngine.js';
+import { customerScope } from '../../app/customerScope.js';
 import type { Quote, QuoteInputs } from '../../data-access-layer/lib/types';
 
 // uuid-shaped tokens only (public_token is a uuid). Rejecting everything else
