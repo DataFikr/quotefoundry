@@ -12,7 +12,9 @@
 // Motion (a11y): every animated node's BASE style is the completed final frame;
 // keyframes in global.css animate up to it and loop. prefers-reduced-motion
 // freezes the loop on that finished frame (see `.qf-demo-stage` guard).
-// Desktop autoplays; mobile shows a poster and plays in place on tap.
+// Both desktop AND mobile show the static poster thumbnail until the user
+// clicks play; play is user-initiated, then the video loops continuously (like
+// a GIF, muted). Click the playing video to pause/resume (WCAG 2.2.2).
 // ============================================================================
 import { useState, useRef, useEffect } from 'react';
 import { heading } from '../app/ui';
@@ -131,58 +133,61 @@ function Stage({ mobile }: { mobile: boolean }) {
   );
 }
 
-// The produced demo video. `autoplay` (desktop) plays only while on-screen via an
-// IntersectionObserver — the "network diet" from doc 09; mobile mounts this only
-// after a tap. If the source 404s (not yet encoded), onError bubbles up so the
-// caller can fall back to the CSS animation. Always muted+loop → poster-until-play.
+// The produced demo video. Mounted ONLY after the user clicks play (both desktop
+// and mobile), so playback is always user-initiated — no autoplay. Once mounted
+// it loops continuously like a muted GIF; clicking it toggles pause/resume so
+// there is always a way to stop the motion (WCAG 2.2.2). If the source 404s (not
+// yet encoded), onError bubbles up so the caller falls back to the CSS animation.
 //
 // SIZING: the box is driven by the source aspect ratio (demoVideo.aspect) with
 // object-fit:contain, so the ENTIRE frame is visible — never cropped — at any
-// width, on desktop AND mobile. (Previously a fixed height + object-fit:cover
-// truncated the frame on mobile to roughly its upper half.) Any mismatch between
-// the card width and the source ratio letterboxes on brand-dark, not by clipping.
-function VideoPlayer({ mobile, autoplay, onError }: { mobile: boolean; autoplay: boolean; onError: () => void }) {
+// width, on desktop AND mobile. Any mismatch between the card width and the
+// source ratio letterboxes on brand-dark, not by clipping.
+function VideoPlayer({ mobile, onError }: { mobile: boolean; onError: () => void }) {
   const ref = useRef<HTMLVideoElement>(null);
-  // Respect prefers-reduced-motion (WCAG 2.3.3 / 2.2.2): don't auto-loop motion;
-  // show native controls so the user starts it deliberately.
-  const [reduce, setReduce] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
+  const [paused, setPaused] = useState(false);
+  // User clicked play → start it now (muted autoplay is allowed post-gesture).
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const on = () => setReduce(mq.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
+    ref.current?.play().catch(() => {});
   }, []);
-  const auto = autoplay && !reduce;
-  useEffect(() => {
-    if (!auto) return;
+  const toggle = () => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) el.play().catch(() => {}); else el.pause(); }),
-      { threshold: 0.25 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [auto]);
+    if (el.paused) { el.play().catch(() => {}); setPaused(false); }
+    else { el.pause(); setPaused(true); }
+  };
   return (
-    <video
-      ref={ref}
-      muted
-      loop
-      playsInline
-      autoPlay={auto}
-      preload="none"
-      controls={!auto}
-      poster={demoVideo.poster}
-      onError={onError}
-      data-testid="demo-video"
-      aria-label="QuoteFoundry product demo — a real job quoted from RFQ to sent, at 2× speed"
-      style={{ display: 'block', width: '100%', aspectRatio: demoVideo.aspect, height: 'auto', objectFit: 'contain', background: color.panelFrom, border: 'none' }}
-    >
-      <source src={demoVideo.mp4} type="video/mp4" />
-    </video>
+    <div style={{ position: 'relative', display: 'block', background: color.panelFrom }}>
+      <video
+        ref={ref}
+        muted
+        loop
+        playsInline
+        autoPlay
+        preload="auto"
+        poster={demoVideo.poster}
+        onClick={toggle}
+        onError={onError}
+        data-testid="demo-video"
+        aria-label="QuoteFoundry product demo — a real job quoted from RFQ to sent, at 2× speed. Click to pause or resume."
+        style={{ display: 'block', width: '100%', aspectRatio: demoVideo.aspect, height: 'auto', objectFit: 'contain', background: color.panelFrom, border: 'none', cursor: 'pointer' }}
+      >
+        <source src={demoVideo.mp4} type="video/mp4" />
+      </video>
+      {/* pause affordance — shows the play glyph while paused so it reads as "resume" */}
+      {paused && (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label="Resume the demo"
+          style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', padding: 0, background: 'rgba(20,21,42,.28)' }}
+        >
+          <span style={{ width: mobile ? 64 : 72, height: mobile ? 64 : 72, borderRadius: '50%', background: CTA, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 16px 40px -10px rgba(8,9,20,.9)' }}>
+            <i className="las la-play" style={{ fontSize: mobile ? 28 : 30, color: '#fff', marginLeft: 4 }} />
+          </span>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -217,44 +222,29 @@ export function LandingDemo({ mobile, demoVideoUrl }: { mobile: boolean; demoVid
         <span style={{ width: mobile ? 30 : 55 }} />
       </div>
 
-      {/* Desktop: play the produced video in-place (falls back to the CSS
-          animation if the asset isn't encoded yet). Mobile shows a poster until
-          tapped, then plays the video (or animation) in place. */}
-      {!mobile && useVideo ? (
-        <VideoPlayer mobile={false} autoplay onError={() => setVideoFailed(true)} />
-      ) : mobile && playing ? (
-        useVideo
-          ? <VideoPlayer mobile autoplay={false} onError={() => setVideoFailed(true)} />
-          : <Stage mobile />
-      ) : mobile && !playing ? (
+      {/* Both desktop and mobile show the static poster thumbnail until the user
+          clicks play; then the video loops continuously in place. Falls back to
+          the CSS animation if the asset 404s or the video is disabled. */}
+      {useVideo && playing ? (
+        <VideoPlayer mobile={mobile} onError={() => setVideoFailed(true)} />
+      ) : useVideo ? (
         <button
           type="button"
           onClick={() => setPlaying(true)}
           data-testid="demo-play"
           aria-label="Play the QuoteFoundry demo"
-          style={{ display: 'block', width: '100%', position: 'relative', aspectRatio: demoVideo.aspect, border: 'none', cursor: 'pointer', padding: 0, background: 'linear-gradient(150deg,#14152A 0%,#1C1D2B 55%,#231820 100%)', overflow: 'hidden' }}
+          style={{ display: 'block', width: '100%', position: 'relative', aspectRatio: demoVideo.aspect, border: 'none', cursor: 'pointer', padding: 0, background: color.panelFrom, overflow: 'hidden' }}
         >
-          {/* mini app window — the final "Opened" frame */}
-          <div aria-hidden="true" style={{ position: 'absolute', left: 22, right: 22, top: 38, bottom: -26, borderRadius: '12px 12px 0 0', background: color.appBg, boxShadow: '0 24px 60px -18px rgba(8,9,20,.85)', overflow: 'hidden' }}>
-            <div style={{ height: 26, display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', background: '#fff', borderBottom: `1px solid ${color.border}` }}>
-              <TrafficDots size={7} />
-              <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 600, color: color.success, background: color.successBg, borderRadius: 6, padding: '2px 8px' }}><i className="las la-eye" style={{ fontSize: 10 }} />Opened</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: 8, padding: 10 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {['Structural brackets — welded', 'A36 steel — 240 lb', '8.5 labor hrs @ $80'].map((t) => (
-                  <div key={t} style={{ height: 22, border: `1px solid ${color.border}`, borderRadius: 6, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 8px', fontSize: 9.5, color: SUB, whiteSpace: 'nowrap', overflow: 'hidden' }}>{t}</div>
-                ))}
-              </div>
-              <div style={{ background: `linear-gradient(160deg,${color.panelFrom},${color.panelTo})`, borderRadius: 8, padding: '10px 12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                <div style={{ fontSize: 8.5, color: '#AFC0FF', letterSpacing: '.06em', marginBottom: 2 }}>QUOTED PRICE</div>
-                <div style={{ fontFamily: heading, fontWeight: 900, fontSize: 26, letterSpacing: '-.5px' }}>$1,486</div>
-              </div>
-            </div>
-          </div>
+          {/* static thumbnail face (the produced demo poster) */}
+          <img
+            src={demoVideo.poster}
+            alt=""
+            aria-hidden="true"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
           {/* play affordance */}
-          <span aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ width: 72, height: 72, borderRadius: '50%', background: CTA, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 16px 40px -10px rgba(8,9,20,.9)' }}><i className="las la-play" style={{ fontSize: 30, color: '#fff', marginLeft: 4 }} /></span>
+          <span aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,21,42,.16)' }}>
+            <span style={{ width: mobile ? 64 : 72, height: mobile ? 64 : 72, borderRadius: '50%', background: CTA, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 16px 40px -10px rgba(8,9,20,.9)' }}><i className="las la-play" style={{ fontSize: mobile ? 28 : 30, color: '#fff', marginLeft: 4 }} /></span>
           </span>
         </button>
       ) : (
