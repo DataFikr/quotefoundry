@@ -3,6 +3,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/send-quote-email.ts": { "includeFiles": "node_modules/pdfkit/js/data/**" },
+    "api/generate-pdf.ts": { "includeFiles": "node_modules/pdfkit/js/data/**" }
+  },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
