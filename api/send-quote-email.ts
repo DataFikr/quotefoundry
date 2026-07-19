@@ -15,6 +15,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'POST only' });
 
   try {
+    // Fail fast with a legible message if the sending config is incomplete —
+    // otherwise a missing secret surfaces as an opaque low-level throw / 500.
+    const missingEnv = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'RESEND_API_KEY']
+      .filter((k) => !process.env[k]);
+    if (missingEnv.length) {
+      return res.status(500).json({ ok: false, error: `Email is not configured on the server (missing: ${missingEnv.join(', ')}).` });
+    }
+
     const { caller, error } = await getCaller(req);
     if (!caller) return res.status(401).json({ ok: false, error });
 

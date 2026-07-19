@@ -28,6 +28,13 @@ const EMPTY: QuoteInputs = {
   outside_services: 0, finish_spec: '', lead_time: '', notes: '',
 };
 
+// Labor duration estimator: convert a job duration into total labor hours.
+// Working-time convention (shown in the UI so the number is never a surprise):
+// 5 workdays/week, 22 workdays/month.
+type DurationUnit = 'days' | 'weeks' | 'months';
+const WORKDAYS: Record<DurationUnit, number> = { days: 1, weeks: 5, months: 22 };
+const DURATION_LABEL: Record<DurationUnit, string> = { days: 'Days', weeks: 'Weeks', months: 'Months' };
+
 const inputBox: React.CSSProperties = {
   marginTop: 7, display: 'flex', alignItems: 'center', border: `1.5px solid ${color.border}`,
   borderRadius: 12, height: 46, padding: '0 14px', background: color.surface,
@@ -167,6 +174,16 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
   const [previewIdx, setPreviewIdx] = useState<number | null>(null);
   const [prefillMeta, setPrefillMeta] = useState<Prefill>({});
 
+  // --- Labor duration estimator state ---
+  // A helper that computes total labor hours from a duration and pre-fills a
+  // chosen labor bucket. Live estimate shown; the estimator only WRITES on
+  // "Fill hours" so the estimator can't clobber a value the user hand-edits.
+  const [estNum, setEstNum] = useState('');
+  const [estUnit, setEstUnit] = useState<DurationUnit>('days');
+  const [estDaily, setEstDaily] = useState('8');
+  const [estTarget, setEstTarget] = useState<keyof QuoteInputs>('hrs_fitting');
+  const estHours = Math.round((Number(estNum) || 0) * WORKDAYS[estUnit] * (Number(estDaily) || 0) * 100) / 100;
+
   useEffect(() => {
     (async () => {
       if (quoteId) {
@@ -207,6 +224,13 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
 
   function set<K extends keyof QuoteInputs>(key: K, value: QuoteInputs[K]) { setInputs((p) => ({ ...p, [key]: value })); }
   const num = (key: keyof QuoteInputs) => (e: React.ChangeEvent<HTMLInputElement>) => set(key, (Number(e.target.value) || 0) as QuoteInputs[typeof key]);
+
+  // Pre-fill the chosen labor bucket with the estimated total (the user can
+  // still edit the field afterward — this only writes on demand).
+  function applyEstimate() {
+    if (estHours <= 0) return;
+    set(estTarget, estHours as QuoteInputs[typeof estTarget]);
+  }
 
   function pickCustomer(c: Customer) {
     setCustomer({ name: c.company_name, email: c.email ?? '' });
@@ -521,6 +545,50 @@ export function EditorScreen({ quoteId, presetCustomer, onSaved, onCancel, notif
           {/* ROW 2 · col 2 — LABOR */}
           <div style={card} data-card="labor">
             <CardTitle>Labor (hours)</CardTitle>
+
+            {/* Duration estimator — turn "3 weeks @ 8 hr/day" into total hours and
+                pre-fill a labor bucket. Live estimate; writes only on Fill. */}
+            <div data-testid="labor-estimator" style={{ border: `1.5px solid ${color.border}`, borderRadius: 14, padding: '14px 15px 16px', marginBottom: 16, background: '#FBFBFE' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <i className="las la-calculator" style={{ fontSize: 17, color: color.accentDeep }} />
+                <span style={{ fontFamily: heading, fontWeight: 700, fontSize: 13.5, color: color.body }}>Estimate from duration</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={{ display: 'block' }}><span style={labelText}>Duration</span>
+                  <div style={inputBox}><input type="number" min="0" value={estNum} onChange={(e) => setEstNum(e.target.value)} placeholder="0" style={rawInput} data-field="est_number" /></div>
+                </label>
+                <label style={{ display: 'block' }}><span style={labelText}>Unit</span>
+                  <div style={inputBox}>
+                    <select value={estUnit} onChange={(e) => setEstUnit(e.target.value as DurationUnit)} style={{ ...rawInput, appearance: 'none', cursor: 'pointer' }} data-field="est_unit">
+                      {(Object.keys(WORKDAYS) as DurationUnit[]).map((u) => <option key={u} value={u}>{DURATION_LABEL[u]}</option>)}
+                    </select>
+                    <i className="las la-angle-down" style={{ color: '#B6B6CC' }} />
+                  </div>
+                </label>
+                <label style={{ display: 'block' }}><span style={labelText}>Daily work hours</span>
+                  <div style={inputBox}><input type="number" min="0" value={estDaily} onChange={(e) => setEstDaily(e.target.value)} placeholder="8" style={rawInput} data-field="est_daily" /><span style={{ fontSize: 13, color: color.faint, fontWeight: 600 }}>hr</span></div>
+                </label>
+                <label style={{ display: 'block' }}><span style={labelText}>Fill into</span>
+                  <div style={inputBox}>
+                    <select value={estTarget as string} onChange={(e) => setEstTarget(e.target.value as keyof QuoteInputs)} style={{ ...rawInput, appearance: 'none', cursor: 'pointer' }} data-field="est_target">
+                      {labor.map(([key, lbl]) => <option key={key} value={key}>{lbl}</option>)}
+                    </select>
+                    <i className="las la-angle-down" style={{ color: '#B6B6CC' }} />
+                  </div>
+                </label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+                <div style={{ fontSize: 13, color: color.body }}>
+                  ≈ <span data-testid="est-hours" style={{ fontFamily: heading, fontWeight: 700, color: color.ink }}>{estHours}</span> total hours
+                </div>
+                <button onClick={applyEstimate} disabled={estHours <= 0} data-testid="apply-estimate"
+                  style={{ marginLeft: 'auto', height: 38, padding: '0 16px', border: 'none', borderRadius: 11, background: estHours > 0 ? color.accent : color.border, color: '#fff', fontFamily: heading, fontWeight: 700, fontSize: 13, cursor: estHours > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <i className="las la-arrow-down" />Fill hours
+                </button>
+              </div>
+              <div style={{ fontSize: 11.5, color: color.faint, marginTop: 8 }}>Assumes 5 workdays/week, 22 workdays/month. Adjust any field below after filling.</div>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               {labor.map(([key, lbl]) => (
                 <label key={key} style={{ display: 'block' }}><span style={labelText}>{lbl}</span>

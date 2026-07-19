@@ -44,8 +44,16 @@ export const emailService = {
           body: JSON.stringify({ quoteId: req.quoteId, recipient: req.recipient, subject: req.subject, message: req.message }),
         });
         if (r.status === 404) return fail(EMAIL_ENDPOINT_MISSING);
-        const json = await r.json().catch(() => null);
-        if (!r.ok || !json?.ok) return fail(json?.error ?? `Send failed (${r.status}).`);
+        // Read the body ONCE as text, then try to parse it. A crashed serverless
+        // function returns a non-JSON error page — surfacing that text (instead
+        // of a bare "Send failed (500)") is what makes the failure diagnosable.
+        const raw = await r.text();
+        let json: any = null;
+        try { json = raw ? JSON.parse(raw) : null; } catch { /* non-JSON error page */ }
+        if (!r.ok || !json?.ok) {
+          const detail = json?.error ?? (raw.trim() ? raw.trim().slice(0, 300) : `Send failed (${r.status}).`);
+          return fail(detail);
+        }
         return ok({ emailId: json.emailId });
       } catch (e) {
         return fail(e instanceof Error ? e.message : 'Send failed.');
