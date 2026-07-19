@@ -26,6 +26,19 @@ const FILTERS: Array<{ key: Filter; label: string }> = [
   { key: 'followup', label: 'Needs follow-up' },
 ];
 
+// Short date like "Jul 3"; em-dash when the timestamp is absent (e.g. never sent).
+function shortDate(iso?: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// Whole days between a sent timestamp and now. '—' when never sent.
+function daysSince(iso?: string) {
+  if (!iso) return '—';
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  return days <= 0 ? 'today' : `${days}d`;
+}
+
 function StatCard({ label, value, foot, footColor, onClick, testId }: {
   label: string; value: string; foot: string; footColor?: string; onClick?: () => void; testId?: string;
 }) {
@@ -54,7 +67,7 @@ function ChartCard({ title, children, mobile, testId }: { title: string; childre
 
 export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (id: string) => void; onNew: () => void; onRefresh: () => void; notify?: (t: ToastData) => void }) {
   const mobile = useIsMobile();
-  const ROW_COLS = '2.4fr 1.7fr 1fr 1.1fr 1fr 86px';
+  const ROW_COLS = '2.2fr 1.4fr .8fr .8fr .9fr 1fr 1fr 86px';
   const [all, setAll] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>('all');
@@ -175,7 +188,7 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
 
         {!mobile && (
           <div style={{ display: 'grid', gridTemplateColumns: ROW_COLS, gap: 14, padding: '8px 22px', fontSize: 12, fontWeight: 700, color: color.faint, textTransform: 'uppercase', letterSpacing: '.4px' }}>
-            <div>Job / Quote #</div><div>Customer</div><div>Date</div><div style={{ textAlign: 'right' }}>Quoted</div><div>Status</div><div />
+            <div>Job / Quote #</div><div>Customer</div><div>Created</div><div>Sent</div><div>Since sent</div><div style={{ textAlign: 'right' }}>Quoted</div><div>Status</div><div />
           </div>
         )}
 
@@ -203,6 +216,11 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
                   <span style={{ display: 'inline-block', padding: '6px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, fontFamily: heading, background: pill.bg, color: pill.color }}>{pill.label}</span>
                   <span style={{ fontFamily: heading, fontWeight: 700, fontSize: 17 }}>{money(q.quoted_price)}</span>
                 </div>
+                <div style={{ display: 'flex', gap: 14, fontSize: 12, color: color.muted, flexWrap: 'wrap' }} data-mask>
+                  <span>Created {shortDate(q.created_at)}</span>
+                  <span>Sent {shortDate(q.sent_at)}</span>
+                  {q.sent_at && <span style={{ color: needsFollowUp(q) ? color.danger : color.muted, fontWeight: needsFollowUp(q) ? 700 : 400 }}>{daysSince(q.sent_at)} since sent</span>}
+                </div>
               </div>
             );
           }
@@ -221,7 +239,9 @@ export function PipelineScreen({ onOpen, onNew, onRefresh, notify }: { onOpen: (
                 </div>
               </div>
               <div style={{ fontSize: 14, color: color.body, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.customer_name ?? '—'}</div>
-              <div style={{ fontSize: 13.5, color: color.muted }} data-mask>{new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+              <div style={{ fontSize: 13.5, color: color.muted }} data-mask>{shortDate(q.created_at)}</div>
+              <div style={{ fontSize: 13.5, color: color.muted }} data-mask>{shortDate(q.sent_at)}</div>
+              <div style={{ fontSize: 13.5, color: needsFollowUp(q) ? color.danger : color.muted, fontWeight: needsFollowUp(q) ? 700 : 400 }} data-mask>{daysSince(q.sent_at)}</div>
               <div style={{ fontFamily: heading, fontWeight: 700, fontSize: 15, textAlign: 'right' }}>{money(q.quoted_price)}</div>
               <div><span style={{ display: 'inline-block', padding: '6px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, fontFamily: heading, background: pill.bg, color: pill.color }}>{pill.label}</span></div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
